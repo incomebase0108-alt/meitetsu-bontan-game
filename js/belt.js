@@ -109,6 +109,20 @@ window.Battle = (function() {
     ]
   };
 
+  // 雑魚の恫喝（駅名入り）
+  function mobTaunt() {
+    const name = (S.station && S.station.name) || 'ここ';
+    const lines = [
+      `${name}なめんじゃねぇー！`,
+      'ぶっ殺すぞコラ！',
+      `${name}の番張っとんじゃ！`,
+      'シメたるわ！',
+      `${name}から出てけや！`,
+      'おうコラ、待たんかい！'
+    ];
+    return lines[Math.floor(Math.random() * lines.length)];
+  }
+
   const TAUNTS = [
     'おうおう、ビビっとんのか？',
     'その程度かよ三河の喧嘩は！',
@@ -621,8 +635,9 @@ window.Battle = (function() {
       const fromRight = i !== 1; // 2人目だけ左から
       const x = fromRight ? S.cam + S.viewW + 60 + i * 50 : S.cam - 60;
       const y = Math.random() * S.yMax;
-      // 色は駅ボスの色相をずらして個体差
+      // 色は駅ボスの色相をずらして個体差、髪は黒/茶/金髪からランダム
       const hue = (Math.random() * 80 - 40) | 0;
+      const HAIRS = ['#15110c', '#15110c', '#e8c34a', '#6b3f16', '#e8c34a'];
       const mob = makeEntity('mob', type.archetypeId, {
         name: type.name,
         hp: Math.max(6, Math.ceil(S.bossData.hp * 0.3 * type.hpF)),
@@ -630,7 +645,8 @@ window.Battle = (function() {
         speed: type.speed,
         color: S.bossData.color,
         bontanColor: S.bossData.bontanColor,
-        gakOverride: shiftColor(S.bossData.color, hue)
+        gakOverride: shiftColor(S.bossData.color, hue),
+        hairOverride: HAIRS[Math.floor(Math.random() * HAIRS.length)]
       }, x, y);
       mob.type = type;
       mob.cdLeft = 0.8 + Math.random();
@@ -797,6 +813,8 @@ window.Battle = (function() {
         e.cdAfter = e.type.cdMin + Math.random() * (e.type.cdMax - e.type.cdMin);
         e.state = 'attack'; e.stateT = 0; e.hitDone = false;
         setAnim(e, e.move.anim, 0.6);
+        // 攻撃しながら駅名入りで凄む
+        if (Math.random() < 0.35) showTaunt(e, mobTaunt());
       }
     }
   }

@@ -45,8 +45,8 @@ window.Sprites = (function() {
 
     const v = VISUALS_BY_ARCHETYPE[archetypeId] || VISUALS_BY_ARCHETYPE['yankee-basic'];
 
-    // アクセサリー（アーキタイプ固有 > 敵固有emoji）
-    if (accessory) accessory.textContent = v.acc || data.emoji || '';
+    // アクセサリー絵文字は廃止（頭にサイコロ等が乗って見えるため）
+    if (accessory) accessory.textContent = '';
 
     charEl.classList.add('dq');
     charEl.style.setProperty('--hair', data.hairOverride || v.hair || '#15110c');
