@@ -143,30 +143,37 @@ window.Game = (function() {
     const victim = document.getElementById('bontan-victim');
     victim.style.right = '80px';
     victim.style.transition = '';
-    victim.querySelector('.char-body').style.background = enemy.color;
-    victim.querySelector('.char-body').style.height = '80px';
-    victim.querySelector('.char-body').innerHTML = '';
+    victim.querySelector('.char-body').style.background = enemy.color; // 上着（学ラン）は着たまま
+    const vBontan = victim.querySelector('.victim-bontan');
+    const vTrunks = victim.querySelector('.victim-trunks');
+    const vLegs = victim.querySelector('.victim-legs');
+    vBontan.style.display = '';
+    vBontan.style.background = enemy.bontanColor || '#1a1a2e';
+    vTrunks.style.display = 'none';
+    vLegs.style.display = 'none';
     document.getElementById('bontan-message').textContent = '';
     document.getElementById('bontan-levelup').textContent = '';
     const pants = document.getElementById('bontan-floating');
     pants.classList.remove('fly');
-    pants.textContent = '👖';
+    pants.style.background = enemy.bontanColor || '#1a1a2e';
 
     setTimeout(() => {
+      // ボンタンが剥がれて宙を舞う → 下半身はトランクス一丁に
       pants.classList.add('fly');
+      vBontan.style.display = 'none';
+      vTrunks.style.display = '';
+      vLegs.style.display = '';
       window.Audio8 && window.Audio8.SFX.bontan();
       document.getElementById('bontan-message').textContent =
         `${enemy.name}のボンタンをGET！`;
     }, 700);
 
     setTimeout(() => {
-      // 敵がパンツ姿で逃げる
+      // 上着は着たまま、トランクス一丁で逃げる
       victim.style.transition = 'all 1.5s';
       victim.style.right = '-250px';
-      victim.querySelector('.char-body').style.height = '120px';
-      victim.querySelector('.char-body').innerHTML = '<div style="height:50%; background:white"></div>';
       document.getElementById('bontan-message').textContent =
-        `${enemy.name}はパンツ一丁で逃げ去った！💨`;
+        `${enemy.name}はトランクス一丁で逃げ去った！💨`;
     }, 1800);
 
     setTimeout(() => {
@@ -214,7 +221,7 @@ window.Game = (function() {
     setTimeout(() => window.Audio8 && window.Audio8.SFX.victory(), 500);
     const display = document.getElementById('victory-bontans');
     display.innerHTML = player.bontans.map(b =>
-      `<span style="color:${b.color}" title="${b.from}">👖</span>`
+      `<span class="bontan-icon" style="background:${b.color}" title="${b.from}"></span>`
     ).join('');
     // クリア後はセーブを消す（リプレイ用）
     window.Save && window.Save.clear();
