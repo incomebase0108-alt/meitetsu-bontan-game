@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1a1a1a">
 <title>名鉄ボンタン狩り 〜蒲郡から新安城まで〜</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=20260612a">
 </head>
 <body>
 
@@ -25,6 +25,7 @@
     <button id="btn-continue" class="big-btn" style="display:none">続きから</button>
     <p class="title-credit">名鉄蒲郡線 + 西尾線 完全踏破RPG</p>
     <p class="title-help">スマホ：画面下のボタンをタップ／PC：A S D F W E キー</p>
+    <p class="title-help">敵が光って溜めたら→ガードで「ジャストガード」！／技を順番につなぐと連携奥義！</p>
   </section>
 
   <!-- マップ画面（路線図） -->
@@ -112,6 +113,13 @@
 
     <div class="battle-log" id="battle-log"></div>
 
+    <!-- 必殺ゲージ -->
+    <div class="meter-wrap">
+      <span class="meter-label">必殺</span>
+      <div class="meter-bg"><div id="meter-fill" class="meter-fill"></div></div>
+      <span id="meter-text" class="meter-text">0%</span>
+    </div>
+
     <!-- 操作ボタン（モバイル最適化6ボタン） -->
     <div class="battle-controls">
       <button class="action-btn act-punch" data-action="punch">
@@ -177,12 +185,12 @@
 
 </div>
 
-<script src="js/audio.js"></script>
-<script src="js/save.js"></script>
-<script src="js/stations.js"></script>
-<script src="js/scenes.js"></script>
-<script src="js/battle.js"></script>
-<script src="js/map.js"></script>
-<script src="js/game.js"></script>
+<script src="js/audio.js?v=20260612a"></script>
+<script src="js/save.js?v=20260612a"></script>
+<script src="js/stations.js?v=20260612a"></script>
+<script src="js/scenes.js?v=20260612a"></script>
+<script src="js/battle.js?v=20260612a"></script>
+<script src="js/map.js?v=20260612a"></script>
+<script src="js/game.js?v=20260612a"></script>
 </body>
 </html>

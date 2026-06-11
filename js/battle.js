@@ -1,31 +1,45 @@
 // 戦闘システム（くにおくん風・拡張版）
 // - 6コマンド（パンチ/キック/必殺/ガード/突進/投げ）
-// - コンボシステム
-// - 敵アーキタイプ別AI
-// - ガードブレイク・クリティカル
-// - タッチ操作対応
+// - 必殺ゲージ制（ヒット/被弾で溜まりMAXで必殺解放）
+// - ジャストガード（敵チャージ予告に合わせると完全無効＋カウンター確定）
+// - 連携技（特定の技順で奥義発動）
+// - 敵の怒りモード（残りHP35%で攻撃強化・行動加速）
+// - 敵アーキタイプ別AI / ガードブレイク / クリティカル / タッチ操作対応
 window.Battle = (function() {
   let state = null;
 
-  // アクセサリーemoji（アーキタイプごとの装飾）
-  const ACCESSORY_BY_ARCHETYPE = {
-    'yankee-basic':  { acc: '' },
-    'yankee-fisher': { acc: '🎣' },
-    'yankee-fire':   { acc: '🔥' },
-    'kid-boss':      { acc: '🍭' },
-    'samurai-yanki': { acc: '👑' },
-    'matcha-boss':   { acc: '🍃' },
-    'girl-yankee':   { acc: '🎀' },
-    'big-boss':      { acc: '💪' },
-    'final-boss':    { acc: '👑' },
-    'yakuza':        { acc: '🕶' },
-    'gambler-boss':  { acc: '🎲' },
-    'thrower-boss':  { acc: '🎯' },
-    'onsen-boss':    { acc: '♨️' },
-    'riezent-boss':  { acc: '💈' },
-    'karate-boss':   { acc: '🥋' },
-    'player':        { acc: '' }
+  // アーキタイプ別の見た目（全員リーゼント＋改造学ラン仕様）
+  // hair=リーゼント色 / gak=学ラン色(省略時は敵固有色) / acc=肩のアクセサリー
+  const VISUALS_BY_ARCHETYPE = {
+    'player':        { hair: '#15151c', gak: '#191921', skin: '#f2c899', sarashi: true },
+    'yankee-basic':  { hair: '#1a140e' },
+    'yankee-fisher': { hair: '#10202a', acc: '🎣' },
+    'yankee-fire':   { hair: '#3a0d05', acc: '🔥' },
+    'kid-boss':      { hair: '#4a2c10', acc: '🍭', scale: 0.82 },
+    'samurai-yanki': { hair: '#0d0d18', acc: '👑', scar: true },
+    'matcha-boss':   { hair: '#1c2e10', acc: '🍃', scar: true },
+    'girl-yankee':   { hair: '#d4a017', acc: '🎀' },
+    'big-boss':      { hair: '#241505', acc: '💪', scale: 1.22, scar: true },
+    'final-boss':    { hair: '#ececec', gak: '#f2f0e8', acc: '👑', scar: true, white: true },
+    'yakuza':        { hair: '#23201c', gak: '#0c0c10', shades: true, scar: true },
+    'gambler-boss':  { hair: '#2c1a3a', acc: '🎲' },
+    'thrower-boss':  { hair: '#33200c', acc: '🎯' },
+    'onsen-boss':    { hair: '#5a4a42', acc: '♨️' },
+    'riezent-boss':  { hair: '#050505', acc: '💈', pompXL: true },
+    'karate-boss':   { hair: '#1a1a1a', acc: '🥋', scar: true }
   };
+
+  // リーゼント頭のHTML（CSSで描画）
+  function delinquentHeadHTML(v) {
+    return `
+      <div class="dq-face">
+        <div class="dq-brow l"></div><div class="dq-brow r"></div>
+        ${v.shades ? '<div class="dq-shades"></div>' : '<div class="dq-eye l"></div><div class="dq-eye r"></div>'}
+        <div class="dq-mouth"></div>
+        ${v.scar ? '<div class="dq-scar"></div>' : ''}
+      </div>
+      <div class="dq-hair${v.pompXL ? ' xl' : ''}"><div class="dq-pomp"></div></div>`;
+  }
 
   function applyCharSprite(charEl, archetypeId, data) {
     const body = charEl.querySelector('.char-body');
@@ -37,9 +51,10 @@ window.Battle = (function() {
     const oldImg = charEl.querySelector('img.char-sprite');
     if (oldImg) oldImg.remove();
 
-    // アクセサリー設定
-    const accInfo = ACCESSORY_BY_ARCHETYPE[archetypeId] || ACCESSORY_BY_ARCHETYPE['yankee-basic'];
-    if (accessory) accessory.textContent = accInfo.acc || '';
+    const v = VISUALS_BY_ARCHETYPE[archetypeId] || VISUALS_BY_ARCHETYPE['yankee-basic'];
+
+    // アクセサリー（アーキタイプ固有 > 敵固有emoji）
+    if (accessory) accessory.textContent = v.acc || data.emoji || '';
 
     const imgPath = `assets/characters/${archetypeId}.png`;
     const img = new Image();
@@ -56,16 +71,18 @@ window.Battle = (function() {
       head.style.display = '';
       body.style.display = '';
       pants.style.display = '';
-      body.style.background = data.color;
-      head.textContent = data.emoji || '😡';
-      pants.style.background = data.bontanColor || '#1a1a1a';
+      // CSS不良スプライト構築
+      charEl.classList.add('dq');
+      charEl.style.setProperty('--hair', v.hair || '#15110c');
+      charEl.style.setProperty('--gak', v.gak || data.color || '#23232b');
+      charEl.style.setProperty('--skin', v.skin || '#f0c08a');
+      charEl.style.setProperty('--bontan', data.bontanColor || '#1a1a1a');
+      head.innerHTML = delinquentHeadHTML(v);
+      body.innerHTML = v.sarashi ? '<div class="dq-sarashi"></div>' : '';
+      body.classList.toggle('white-gak', !!v.white);
       // ボス・大型キャラはちょっと大きく
-      if (data.isBig) {
-        body.style.transform = 'scale(1.3)';
-        head.style.fontSize = '60px';
-      } else {
-        body.style.transform = '';
-      }
+      const sc = v.scale || (data.isBig ? 1.22 : 1);
+      charEl.style.zoom = sc;
     };
     img.src = imgPath;
   }
@@ -181,17 +198,37 @@ window.Battle = (function() {
     ]
   };
 
+  // 戦闘中の不良煽りセリフ（吹き出し表示）
+  const TAUNTS = [
+    'おうおう、ビビっとんのか？',
+    'その程度かよ三河の喧嘩は！',
+    'ボンタンは渡さねぇぞコラ！',
+    '歯ァ食いしばれや！',
+    '上等じゃねぇか…！',
+    'テメェのリーゼント、へし折ったる！',
+    '夜露死苦ぅ！！'
+  ];
+
+  // 連携技（この順で連続ヒットさせると発動）
+  const CHAINS = [
+    { seq: ['punch', 'punch', 'kick'], name: '喧嘩殺法・三連蹴り', mult: 1.5 },
+    { seq: ['punch', 'kick', 'throw'], name: '奥義・ボンタン三段崩し', mult: 1.8 },
+    { seq: ['kick', 'kick', 'dash'],   name: '特攻・轟雷タックル', mult: 1.6 },
+    { seq: ['dash', 'punch', 'throw'], name: '裏技・通り魔バックドロップ', mult: 1.7 }
+  ];
+
   function init(enemyData, onWin, onLose, stationId) {
     const player = window.Game.getPlayer();
     state = {
       player: {
         hp: player.hp, maxHp: player.maxHp, atk: player.atk,
-        guarding: false, busy: false, combo: 0, lastHitAt: 0
+        guarding: false, busy: false, combo: 0, lastHitAt: 0,
+        meter: 0, counterReady: false, justGuardArmed: false, chain: []
       },
       enemy: {
         ...enemyData, maxHp: enemyData.hp, currentHp: enemyData.hp,
         busy: false, guarding: false, archetypeId: enemyData.archetypeId || 'yankee-basic',
-        atkBoost: 1
+        atkBoost: 1, telegraphing: false, enraged: false, stunnedUntil: 0
       },
       log: [],
       onWin,
@@ -209,21 +246,23 @@ window.Battle = (function() {
 
     const playerChar = document.getElementById('player-char');
     playerChar.classList.remove('defeated', 'hit', 'pantsless', 'thrown', 'knockback', 'guarding', 'charging', 'aura-active');
-    applyCharSprite(playerChar, 'player', { color: '#4a90e2', emoji: '😤', bontanColor: '#3a3a3a' });
+    applyCharSprite(playerChar, 'player', { color: '#191921', emoji: '', bontanColor: '#23232c' });
 
     if (enemyData.isRare) {
       log(`<span style="color:#ff3366; font-weight:bold">⚠️ レアエンカウント！本物の極道が現れた！</span>`);
     }
     log(`${enemyData.title}「${enemyData.name}」が現れた！`);
     log(`「${enemyData.voice}」`);
+    setTimeout(() => { if (state && !state.finished) showTaunt(enemyData.voice); }, 300);
     updateUI();
+    updateMeterUI();
 
     // 全ボタンをアクティブに
     document.querySelectorAll('.action-btn').forEach(b => {
       b.disabled = false;
       b.classList.remove('cooling');
     });
-    document.getElementById('combo-display').classList.remove('show');
+    document.getElementById('combo-display').classList.remove('show', 'chain');
 
     // Enemy AI loop（少しランダム性）
     scheduleEnemyAction();
@@ -231,7 +270,9 @@ window.Battle = (function() {
 
   function scheduleEnemyAction() {
     if (!state || state.finished) return;
-    const delay = 1200 + Math.random() * 800;
+    // 敵speedが高いほど行動が速い。怒りモードでさらに加速
+    let delay = Math.max(650, 1350 - (state.enemy.speed || 5) * 35) + Math.random() * 500;
+    if (state.enemy.enraged) delay *= 0.72;
     state.enemyTimer = setTimeout(() => {
       enemyAction();
       scheduleEnemyAction();
@@ -253,6 +294,29 @@ window.Battle = (function() {
     document.getElementById('enemy-hp-fill').style.width = ePct + '%';
     document.getElementById('player-hp-text').textContent = `${Math.max(0, Math.ceil(p.hp))}/${p.maxHp}`;
     document.getElementById('enemy-hp-text').textContent = `${Math.max(0, Math.ceil(e.currentHp))}/${e.maxHp}`;
+  }
+
+  // 必殺ゲージ
+  function gainMeter(n) {
+    if (!state) return;
+    const p = state.player;
+    const was = p.meter;
+    p.meter = Math.min(100, p.meter + n);
+    updateMeterUI();
+    if (was < 100 && p.meter >= 100) {
+      log('<span style="color:#ffcc00; font-weight:bold">🔥 必殺ゲージMAX！！ぶちかませ！</span>');
+      window.Audio8 && window.Audio8.SFX.levelup && window.Audio8.SFX.levelup();
+    }
+  }
+
+  function updateMeterUI() {
+    const fill = document.getElementById('meter-fill');
+    const txt = document.getElementById('meter-text');
+    const pct = state ? Math.floor(state.player.meter) : 0;
+    if (fill) fill.style.width = pct + '%';
+    if (txt) txt.textContent = pct + '%';
+    const btn = document.querySelector('.action-btn.act-special');
+    if (btn) btn.classList.toggle('ready', pct >= 100);
   }
 
   function showHit(targetSelector, text) {
@@ -293,29 +357,83 @@ window.Battle = (function() {
     flash.classList.add('show');
   }
 
+  function shakeStage() {
+    const stage = document.getElementById('battle-stage');
+    stage.classList.remove('shake');
+    void stage.offsetWidth;
+    stage.classList.add('shake');
+  }
+
   function showCombo(n) {
     const el = document.getElementById('combo-display');
-    if (n < 2) { el.classList.remove('show'); return; }
+    if (n < 2) { el.classList.remove('show', 'chain'); return; }
+    el.classList.remove('chain');
     el.textContent = `${n} HIT COMBO!`;
     el.classList.remove('show');
     void el.offsetWidth;
     el.classList.add('show');
   }
 
+  function showChainName(name) {
+    const el = document.getElementById('combo-display');
+    el.textContent = `連携「${name}」！！`;
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show', 'chain');
+  }
+
+  // 敵の吹き出しセリフ
+  function showTaunt(text) {
+    const stage = document.getElementById('battle-stage');
+    const enemyChar = document.getElementById('enemy-char');
+    if (!stage || !enemyChar || !text) return;
+    const old = stage.querySelector('.speech-bubble');
+    if (old) old.remove();
+    const b = document.createElement('div');
+    b.className = 'speech-bubble';
+    b.textContent = text;
+    const rect = enemyChar.getBoundingClientRect();
+    const stageRect = stage.getBoundingClientRect();
+    b.style.right = Math.max(4, stageRect.right - rect.right) + 'px';
+    b.style.top = Math.max(4, rect.top - stageRect.top - 44) + 'px';
+    stage.appendChild(b);
+    setTimeout(() => b.remove(), 1800);
+  }
+
+  // 怒りモード（残りHP35%で1回だけ発動）
+  function checkEnrage() {
+    const e = state.enemy;
+    if (!e.enraged && e.currentHp > 0 && e.currentHp / e.maxHp < 0.35) {
+      e.enraged = true;
+      e.atkBoost = 1.25;
+      document.getElementById('enemy-char').classList.add('aura-active');
+      log(`<span style="color:#ff3366; font-weight:bold">${e.name}の目の色が変わった！！</span>`);
+      showTaunt('キレちまったぜ…ここからが本番じゃ！');
+      window.Audio8 && window.Audio8.SFX.guardBreak && window.Audio8.SFX.guardBreak();
+    }
+  }
+
   // プレイヤー攻撃
   const ACTIONS = {
-    punch:   { name: 'パンチ', mult: 1.0, hit: 0.9, cd: 320,  text: 'BAM!',    sfx: 'punch',   anim: 'punch',   crit: 0.1 },
-    kick:    { name: 'キック', mult: 1.6, hit: 0.7, cd: 580,  text: 'BOOM!',   sfx: 'kick',    anim: 'kick',    crit: 0.15 },
-    special: { name: '必殺技', mult: 2.8, hit: 0.6, cd: 1200, text: 'WHAM!!',  sfx: 'special', anim: 'special', crit: 0.25, flash: true },
+    punch:   { name: 'パンチ', mult: 1.0, hit: 0.92, cd: 320,  text: 'BAM!',    sfx: 'punch',   anim: 'punch',   crit: 0.1 },
+    kick:    { name: 'キック', mult: 1.6, hit: 0.78, cd: 580,  text: 'BOOM!',   sfx: 'kick',    anim: 'kick',    crit: 0.15 },
+    special: { name: '必殺技', mult: 3.2, hit: 0.95, cd: 1200, text: 'WHAM!!',  sfx: 'special', anim: 'special', crit: 0.3, flash: true, useMeter: true },
     guard:   { name: 'ガード', mult: 0,   hit: 1.0, cd: 700,  text: '',        sfx: 'guard',   anim: null,      crit: 0 },
     dash:    { name: '突進',   mult: 2.0, hit: 0.85, cd: 800,  text: 'CHARGE!', sfx: 'dash',    anim: 'dash',    crit: 0.15 },
-    throw:   { name: '投げ',   mult: 1.8, hit: 0.75, cd: 1000, text: 'GRAB!!',  sfx: 'throw',   anim: 'throw',   crit: 0.1, breakGuard: true }
+    throw:   { name: '投げ',   mult: 1.8, hit: 0.8, cd: 1000, text: 'GRAB!!',  sfx: 'throw',   anim: 'throw',   crit: 0.1, breakGuard: true }
   };
 
   function playerAction(actionKey) {
     if (!state || state.finished || state.player.busy) return;
     const action = ACTIONS[actionKey];
     if (!action) return;
+
+    // 必殺技はゲージMAXでのみ発動
+    if (action.useMeter && state.player.meter < 100) {
+      log('気合いが足りねぇ…（必殺ゲージMAXで発動）');
+      window.Audio8 && window.Audio8.SFX.miss();
+      return;
+    }
 
     state.player.busy = true;
     state.player.guarding = (actionKey === 'guard');
@@ -340,8 +458,20 @@ window.Battle = (function() {
     }
 
     if (actionKey === 'guard') {
-      log(`プレイヤーはガード体勢！`);
+      // ジャストガード判定：敵のチャージ予告中にガードを合わせる
+      if (state.enemy.telegraphing) {
+        state.player.justGuardArmed = true;
+        log(`<span style="color:#66ccff; font-weight:bold">⚡ ジャストガードの構え！！</span>`);
+      } else {
+        log(`プレイヤーはガード体勢！`);
+      }
     } else {
+      // 必殺技はゲージ消費
+      if (action.useMeter) {
+        state.player.meter = 0;
+        updateMeterUI();
+      }
+
       // 命中判定
       const enemyGuarding = state.enemy.guarding && !action.breakGuard;
       let hitRoll = Math.random();
@@ -349,8 +479,14 @@ window.Battle = (function() {
 
       if (hitRoll < action.hit) {
         let baseDmg = state.player.atk * action.mult;
-        // クリティカル
-        const isCrit = Math.random() < action.crit;
+        // クリティカル（ジャストガード後のカウンターは確定クリティカル）
+        let isCrit = Math.random() < action.crit;
+        if (state.player.counterReady) {
+          isCrit = true;
+          state.player.counterReady = false;
+          playerChar.classList.remove('aura-active');
+          log(`<span style="color:#66ccff; font-weight:bold">カウンター炸裂！！</span>`);
+        }
         if (isCrit) baseDmg *= 1.8;
         let dmg = Math.max(1, Math.floor(baseDmg + Math.random() * 4 - 2));
         // 敵ガード貫通でも軽減
@@ -369,12 +505,36 @@ window.Battle = (function() {
           dmg = Math.floor(dmg * (1 + Math.min(0.5, state.player.combo * 0.08)));
         } else {
           state.player.combo = 1;
+          state.player.chain = [];
         }
         state.player.lastHitAt = now;
-        showCombo(state.player.combo);
+
+        // 連携技判定（コンボ継続中に特定の技順）
+        state.player.chain.push(actionKey);
+        if (state.player.chain.length > 3) state.player.chain.shift();
+        let chainHit = null;
+        if (state.player.combo >= 3) {
+          chainHit = CHAINS.find(c =>
+            c.seq.length <= state.player.chain.length &&
+            c.seq.every((k, i) => state.player.chain[state.player.chain.length - c.seq.length + i] === k)
+          );
+        }
+        if (chainHit) {
+          dmg = Math.floor(dmg * chainHit.mult);
+          state.player.chain = [];
+          showChainName(chainHit.name);
+          flashScreen();
+          shakeStage();
+          window.Audio8 && window.Audio8.SFX.special();
+          log(`<span style="color:#ffcc00; font-weight:bold">連携「${chainHit.name}」発動！！</span>`);
+          gainMeter(12);
+        } else {
+          showCombo(state.player.combo);
+        }
         window.Audio8 && window.Audio8.SFX.combo(state.player.combo);
 
         state.enemy.currentHp -= dmg;
+        gainMeter(Math.round(action.cd / 40)); // 重い技ほどゲージが溜まる
         const enemyChar = document.getElementById('enemy-char');
         enemyChar.classList.remove('hit', 'knockback');
         void enemyChar.offsetWidth;
@@ -383,16 +543,19 @@ window.Battle = (function() {
 
         setTimeout(() => window.Audio8 && window.Audio8.SFX[isCrit ? 'critical' : 'hit'](), 80);
         if (action.flash || isCrit) flashScreen();
+        if (isCrit || action.mult >= 2.5 || chainHit) shakeStage();
         showHit('#enemy-char', isCrit ? 'CRITICAL!' : action.text);
         showDamageNumber('#enemy-char', dmg, isCrit ? 'critical' : 'normal');
 
         log(`プレイヤー ${action.name}！ ${dmg}ダメージ${isCrit ? '【会心の一撃！】' : ''}`);
+        checkEnrage();
         checkVictory();
       } else {
         window.Audio8 && window.Audio8.SFX.miss();
         showDamageNumber('#enemy-char', 0, 'miss');
         log(`プレイヤーの${action.name}は外れた…`);
         state.player.combo = 0;
+        state.player.chain = [];
         showCombo(0);
       }
     }
@@ -425,6 +588,8 @@ window.Battle = (function() {
 
   function enemyAction() {
     if (!state || state.finished || state.enemy.busy) return;
+    // ジャストガードで気絶中は行動不能
+    if (state.enemy.stunnedUntil && Date.now() < state.enemy.stunnedUntil) return;
     state.enemy.busy = true;
     const action = chooseEnemyAction();
     const enemyChar = document.getElementById('enemy-char');
@@ -444,14 +609,16 @@ window.Battle = (function() {
       return;
     }
 
-    // チャージ予告（強い攻撃時）
+    // チャージ予告（強い攻撃時）→ この間にガードを押すとジャストガード！
     if (action.mult >= 2.0) {
+      state.enemy.telegraphing = true;
       enemyChar.classList.add('charging');
-      log(`<span style="color:#ff9966">${state.enemy.name}が力を溜めている…</span>`);
+      log(`<span style="color:#ff9966">${state.enemy.name}が力を溜めている…！（今だ、ガード！）</span>`);
       setTimeout(() => {
+        state.enemy.telegraphing = false;
         enemyChar.classList.remove('charging');
         executeEnemyAttack(action);
-      }, 600);
+      }, 800);
     } else {
       executeEnemyAttack(action);
     }
@@ -460,6 +627,29 @@ window.Battle = (function() {
   function executeEnemyAttack(action) {
     if (!state || state.finished) return;
     const enemyChar = document.getElementById('enemy-char');
+
+    // ジャストガード成立：完全無効＋敵気絶＋カウンター確定
+    if (state.player.justGuardArmed) {
+      state.player.justGuardArmed = false;
+      state.player.counterReady = true;
+      state.enemy.stunnedUntil = Date.now() + 1600;
+      const playerChar = document.getElementById('player-char');
+      playerChar.classList.add('aura-active');
+      enemyChar.classList.remove('hit');
+      void enemyChar.offsetWidth;
+      enemyChar.classList.add('hit');
+      setTimeout(() => enemyChar.classList.remove('hit'), 400);
+      window.Audio8 && window.Audio8.SFX.critical();
+      flashScreen();
+      shakeStage();
+      showHit('#player-char', 'JUST GUARD!!');
+      gainMeter(30);
+      log(`<span style="color:#66ccff; font-weight:bold">⚡ ジャストガード成功！！${state.enemy.name}は体勢を崩した！（次の攻撃は確定クリティカル）</span>`);
+      updateUI();
+      setTimeout(() => { state.enemy.busy = false; }, 500);
+      return;
+    }
+
     enemyChar.classList.add('act-' + action.anim);
     setTimeout(() => enemyChar.classList.remove('act-' + action.anim), 700);
 
@@ -475,7 +665,7 @@ window.Battle = (function() {
     }
 
     if (Math.random() < effectiveHit) {
-      let dmg = Math.floor(state.enemy.atk * action.mult * (0.9 + Math.random() * 0.3));
+      let dmg = Math.floor(state.enemy.atk * (state.enemy.atkBoost || 1) * action.mult * (0.9 + Math.random() * 0.3));
       // ガード貫通
       if (state.player.guarding && action.breakGuard) {
         state.player.guarding = false;
@@ -488,8 +678,10 @@ window.Battle = (function() {
       }
 
       state.player.hp -= dmg;
+      gainMeter(10); // 被弾でも闘志が溜まる
       // コンボリセット
       state.player.combo = 0;
+      state.player.chain = [];
       showCombo(0);
 
       const playerChar = document.getElementById('player-char');
@@ -499,10 +691,14 @@ window.Battle = (function() {
       setTimeout(() => playerChar.classList.remove('hit', 'knockback'), 400);
 
       setTimeout(() => window.Audio8 && window.Audio8.SFX.hit(), 80);
-      if (action.mult >= 2.5) flashScreen();
+      if (action.mult >= 2.5) { flashScreen(); shakeStage(); }
       showHit('#player-char', action.text);
       showDamageNumber('#player-char', dmg, action.mult >= 2.5 ? 'critical' : 'normal');
       log(`${state.enemy.name}の${action.name}！ ${dmg}ダメージ！`);
+      // たまに煽ってくる
+      if (Math.random() < 0.22) {
+        showTaunt(TAUNTS[Math.floor(Math.random() * TAUNTS.length)]);
+      }
       checkDefeat();
     } else {
       showDamageNumber('#player-char', 0, 'miss');
@@ -538,7 +734,7 @@ window.Battle = (function() {
     state = null;
   }
 
-  return { init, playerAction, stop };
+  return { init, playerAction, stop, delinquentHeadHTML, VISUALS_BY_ARCHETYPE };
 })();
 
 // ==== 入力ハンドラ ====
