@@ -13,7 +13,7 @@ window.Battle = (function() {
 
   // プレイヤーの技
   const P_MOVES = {
-    punch:   { name: 'パンチ', anim: 'punch',  mult: 1.0, reach: 64,  cd: 0.34, hitAt: 0.12, down: false, sfx: 'punch' },
+    punch:   { name: 'パンチ', anim: 'punch',  mult: 1.0, reach: 64,  cd: 0.3,  hitAt: 0.1,  down: false, sfx: 'punch' },
     kick:    { name: 'キック', anim: 'kick',   mult: 1.6, reach: 88,  cd: 0.55, hitAt: 0.2,  down: true,  sfx: 'kick' },
     special: { name: '必殺技', anim: 'special', mult: 2.5, reach: 165, cd: 1.0,  hitAt: 0.3,  down: true,  sfx: 'special', radial: true, useMeter: true }
   };
@@ -157,6 +157,8 @@ window.Battle = (function() {
         <div class="char-body"></div>
         <div class="char-pants"></div>
         <div class="char-shadow"></div>
+        <div class="dq-fist"></div>
+        <div class="dq-foot"></div>
         ${kind === 'mob' ? '<div class="mini-hp"><i></i></div>' : ''}
       </div>`;
     const fEl = el.querySelector('.fighter');
@@ -224,6 +226,18 @@ window.Battle = (function() {
     fx.classList.remove('show');
     void fx.offsetWidth;
     fx.classList.add('show');
+  }
+
+  // ヒット火花（命中地点に星形スパーク）
+  function showSpark(e, big) {
+    const stage = $('battle-stage');
+    const p = screenPos(e);
+    const s = document.createElement('div');
+    s.className = 'hit-spark' + (big ? ' big' : '');
+    s.style.left = (p.x - 17 + Math.random() * 16 - 8) + 'px';
+    s.style.top = (p.y - SPR_H * 0.55 + Math.random() * 16 - 8) + 'px';
+    stage.appendChild(s);
+    setTimeout(() => s.remove(), 300);
   }
 
   function flashScreen() {
@@ -489,17 +503,21 @@ window.Battle = (function() {
     showCombo(S.combo);
     window.Audio8 && window.Audio8.SFX.combo(S.combo);
 
+    // 3コンボ目のパンチは強パンチ（SMASH＝吹っ飛ばし）
+    const smash = !mv.radial && mv.anim === 'punch' && S.combo >= 3 && S.combo % 3 === 0;
+
     victims.forEach(e => {
       const isCrit = Math.random() < 0.12;
-      let dmg = Math.max(1, Math.floor(p.atk * mv.mult * (isCrit ? 1.8 : 1) * (1 + Math.min(0.4, S.combo * 0.06)) + Math.random() * 3 - 1));
+      let dmg = Math.max(1, Math.floor(p.atk * mv.mult * (isCrit ? 1.8 : 1) * (smash ? 1.4 : 1) * (1 + Math.min(0.4, S.combo * 0.06)) + Math.random() * 3 - 1));
       e.hp -= dmg;
       gainMeter(mv.useMeter ? 0 : (mv.mult >= 1.5 ? 9 : 6));
       showDamageNumber(e, dmg, isCrit ? 'critical' : 'normal');
-      if (isCrit || mv.radial) { flashScreen(); shakeStage(); }
-      setTimeout(() => window.Audio8 && window.Audio8.SFX[isCrit ? 'critical' : 'hit'](), 60);
+      showSpark(e, isCrit || smash || mv.radial);
+      if (isCrit || mv.radial || smash) { flashScreen(); shakeStage(); }
+      setTimeout(() => window.Audio8 && window.Audio8.SFX[(isCrit || smash) ? 'critical' : 'hit'](), 60);
 
       const dead = e.hp <= 0;
-      const knockdown = dead || mv.down || isCrit || (S.combo % 4 === 0);
+      const knockdown = dead || mv.down || isCrit || smash;
       if (e.attackToken) { releaseToken(e); }
       e.move = null;
       if (knockdown) {
@@ -509,6 +527,7 @@ window.Battle = (function() {
         e.fEl.classList.add('down-pose');
         setAnim(e, null);
       } else {
+        e.x += p.dir * 16; // ヒットのめり込み押し込み
         e.state = 'hurt'; e.stateT = 0;
         e.fEl.classList.remove('hit');
         void e.fEl.offsetWidth;
@@ -524,7 +543,7 @@ window.Battle = (function() {
         updateHpUI();
       }
     });
-    showHitText(victims[0], mv.radial ? 'WHAM!!' : (S.combo >= 3 ? 'BOOM!' : 'BAM!'));
+    showHitText(victims[0], mv.radial ? 'WHAM!!' : (smash ? 'SMASH!!' : (S.combo >= 3 ? 'BOOM!' : 'BAM!')));
   }
 
   function updateMiniHp(e) {
@@ -626,6 +645,8 @@ window.Battle = (function() {
     boss.kind = 'boss';
     boss.patterns = BOSS_PATTERNS[d.archetypeId] || BOSS_PATTERNS['yankee-basic'];
     boss.scale *= 1.06;
+    // stations.js の speed は抽象値(3〜13)なので歩行速度(px/s)へ換算
+    boss.speed = 75 + (d.speed || 5) * 6;
     S.enemies.push(boss);
     S.boss = boss;
     // ボスHPバー表示

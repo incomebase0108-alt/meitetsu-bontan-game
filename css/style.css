@@ -1163,6 +1163,68 @@ img.char-sprite {
 .belt-f.invuln { animation: inv-blink 0.16s steps(2) infinite; }
 @keyframes inv-blink { 50% { opacity: 0.35; } }
 
+/* パンチの拳（attack中だけ前方に突き出る） */
+.belt-f .dq-fist {
+  position: absolute;
+  top: 72px;
+  right: -4px;
+  width: 19px;
+  height: 19px;
+  background: var(--skin, #f0c08a);
+  border: 2px solid #000;
+  border-radius: 50%;
+  opacity: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.belt-f.act-punch .dq-fist { animation: fist-jab 0.28s ease-out; }
+@keyframes fist-jab {
+  0% { opacity: 0; transform: translateX(0) scale(0.8); }
+  25% { opacity: 1; transform: translateX(28px) scale(1.2); }
+  55% { opacity: 1; transform: translateX(33px) scale(1.05); }
+  100% { opacity: 0; transform: translateX(8px) scale(0.9); }
+}
+.belt-f.act-special .dq-fist { animation: fist-jab 0.35s ease-out 0.1s; }
+
+/* キックの足（靴） */
+.belt-f .dq-foot {
+  position: absolute;
+  top: 112px;
+  right: -2px;
+  width: 27px;
+  height: 14px;
+  background: #1c1c1c;
+  border: 2px solid #000;
+  border-radius: 4px 10px 10px 4px;
+  opacity: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.belt-f.act-kick .dq-foot { animation: foot-kick 0.42s ease-out; }
+@keyframes foot-kick {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0); }
+  30% { opacity: 1; transform: translate(36px, -16px) rotate(-14deg); }
+  60% { opacity: 1; transform: translate(42px, -20px) rotate(-18deg); }
+  100% { opacity: 0; transform: translate(8px, 0) rotate(0); }
+}
+
+/* ヒット火花（星形スパーク） */
+.hit-spark {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  z-index: 13;
+  pointer-events: none;
+  background: radial-gradient(circle, #fff 0 30%, #ffd24a 30% 60%, #ff8800 60% 100%);
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  animation: spark-pop 0.26s ease-out forwards;
+}
+.hit-spark.big { width: 52px; height: 52px; }
+@keyframes spark-pop {
+  0% { transform: scale(0.3) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1.7) rotate(45deg); opacity: 0; }
+}
+
 /* 雑魚の頭上ミニHPバー */
 .mini-hp {
   position: absolute;
