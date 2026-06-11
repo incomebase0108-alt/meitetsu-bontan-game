@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a1a">
+<title>名鉄ボンタン狩り 〜蒲郡から新安城まで〜</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- 共通：音量ボタン -->
+  <button id="btn-mute" class="mute-btn" title="ミュート切替">🔊</button>
+
+  <!-- タイトル画面 -->
+  <section id="screen-title" class="screen active">
+    <h1 class="title-main">名鉄ボンタン狩り</h1>
+    <p class="title-sub">〜蒲郡から新安城まで・全23駅制覇〜</p>
+    <div class="title-art">🚃💢👖💨</div>
+    <button id="btn-start" class="big-btn">新しく始める</button>
+    <button id="btn-continue" class="big-btn" style="display:none">続きから</button>
+    <p class="title-credit">名鉄蒲郡線 + 西尾線 完全踏破RPG</p>
+    <p class="title-help">スマホ：画面下のボタンをタップ／PC：A S D F W E キー</p>
+  </section>
+
+  <!-- マップ画面（路線図） -->
+  <section id="screen-map" class="screen">
+    <header class="map-header">
+      <h2>路線図 / 現在地</h2>
+      <div class="player-status">
+        <span>HP: <span id="map-hp">100</span>/<span id="map-maxhp">100</span></span>
+        <span>ATK: <span id="map-atk">10</span></span>
+        <span>ボンタン: <span id="map-bontans">0</span>本</span>
+      </div>
+    </header>
+    <div id="route-map" class="route-map"></div>
+    <div class="map-controls">
+      <button id="btn-board" class="big-btn">この駅で電車を降りる</button>
+    </div>
+  </section>
+
+  <!-- 電車移動アニメ画面 -->
+  <section id="screen-train" class="screen">
+    <div class="train-cutscene">
+      <p class="train-from"><span id="train-from-name">蒲郡</span>駅 発</p>
+      <div class="train-track">
+        <div class="train-rail"></div>
+        <div class="train-rail bottom"></div>
+        <div id="train-sprite" class="train-sprite">🚃🚃🚃</div>
+        <div class="train-scenery">
+          <span class="scenery-item">🌳</span>
+          <span class="scenery-item">🏠</span>
+          <span class="scenery-item">⛰</span>
+          <span class="scenery-item">🌾</span>
+          <span class="scenery-item">🏢</span>
+          <span class="scenery-item">🌳</span>
+          <span class="scenery-item">🏯</span>
+          <span class="scenery-item">🌾</span>
+        </div>
+      </div>
+      <p class="train-to"><span id="train-to-name">蒲郡競艇場前</span>駅 着</p>
+      <p class="train-distance">距離 <span id="train-distance">2.3</span>km</p>
+    </div>
+  </section>
+
+  <!-- 戦闘画面 -->
+  <section id="screen-battle" class="screen">
+    <div class="battle-ui">
+      <div class="hp-bar player-hp">
+        <span class="hp-label">プレイヤー</span>
+        <div class="hp-bar-bg"><div id="player-hp-fill" class="hp-bar-fill"></div></div>
+        <span id="player-hp-text">100/100</span>
+      </div>
+      <div class="vs-label">VS</div>
+      <div class="hp-bar enemy-hp">
+        <span class="hp-label" id="enemy-name">不良A</span>
+        <div class="hp-bar-bg"><div id="enemy-hp-fill" class="hp-bar-fill enemy"></div></div>
+        <span id="enemy-hp-text">100/100</span>
+      </div>
+    </div>
+
+    <div id="combo-display" class="combo-display"></div>
+
+    <div id="battle-stage" class="battle-stage">
+      <div id="battle-bg" class="battle-bg"></div>
+      <!-- プレイヤーキャラ -->
+      <div id="player-char" class="fighter player">
+        <div class="char-aura"></div>
+        <div class="char-accessory"></div>
+        <div class="char-head">😤</div>
+        <div class="char-body"></div>
+        <div class="char-pants" style="background:#3a3a3a"></div>
+        <div class="char-shadow"></div>
+      </div>
+      <!-- 敵キャラ -->
+      <div id="enemy-char" class="fighter enemy">
+        <div class="char-aura"></div>
+        <div class="char-accessory"></div>
+        <div class="char-head">😡</div>
+        <div class="char-body"></div>
+        <div class="char-pants"></div>
+        <div class="char-shadow"></div>
+      </div>
+      <div id="hit-effect" class="hit-effect"></div>
+      <div id="screen-flash" class="screen-flash"></div>
+      <div id="damage-numbers" class="damage-numbers"></div>
+    </div>
+
+    <div class="battle-log" id="battle-log"></div>
+
+    <!-- 操作ボタン（モバイル最適化6ボタン） -->
+    <div class="battle-controls">
+      <button class="action-btn act-punch" data-action="punch">
+        <span class="act-icon">👊</span><span class="act-name">パンチ</span><span class="act-key">A</span>
+      </button>
+      <button class="action-btn act-kick" data-action="kick">
+        <span class="act-icon">🦵</span><span class="act-name">キック</span><span class="act-key">S</span>
+      </button>
+      <button class="action-btn act-special" data-action="special">
+        <span class="act-icon">💥</span><span class="act-name">必殺技</span><span class="act-key">D</span>
+      </button>
+      <button class="action-btn act-guard" data-action="guard">
+        <span class="act-icon">🛡</span><span class="act-name">ガード</span><span class="act-key">F</span>
+      </button>
+      <button class="action-btn act-dash" data-action="dash">
+        <span class="act-icon">⚡</span><span class="act-name">突進</span><span class="act-key">W</span>
+      </button>
+      <button class="action-btn act-throw" data-action="throw">
+        <span class="act-icon">🤼</span><span class="act-name">投げ</span><span class="act-key">E</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ボンタン狩り演出 -->
+  <section id="screen-bontan" class="screen">
+    <div class="bontan-cutscene">
+      <h2 class="bontan-title">ボンタン狩り！！</h2>
+      <div class="bontan-stage">
+        <div id="bontan-player" class="cutscene-char">
+          <div class="char-head" style="font-size:80px">😈</div>
+          <div class="char-body" style="background:#4a4a4a"></div>
+        </div>
+        <div id="bontan-victim" class="cutscene-char">
+          <div class="char-head" style="font-size:80px">😱</div>
+          <div class="char-body" style="background:#aa3333"></div>
+          <div class="char-underwear">🩲</div>
+        </div>
+        <div id="bontan-floating" class="floating-pants">👖</div>
+      </div>
+      <p id="bontan-message" class="bontan-message"></p>
+      <p id="bontan-levelup" class="bontan-levelup"></p>
+      <button id="btn-bontan-next" class="big-btn">次の駅へ進む</button>
+    </div>
+  </section>
+
+  <!-- 敗北画面 -->
+  <section id="screen-defeat" class="screen">
+    <h2 class="defeat-title">やられた…</h2>
+    <p class="defeat-msg">電車に乗って逃げ帰った…</p>
+    <div class="defeat-art">😵🚃💨</div>
+    <button id="btn-retry" class="big-btn">同じ駅でリベンジ</button>
+    <button id="btn-defeat-title" class="big-btn" style="background:#555">タイトルへ戻る</button>
+  </section>
+
+  <!-- 勝利画面（全駅クリア） -->
+  <section id="screen-victory" class="screen">
+    <h2 class="victory-title">全駅制覇！</h2>
+    <p>名鉄蒲郡線+西尾線 全23駅をボンタン狩り！</p>
+    <div id="victory-bontans" class="victory-pants-display"></div>
+    <p>君は名鉄ボンタン狩り界の総長になった！</p>
+    <button id="btn-newgame" class="big-btn">最初から</button>
+  </section>
+
+</div>
+
+<script src="js/audio.js"></script>
+<script src="js/save.js"></script>
+<script src="js/stations.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/map.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
