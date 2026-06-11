@@ -770,10 +770,11 @@ img.char-sprite {
 }
 
 .battle-log {
-  height: 56px;
+  height: 38px;
   background: #000;
-  padding: 6px 12px;
-  font-size: 13px;
+  padding: 3px 12px;
+  font-size: 12px;
+  line-height: 1.4;
   color: #ffcc66;
   border-top: 2px solid #444;
   overflow-y: auto;
@@ -837,12 +838,7 @@ img.char-sprite {
   .action-btn .act-icon { font-size: 22px; }
   .action-btn .act-name { font-size: 11px; }
   .action-btn { padding: 6px 1px; min-height: 52px; }
-  .battle-controls { grid-template-columns: repeat(3, 1fr); }
-  .fighter { width: 70px; height: 140px; }
-  .fighter.player { left: 30px; }
-  .fighter.enemy { right: 30px; }
-  /* スプライト全体を縮小（zoomはレイアウトごと縮む） */
-  .fighter .char-head, .fighter .char-body, .fighter .char-pants { zoom: 0.8; }
+  /* ベルトアクションのモバイル縮小は belt.js 側の gScale で行う */
   .hp-bar { padding: 0 6px; }
   .hp-label { font-size: 11px; }
   .vs-label { font-size: 18px; padding: 0 6px; }
@@ -1115,3 +1111,204 @@ img.char-sprite {
   60% { transform: translate(-4px, 2px); }
   80% { transform: translate(3px, -2px); }
 }
+
+/* ==== ベルトスクロールアクション ==== */
+.battle-stage.belt { touch-action: none; background: #000; }
+.belt-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  will-change: transform;
+}
+.belt-sky { position: absolute; inset: 0; overflow: hidden; }
+.belt-photo {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 65%;
+}
+.belt-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10,10,25,0.15) 0%, rgba(10,10,25,0.3) 100%);
+}
+.belt-ground { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; }
+.belt-world { position: absolute; inset: 0; z-index: 3; }
+
+.entity {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 90px;
+  height: 166px;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.entity .fighter.belt-f {
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  height: 100%;
+}
+/* ダウン（寝転び）ポーズ */
+.belt-f.down-pose {
+  animation: none;
+  transform: rotate(-82deg) translate(-22px, 14px);
+}
+/* 無敵点滅 */
+.belt-f.invuln { animation: inv-blink 0.16s steps(2) infinite; }
+@keyframes inv-blink { 50% { opacity: 0.35; } }
+
+/* 雑魚の頭上ミニHPバー */
+.mini-hp {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 5px;
+  background: #3a0a0a;
+  border: 1px solid #000;
+  z-index: 5;
+}
+.mini-hp i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #ff6666, #cc0000);
+}
+
+/* GO矢印 */
+.go-arrow {
+  position: absolute;
+  right: 14px;
+  top: 38%;
+  font-size: 34px;
+  font-weight: 900;
+  color: #ffcc00;
+  text-shadow: 3px 3px 0 #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+.go-arrow.show {
+  opacity: 1;
+  animation: go-slide 0.7s ease-in-out infinite;
+}
+@keyframes go-slide {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(12px); opacity: 0.5; }
+}
+
+/* 写真クレジットラベル（戦闘画面右下） */
+.photo-credit {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.8);
+  background: rgba(0,0,0,0.45);
+  padding: 1px 6px;
+  border-radius: 3px;
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* 操作系：仮想パッド＋3ボタン */
+.belt-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #222;
+  border-top: 2px solid #555;
+  gap: 10px;
+  touch-action: none;
+}
+.vpad {
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, #3a3a3a, #1c1c1c);
+  border: 3px solid #555;
+  position: relative;
+  flex-shrink: 0;
+  touch-action: none;
+}
+.vpad-stick {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #666, #333);
+  border: 2px solid #888;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+.belt-btns { display: flex; gap: 12px; align-items: center; }
+.belt-btn {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  border: 3px solid #888;
+  background: linear-gradient(180deg, #444, #222);
+  color: #fff;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.belt-btn span { font-size: 24px; line-height: 1.2; pointer-events: none; }
+.belt-btn small { font-size: 9px; color: #ffcc00; opacity: 0.7; pointer-events: none; }
+.belt-btn:active { transform: scale(0.92); filter: brightness(1.4); }
+.belt-btn.bb-punch { border-color: #ffcc00; box-shadow: 0 3px 0 #774400; }
+.belt-btn.bb-kick { border-color: #ff8800; box-shadow: 0 3px 0 #774400; }
+.belt-btn.bb-special { border-color: #ff3366; box-shadow: 0 3px 0 #770022; opacity: 0.55; }
+.belt-btn.bb-special.ready { opacity: 1; animation: special-ready 0.7s ease-in-out infinite; }
+
+@media (max-width: 600px) {
+  .vpad { width: 104px; height: 104px; }
+  .belt-btn { width: 58px; height: 58px; }
+  .belt-btn span { font-size: 21px; }
+  .belt-controls { padding: 8px 10px; }
+}
+
+/* ==== クレジット画面 ==== */
+.credits-title { font-size: 30px; color: #ffcc00; margin-bottom: 10px; text-align: center; }
+.credits-note { font-size: 12px; color: #aaa; margin-bottom: 12px; text-align: center; }
+.credits-list {
+  list-style: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: 55vh;
+  font-size: 11px;
+  line-height: 1.9;
+  color: #ccc;
+  max-width: 680px;
+  padding: 0 16px;
+}
+.credits-list a { color: #66ccff; }
+.credits-link {
+  background: none;
+  border: 1px solid #555;
+  color: #888;
+  font-size: 11px;
+  padding: 5px 14px;
+  margin-top: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: inherit;
+}
+.credits-link:hover { color: #ccc; border-color: #888; }

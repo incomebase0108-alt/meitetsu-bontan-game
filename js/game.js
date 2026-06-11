@@ -130,12 +130,12 @@ window.Game = (function() {
     window.Audio8 && window.Audio8.stopBgm();
     // 主人公をリーゼント不良スプライトに（戦闘と同じ見た目）
     const bp = document.getElementById('bontan-player');
-    if (window.Battle && window.Battle.delinquentHeadHTML) {
-      const v = window.Battle.VISUALS_BY_ARCHETYPE['player'];
+    if (window.Sprites && window.Sprites.delinquentHeadHTML) {
+      const v = window.Sprites.VISUALS_BY_ARCHETYPE['player'];
       const bpHead = bp.querySelector('.char-head');
       bpHead.style.fontSize = '';
       bpHead.style.cssText = 'position:relative; width:52px; height:56px; zoom:1.5;';
-      bpHead.innerHTML = window.Battle.delinquentHeadHTML(v);
+      bpHead.innerHTML = window.Sprites.delinquentHeadHTML(v);
       bp.style.setProperty('--hair', v.hair);
       bp.style.setProperty('--skin', v.skin);
       bp.querySelector('.char-body').style.background = v.gak;

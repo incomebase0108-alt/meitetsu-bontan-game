@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1a1a1a">
 <title>名鉄ボンタン狩り 〜蒲郡から新安城まで〜</title>
-<link rel="stylesheet" href="css/style.css?v=20260612a">
+<link rel="stylesheet" href="css/style.css?v=20260612b">
 </head>
 <body>
 
@@ -24,8 +24,9 @@
     <button id="btn-start" class="big-btn">新しく始める</button>
     <button id="btn-continue" class="big-btn" style="display:none">続きから</button>
     <p class="title-credit">名鉄蒲郡線 + 西尾線 完全踏破RPG</p>
-    <p class="title-help">スマホ：画面下のボタンをタップ／PC：A S D F W E キー</p>
-    <p class="title-help">敵が光って溜めたら→ガードで「ジャストガード」！／技を順番につなぐと連携奥義！</p>
+    <p class="title-help">スマホ：左の仮想パッドで移動＋右のボタンで攻撃／PC：矢印キー移動＋A(パンチ) S(キック) D(必殺)</p>
+    <p class="title-help">右へ進んで雑魚を蹴散らし、駅前のボスを倒せ！敵が光って溜めたら離れろ！</p>
+    <button id="btn-credits" class="credits-link">写真クレジット</button>
   </section>
 
   <!-- マップ画面（路線図） -->
@@ -86,29 +87,14 @@
 
     <div id="combo-display" class="combo-display"></div>
 
-    <div id="battle-stage" class="battle-stage">
-      <div id="battle-bg" class="battle-bg"></div>
-      <!-- プレイヤーキャラ -->
-      <div id="player-char" class="fighter player">
-        <div class="char-aura"></div>
-        <div class="char-accessory"></div>
-        <div class="char-head">😤</div>
-        <div class="char-body"></div>
-        <div class="char-pants" style="background:#3a3a3a"></div>
-        <div class="char-shadow"></div>
-      </div>
-      <!-- 敵キャラ -->
-      <div id="enemy-char" class="fighter enemy">
-        <div class="char-aura"></div>
-        <div class="char-accessory"></div>
-        <div class="char-head">😡</div>
-        <div class="char-body"></div>
-        <div class="char-pants"></div>
-        <div class="char-shadow"></div>
-      </div>
+    <div id="battle-stage" class="battle-stage belt">
+      <div id="belt-bg" class="belt-bg"></div>
+      <div id="belt-world" class="belt-world"></div>
+      <div id="go-arrow" class="go-arrow">GO ▶</div>
       <div id="hit-effect" class="hit-effect"></div>
       <div id="screen-flash" class="screen-flash"></div>
       <div id="damage-numbers" class="damage-numbers"></div>
+      <div id="photo-credit" class="photo-credit" style="display:none"></div>
     </div>
 
     <div class="battle-log" id="battle-log"></div>
@@ -120,26 +106,16 @@
       <span id="meter-text" class="meter-text">0%</span>
     </div>
 
-    <!-- 操作ボタン（モバイル最適化6ボタン） -->
-    <div class="battle-controls">
-      <button class="action-btn act-punch" data-action="punch">
-        <span class="act-icon">👊</span><span class="act-name">パンチ</span><span class="act-key">A</span>
-      </button>
-      <button class="action-btn act-kick" data-action="kick">
-        <span class="act-icon">🦵</span><span class="act-name">キック</span><span class="act-key">S</span>
-      </button>
-      <button class="action-btn act-special" data-action="special">
-        <span class="act-icon">💥</span><span class="act-name">必殺技</span><span class="act-key">D</span>
-      </button>
-      <button class="action-btn act-guard" data-action="guard">
-        <span class="act-icon">🛡</span><span class="act-name">ガード</span><span class="act-key">F</span>
-      </button>
-      <button class="action-btn act-dash" data-action="dash">
-        <span class="act-icon">⚡</span><span class="act-name">突進</span><span class="act-key">W</span>
-      </button>
-      <button class="action-btn act-throw" data-action="throw">
-        <span class="act-icon">🤼</span><span class="act-name">投げ</span><span class="act-key">E</span>
-      </button>
+    <!-- ベルトアクション操作：仮想パッド＋3ボタン -->
+    <div class="belt-controls">
+      <div id="vpad" class="vpad">
+        <div id="vpad-stick" class="vpad-stick"></div>
+      </div>
+      <div class="belt-btns">
+        <button class="belt-btn bb-punch" data-act="punch"><span>👊</span><small>A</small></button>
+        <button class="belt-btn bb-kick" data-act="kick"><span>🦵</span><small>S</small></button>
+        <button class="belt-btn bb-special" data-act="special"><span>💥</span><small>D</small></button>
+      </div>
     </div>
   </section>
 
@@ -165,6 +141,14 @@
     </div>
   </section>
 
+  <!-- 写真クレジット画面 -->
+  <section id="screen-credits" class="screen">
+    <h2 class="credits-title">写真クレジット</h2>
+    <p class="credits-note">背景写真は Wikimedia Commons のフリーライセンス画像を使用しています。</p>
+    <ul id="credits-list" class="credits-list"></ul>
+    <button id="btn-credits-back" class="big-btn">タイトルへ戻る</button>
+  </section>
+
   <!-- 敗北画面 -->
   <section id="screen-defeat" class="screen">
     <h2 class="defeat-title">やられた…</h2>
@@ -185,12 +169,14 @@
 
 </div>
 
-<script src="js/audio.js?v=20260612a"></script>
-<script src="js/save.js?v=20260612a"></script>
-<script src="js/stations.js?v=20260612a"></script>
-<script src="js/scenes.js?v=20260612a"></script>
-<script src="js/battle.js?v=20260612a"></script>
-<script src="js/map.js?v=20260612a"></script>
-<script src="js/game.js?v=20260612a"></script>
+<script src="js/audio.js?v=20260612b"></script>
+<script src="js/save.js?v=20260612b"></script>
+<script src="js/stations.js?v=20260612b"></script>
+<script src="js/scenes.js?v=20260612b"></script>
+<script src="js/sprites.js?v=20260612b"></script>
+<script src="js/credits.js?v=20260612b"></script>
+<script src="js/belt.js?v=20260612b"></script>
+<script src="js/map.js?v=20260612b"></script>
+<script src="js/game.js?v=20260612b"></script>
 </body>
 </html>
