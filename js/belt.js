@@ -590,8 +590,8 @@ window.Battle = (function() {
   function buildWaves(station) {
     const heavy = station.isMidBoss || station.isFinalBoss;
     const waves = heavy
-      ? [{ at: 0.18, mobs: 2 }, { at: 0.45, mobs: 3 }, { at: 0.7, mobs: 3 }, { at: 0.92, boss: true }]
-      : [{ at: 0.22, mobs: 2 }, { at: 0.52, mobs: 3 }, { at: 0.9, boss: true }];
+      ? [{ at: 0.16, mobs: 2 }, { at: 0.4, mobs: 3 }, { at: 0.6, mobs: 3 }, { at: 0.8, boss: true }]
+      : [{ at: 0.22, mobs: 2 }, { at: 0.5, mobs: 3 }, { at: 0.76, boss: true }];
     return waves.map(w => ({ ...w, spawned: false }));
   }
 
@@ -914,7 +914,8 @@ window.Battle = (function() {
       onWin, onLose,
       finished: false,
       viewW,
-      stageW: viewW * STAGE_SCREENS,
+      // 横長画面（PC）でステージが間延びしないよう、1画面分の幅は最大500pxとして計算
+      stageW: viewW + Math.min(500, viewW) * (STAGE_SCREENS - 1),
       groundTop: Math.floor(stageH * 0.62),
       yMax: Math.floor(stageH * 0.30),
       gScale: viewW < 600 ? 0.78 : 1,
