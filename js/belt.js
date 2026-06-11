@@ -646,7 +646,8 @@ window.Battle = (function() {
         color: S.bossData.color,
         bontanColor: S.bossData.bontanColor,
         gakOverride: shiftColor(S.bossData.color, hue),
-        hairOverride: HAIRS[Math.floor(Math.random() * HAIRS.length)]
+        hairOverride: HAIRS[Math.floor(Math.random() * HAIRS.length)],
+        spriteHue: hue // PNGスプライト時の色違い（hue-rotate）
       }, x, y);
       mob.type = type;
       mob.cdLeft = 0.8 + Math.random();

@@ -35,8 +35,12 @@ window.Sprites = (function() {
       <div class="dq-hair${v.pompXL ? ' xl' : ''}"><div class="dq-pomp"></div></div>`;
   }
 
+  // PNG差し替えの存在キャッシュ（archetypeId → 'ok' | 'none'）
+  const SPRITE_CACHE = {};
+
   // charEl（.fighter 構造を持つ要素）に不良スプライトを適用する。
-  // 戻り値: 推奨スケール（ボス大型化等。位置側で transform scale に乗せる）
+  // assets/characters/<archetypeId>.png があれば画像を優先（Blender製スプライト差し替え用）、
+  // 無ければCSS描画。戻り値: 推奨スケール（ボス大型化等。位置側で transform scale に乗せる）
   function applyCharSprite(charEl, archetypeId, data) {
     const body = charEl.querySelector('.char-body');
     const head = charEl.querySelector('.char-head');
@@ -48,7 +52,11 @@ window.Sprites = (function() {
     // アクセサリー絵文字は廃止（頭にサイコロ等が乗って見えるため）
     if (accessory) accessory.textContent = '';
 
+    // CSS描画（画像が無い場合・読み込み完了までのフォールバック）
     charEl.classList.add('dq');
+    head.style.display = '';
+    body.style.display = '';
+    pants.style.display = '';
     charEl.style.setProperty('--hair', data.hairOverride || v.hair || '#15110c');
     charEl.style.setProperty('--gak', data.gakOverride || v.gak || data.color || '#23232b');
     charEl.style.setProperty('--skin', v.skin || '#f0c08a');
@@ -56,6 +64,25 @@ window.Sprites = (function() {
     head.innerHTML = delinquentHeadHTML(v);
     body.innerHTML = v.sarashi ? '<div class="dq-sarashi"></div>' : '';
     body.classList.toggle('white-gak', !!v.white);
+
+    // PNG差し替え
+    const oldImg = charEl.querySelector('img.char-sprite');
+    if (oldImg) oldImg.remove();
+    if (SPRITE_CACHE[archetypeId] !== 'none') {
+      const img = new Image();
+      img.onload = () => {
+        SPRITE_CACHE[archetypeId] = 'ok';
+        if (!charEl.isConnected) return;
+        img.className = 'char-sprite';
+        if (data.spriteHue) img.style.filter = `hue-rotate(${data.spriteHue}deg)`; // 雑魚の色違い用
+        charEl.appendChild(img);
+        head.style.display = 'none';
+        body.style.display = 'none';
+        pants.style.display = 'none';
+      };
+      img.onerror = () => { SPRITE_CACHE[archetypeId] = 'none'; };
+      img.src = `assets/characters/${archetypeId}.png`;
+    }
 
     return v.scale || (data.isBig ? 1.22 : 1);
   }
