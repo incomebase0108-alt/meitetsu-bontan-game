@@ -658,7 +658,15 @@ window.Battle = (function() {
   function spawnBoss() {
     const st = S.station;
     const d = S.bossData;
-    const boss = makeEntity('boss', d.archetypeId || 'yankee-basic', d, S.cam + S.viewW + 80, S.yMax * 0.5);
+    // 駅専用ボス画像があれば最優先（assets/characters/boss/<駅id>.png）
+    const bossData = {
+      ...d,
+      spritePaths: [
+        `assets/characters/boss/${S.stationId}.png`,
+        `assets/characters/${d.archetypeId || 'yankee-basic'}.png`
+      ]
+    };
+    const boss = makeEntity('boss', d.archetypeId || 'yankee-basic', bossData, S.cam + S.viewW + 80, S.yMax * 0.5);
     boss.kind = 'boss';
     boss.patterns = BOSS_PATTERNS[d.archetypeId] || BOSS_PATTERNS['yankee-basic'];
     boss.scale *= 1.06;

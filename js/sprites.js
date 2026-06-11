@@ -65,13 +65,17 @@ window.Sprites = (function() {
     body.innerHTML = v.sarashi ? '<div class="dq-sarashi"></div>' : '';
     body.classList.toggle('white-gak', !!v.white);
 
-    // PNG差し替え
+    // PNG差し替え（候補を順に試す：駅専用ボス画像 → アーキタイプ画像 → CSS描画のまま）
     const oldImg = charEl.querySelector('img.char-sprite');
     if (oldImg) oldImg.remove();
-    if (SPRITE_CACHE[archetypeId] !== 'none') {
+    const candidates = (data.spritePaths || [`assets/characters/${archetypeId}.png`])
+      .filter(p => SPRITE_CACHE[p] !== 'none');
+    (function tryLoad(i) {
+      if (i >= candidates.length) return;
+      const path = candidates[i];
       const img = new Image();
       img.onload = () => {
-        SPRITE_CACHE[archetypeId] = 'ok';
+        SPRITE_CACHE[path] = 'ok';
         if (!charEl.isConnected) return;
         img.className = 'char-sprite';
         if (data.spriteHue) img.style.filter = `hue-rotate(${data.spriteHue}deg)`; // 雑魚の色違い用
@@ -80,9 +84,12 @@ window.Sprites = (function() {
         body.style.display = 'none';
         pants.style.display = 'none';
       };
-      img.onerror = () => { SPRITE_CACHE[archetypeId] = 'none'; };
-      img.src = `assets/characters/${archetypeId}.png`;
-    }
+      img.onerror = () => {
+        SPRITE_CACHE[path] = 'none';
+        tryLoad(i + 1);
+      };
+      img.src = path;
+    })(0);
 
     return v.scale || (data.isBig ? 1.22 : 1);
   }
