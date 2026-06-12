@@ -367,9 +367,9 @@ def body_tattoo(p, sh_w, sh_z, hip_z):
         rr = sh_w * 0.70
         pts2.append((rr * 0.74 * math.cos(a), rr * math.sin(a), z))
     tube(pts2, 0.015, tat, parent=p)
-    # 龍頭 (カメラ側の鎖骨上・大きく) + 角 + 紅の目
+    # 龍頭 (カメラ側の鎖骨上・皮膚に沿わせて平たく) + 角 + 紅の目
     hx, hy, hz = sh_w * 0.28, -sh_w * 0.62, sh_z + 0.02
-    sph((hx, hy, hz), 0.052, tat, scale=(1.5, 0.65, 0.85), rot=(0, -18, -35), parent=p)
+    sph((hx, hy, hz), 0.052, tat, scale=(1.3, 0.38, 0.80), rot=(0, -18, -35), parent=p)
     for sy in (1, -1):
         cyl((hx - 0.02, hy + sy * 0.026, hz + 0.06), 0.008, 0.002, 0.06, tat, rot=(sy * 18, -18, 0), parent=p)
     sph((hx + 0.045, hy - 0.02, hz + 0.018), 0.009, tat_r, parent=p)
@@ -398,17 +398,21 @@ def bare_torso(p, cfg, hip_z, sh_z, sh_w, bulk):
     waist_r = sh_w * 0.60 * bulk * 0.76  # 腰の前後半径
     cyl((0, 0, (hip_z + sh_z) / 2 + 0.02), sh_w * 0.60 * bulk, sh_w * 0.86, (sh_z - hip_z) + 0.10,
         skin, scale=(0.76, 1, 1), parent=p)
-    # 大胸筋 (デカく・胸面に乗せる)
+    # 大胸筋: 瘤にならないよう薄い面で (大部分を胴に沈める)
     for sy in (1, -1):
-        sph((top_r * 0.84, sy * sh_w * 0.38, sh_z - 0.115), sh_w * 0.32, skin, scale=(0.55, 0.92, 0.65), parent=p)
+        sph((top_r * 0.62, sy * sh_w * 0.38, sh_z - 0.115), sh_w * 0.34, skin, scale=(0.42, 0.90, 0.60), parent=p)
     # 僧帽筋
     sph((-sh_w * 0.24, 0, sh_z - 0.05), sh_w * 0.48, skin, scale=(0.60, 1.00, 0.60), parent=p)
-    # 腹筋 (3段x2列・腹面に乗せる)
-    for row in range(3):
-        for sy in (1, -1):
-            az = hip_z + 0.105 + row * 0.080
-            sph((waist_r * (0.93 - 0.05 * row), sy * sh_w * 0.16, az), 0.042, skin,
-                scale=(0.58, 0.85, 0.78), parent=p)
+    # 筋肉の定義は「線」で描く (アニメ調・瘤防止)
+    #   胸下ライン
+    for sy in (1, -1):
+        box((top_r * 0.92, sy * sh_w * 0.30, sh_z - 0.205), (0.012, sh_w * 0.40, 0.013), skin_dk,
+            rot=(sy * 8, 0, sy * -6), parent=p, bevel=0.004)
+    #   腹の正中線 + 横ライン2本 (シックスパックを線で)
+    box((waist_r * 0.985, 0.0, hip_z + 0.155), (0.012, 0.013, 0.155), skin_dk, parent=p, bevel=0.004)
+    for row in range(2):
+        az = hip_z + 0.115 + row * 0.085
+        box((waist_r * 0.975, 0, az), (0.012, sh_w * 0.30, 0.013), skin_dk, parent=p, bevel=0.004)
     # 腹斜筋の影ライン
     for sy in (1, -1):
         box((waist_r * 0.72, sy * sh_w * 0.36, hip_z + 0.16), (0.012, 0.012, 0.10), skin_dk,
@@ -434,9 +438,9 @@ def tokkofuku(p, cfg, hip_z, sh_z, sh_w, bulk):
     hem_r = sh_w * 0.70 * bulk * 0.80    # 裾の前後半径
     cyl((0, 0, (hip_z + sh_z) / 2 + 0.02), sh_w * 0.66 * bulk, sh_w * 0.88, (sh_z - hip_z) + 0.10,
         cc, scale=(0.76, 1, 1), parent=p)
-    # 大胸筋
+    # 大胸筋 (服の上からの厚みなので薄く・沈める)
     for sy in (1, -1):
-        sph((top_r * 0.82, sy * sh_w * 0.36, sh_z - 0.10), sh_w * 0.28, cc, scale=(0.55, 0.90, 0.65), parent=p)
+        sph((top_r * 0.60, sy * sh_w * 0.36, sh_z - 0.10), sh_w * 0.30, cc, scale=(0.40, 0.88, 0.60), parent=p)
     # 背中(僧帽筋)
     sph((-sh_w * 0.26, 0, sh_z - 0.06), sh_w * 0.50, cc, scale=(0.60, 1.00, 0.60), parent=p)
     # ロング裾 (膝まで・下に向かってフレア)
@@ -473,12 +477,13 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
     sh_pos = (0.01, y0, sh_z - 0.015)
     sph(sh_pos, sh_w * 0.28 * bulk, cc, scale=(0.95, 0.82, 0.95), parent=p)  # 三角筋
     if pose == "shoulder":
-        elbow = (0.075, y0 * 1.10, sh_z - 0.295)
-        f = (0.155, y0 * 1.02, sh_z + 0.055)
+        # 上腕は体側に沿わせて下ろし、前腕を前上45度に曲げて担ぐ (肘の折れが自然に見える)
+        elbow = (0.030, y0 * 1.10, sh_z - 0.305)
+        f = (0.205, y0 * 0.96, sh_z - 0.045)
         seg(sh_pos, elbow, 0.075 * bulk, 0.060 * bulk, cc, parent=p)
         sph(elbow, 0.064 * bulk, cc, parent=p)
-        seg(elbow, (f[0], f[1], f[2] - 0.02), 0.058 * bulk, 0.048, cc, parent=p)
-        ring((f[0] - 0.018, f[1], f[2] - 0.085), 0.050, 0.008, gold, rot=(0, 8, 0), parent=p)
+        seg(elbow, (f[0] - 0.012, f[1], f[2] - 0.012), 0.058 * bulk, 0.048, cc, parent=p)
+        ring((f[0] - 0.062, f[1] + sy * 0.01, f[2] - 0.062), 0.050, 0.008, gold, rot=(0, 42, 0), parent=p)
         fist(p, f)
         return f
     elif pose == "swing":
@@ -705,7 +710,120 @@ def gold_swirl_embroidery(p, sh_w, hem_z, hip_z):
 # キャラ組み立て
 # ============================================================
 
+def build_rider(p, cfg):
+    """暴走族ライダー: 旧車會単車(絞りハンドル・三段シート・ロケットカウル・竹やりマフラー)
+    + 跨がった不良。POSE idle2 はエンジン振動で車体+ライダーがわずかに上下"""
+    vib = 0.010 if POSE == "idle2" else 0.0
+    tire = mat("tire", C(0.09, 0.09, 0.10), 0, 0.85)
+    chrome = mat("chrome", C(0.80, 0.83, 0.88), 0.9, 0.18)
+    steel_dk = mat("steel_dk", C(0.30, 0.31, 0.35), 0.6, 0.4)
+    body_c = mat("bike_body", cfg.get("bike", PAL["red"]), 0.15, 0.5)
+    gold = mat("gold", PAL["gold"], 0.7, 0.35)
+    # ---- 車輪 (接地・振動しない) ----
+    wr = 0.30
+    for wx in (0.88, -0.78):
+        torus((wx, 0, wr), wr * 0.76, wr * 0.26, tire, rot=(90, 0, 0), parent=p)
+        cyl((wx, 0, wr), wr * 0.55, wr * 0.55, 0.05, steel_dk, rot=(90, 0, 0), parent=p)
+        cyl((wx, 0, wr), 0.05, 0.05, 0.10, chrome, rot=(90, 0, 0), parent=p)
+    # ---- 車体 (以下 vib 分上下) ----
+    v = vib
+    head_tube = (0.62, 0, 0.80 + v)
+    # フロントフォーク
+    for sy in (1, -1):
+        seg(head_tube, (0.88, sy * 0.05, wr + 0.02 + v), 0.022, 0.018, chrome, parent=p)
+    # メインフレーム+エンジン
+    seg((-0.70, 0, 0.46 + v), head_tube, 0.035, 0.030, body_c, parent=p)
+    seg((-0.70, 0, 0.46 + v), (-0.05, 0, 0.38 + v), 0.030, 0.030, steel_dk, parent=p)
+    box((0.08, 0, 0.46 + v), (0.34, 0.24, 0.26), steel_dk, parent=p, bevel=0.02)   # エンジンブロック
+    for k in range(3):  # 冷却フィン
+        box((0.10, 0, 0.40 + 0.05 * k + v), (0.38, 0.27, 0.018), chrome, parent=p, bevel=0.004)
+    cyl((0.13, 0, 0.36 + v), 0.085, 0.085, 0.30, chrome, rot=(90, 0, 0), parent=p)  # クランクケース
+    # タンク (車体色)
+    sph((0.33, 0, 0.74 + v), 0.20, body_c, scale=(1.15, 0.62, 0.52), parent=p)
+    # 三段シート (後ろへ段々高く・車体と一体) + シシーバー
+    box((-0.28, 0, 0.62 + v), (0.40, 0.22, 0.10), tire, parent=p, bevel=0.02)
+    for k in range(3):
+        box((-0.47 - 0.05 * k, 0, 0.63 + 0.12 * k + v), (0.10, 0.20, 0.15), body_c,
+            rot=(0, -8, 0), parent=p, bevel=0.015)
+    for sy in (1, -1):
+        seg((-0.82, sy * 0.075, 0.42 + v), (-0.60, sy * 0.055, 1.02 + v), 0.016, 0.013, chrome, parent=p)
+    seg((-0.60, 0.055, 1.02 + v), (-0.60, -0.055, 1.02 + v), 0.013, 0.013, chrome, parent=p)
+    # 絞りハンドル (高く立ち上げて手前に絞る)
+    for sy in (1, -1):
+        seg((0.60, sy * 0.10, 0.84 + v), (0.46, sy * 0.085, 1.38 + v), 0.020, 0.018, chrome, parent=p)
+        seg((0.46, sy * 0.085, 1.38 + v), (0.38, sy * 0.075, 1.42 + v), 0.018, 0.022, tire, parent=p)  # グリップ
+    # ロケットカウル + ヘッドライト
+    cyl((0.86, 0, 0.86 + v), 0.15, 0.085, 0.34, body_c, rot=(0, 96, 0), parent=p)
+    sph((1.02, 0, 0.84 + v), 0.075, chrome, scale=(0.4, 1, 1), parent=p)
+    # 竹やりマフラー x2 (後上方へ突き上げる)
+    for sy in (1, -1):
+        seg((0.05, sy * 0.13, 0.34 + v), (-1.30, sy * 0.17, 1.00 + v), 0.040, 0.024, chrome, parent=p)
+    if POSE == "idle2":  # 排気
+        smoke = mat("smoke", C(0.62, 0.62, 0.64), 0, 1.0)
+        sph((-1.42, -0.18, 1.10), 0.075, smoke, parent=p)
+        sph((-1.54, -0.17, 1.20), 0.055, smoke, parent=p)
+    # リアフェンダー+ナンバー
+    box((-0.95, 0, 0.62 + v), (0.22, 0.18, 0.04), body_c, rot=(0, 24, 0), parent=p, bevel=0.01)
+    box((-1.02, 0, 0.52 + v), (0.015, 0.16, 0.09), mat("plate", PAL["white"], 0, 0.7),
+        rot=(0, 14, 0), parent=p, bevel=0.004)
+
+    # ---- ライダー (跨がり・前傾でハンドルへ) ----
+    r = 0.125                       # 頭半径
+    hip = (-0.24, 0, 0.74 + v)
+    sh_z = 1.32 + v
+    sh_w = 0.235
+    bulk = 1.1
+    cc = mat("coat", cfg["coat"], 0, 0.9)
+    pc = mat("pants", cfg["pants"], 0, 0.9)
+    skin = mat("skin", PAL["skin"])
+    shoe = mat("shoe", PAL["black"], 0.1, 0.4)
+    # 脚: 跨がって膝を曲げステップへ
+    for sy in (1, -1):
+        knee = (0.10, sy * 0.20, 0.58 + v)
+        foot = (-0.02, sy * 0.21, 0.30 + v)
+        seg((hip[0], sy * 0.12, hip[2]), knee, 0.105, 0.085, pc, parent=p)
+        sph(knee, 0.085, pc, parent=p)
+        seg(knee, (foot[0], foot[1], foot[2] + 0.03), 0.080, 0.050, pc, parent=p)
+        sph((foot[0] + 0.06, foot[1], foot[2]), 0.075, shoe, scale=(1.6, 0.6, 0.55), parent=p)
+    # 胴 (前傾の学ラン/特攻服)
+    cyl((hip[0] + 0.06, 0, (hip[2] + sh_z) / 2), sh_w * 0.62 * bulk, sh_w * 0.85, sh_z - hip[2] + 0.06,
+        cc, scale=(0.74, 1, 1), rot=(0, 10, 0), parent=p)
+    for sy in (1, -1):  # 肩
+        sph((hip[0] + 0.12, sy * sh_w * 0.92, sh_z - 0.02), sh_w * 0.30 * bulk, cc, parent=p)
+    # 金ボタン
+    for k in range(4):
+        sph((hip[0] + 0.20 + 0.012 * k, 0.028, sh_z - 0.10 - k * 0.115), 0.014, gold, parent=p)
+    # 襟
+    cyl((hip[0] + 0.13, 0, sh_z + 0.045), sh_w * 0.42, sh_w * 0.45, 0.08, cc, parent=p)
+    # 腕: ハンドルグリップへ伸ばす
+    for sy in (1, -1):
+        grip_pos = (0.40, sy * 0.085, 1.40 + v)
+        elbow = (0.08, sy * (sh_w + 0.06), 1.30 + v)
+        seg((hip[0] + 0.12, sy * sh_w * 0.92, sh_z - 0.02), elbow, 0.068 * bulk, 0.058, cc, parent=p)
+        sph(elbow, 0.060, cc, parent=p)
+        seg(elbow, grip_pos, 0.054, 0.045, cc, parent=p)
+        fist(p, grip_pos, r=0.046)
+    # 特攻服のロング裾 (シートの後ろへ垂らす)
+    for sy in (1, -1):
+        box((hip[0] - 0.16, sy * 0.10, hip[2] - 0.16), (0.16, 0.085, 0.30), cc,
+            rot=(0, -18, sy * 6), parent=p, bevel=0.012)
+    box((hip[0] - 0.26, 0, hip[2] - 0.20), (0.13, 0.16, 0.26), cc, rot=(0, -24, 0), parent=p, bevel=0.012)
+    # 頭 (前傾・リーゼント+面構え)
+    cz = sh_z + r * 1.45
+    sph((hip[0] + 0.16, 0, cz), r, skin, scale=(0.95, 0.92, 1.04), parent=p)
+    cyl((hip[0] + 0.15, 0, sh_z + r * 0.35), r * 0.46, r * 0.50, r * 1.0, skin, parent=p)
+    hp = root(); hp.parent = p
+    hp.location = (hip[0] + 0.16, 0, 0)
+    face(hp, cz, r, cfg)
+    pompadour(hp, cz, r, cfg)
+    return p
+
+
 def build_character(cfg):
+    if cfg.get("rider"):
+        p = root()
+        build_rider(p, cfg)
+        return p
     p = root()
     H = cfg["H"]
     bulk = cfg["bulk"]
@@ -763,15 +881,16 @@ def build_character(cfg):
 # シーン/レンダ
 # ============================================================
 
-def setup_scene():
+def setup_scene(cfg=None):
+    res = (cfg or {}).get("res", (560, 1000))
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
     scene.cycles.samples = 48
     scene.cycles.use_denoising = True
     scene.render.film_transparent = True
-    scene.render.resolution_x = 560
-    scene.render.resolution_y = 1000
+    scene.render.resolution_x = res[0]
+    scene.render.resolution_y = res[1]
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"
     # Freestyle 輪郭線 (アニメ調)
@@ -789,10 +908,13 @@ def setup_scene():
     style = ls.linestyle
     style.color = (0.03, 0.02, 0.04)
     style.thickness = 2.1
-    # カメラ: 右向き3/4・水平・ortho。下端=z0 (足裏接地)
+    # カメラ: 3/4・水平・ortho。下端=z0 (足裏/タイヤ接地)
     az = D(32)
     R = 8.0
-    oscale, zc = (2.30, 2.30 / 2.0) if ZOOM is None else (ZOOM[0], ZOOM[1])
+    base_scale = (cfg or {}).get("ortho", 2.30)
+    # ortho_scale は解像度の長辺に対応する。縦長なら縦=scale、横長なら横=scale
+    vert = base_scale if res[1] >= res[0] else base_scale * res[1] / res[0]
+    oscale, zc = (base_scale, vert / 2.0) if ZOOM is None else (ZOOM[0], ZOOM[1])
     bpy.ops.object.camera_add(location=(R * math.sin(az), -R * math.cos(az), zc))
     cam = bpy.context.active_object
     cam.rotation_euler = (math.pi / 2, 0, az)
@@ -864,6 +986,16 @@ CHARS = {
         "face_scar_x": True,
         "out": (None, "skinhead.png"),
     },
+    # 暴走族ライダー: 旧車會単車に跨がった特攻服の不良 (idle/idle2=エンジン振動 のみ)
+    "rider": {
+        "rider": True,
+        "coat": PAL["white"], "coat_dk": PAL["offwhite"],
+        "pants": PAL["white"], "pants_dk": PAL["offwhite"],
+        "hair": PAL["hair_blk"], "bike": PAL["red"],
+        "pompadour": 1.15,
+        "res": (900, 700), "ortho": 2.85,
+        "out": (None, "rider.png"),
+    },
 }
 
 
@@ -885,9 +1017,11 @@ def flip_image_x(path):
 
 
 def render_one(cid):
-    clear()
-    setup_scene()
     cfg = CHARS[cid]
+    if cfg.get("rider") and POSE not in ("idle", "idle2"):
+        return  # ライダーは idle + エンジン振動の2枚のみ
+    clear()
+    setup_scene(cfg)
     build_character(cfg)
     sub, fn = cfg.get("out", ("boss", cid + ".png"))
     fn = fn[:-4] + POSE_SUFFIX[POSE] + ".png"
