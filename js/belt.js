@@ -688,7 +688,8 @@ window.Battle = (function() {
     const boss = makeEntity('boss', d.archetypeId || 'yankee-basic', bossData, S.cam + S.viewW + 80, S.yMax * 0.5);
     boss.kind = 'boss';
     boss.patterns = BOSS_PATTERNS[d.archetypeId] || BOSS_PATTERNS['yankee-basic'];
-    boss.scale *= 1.06;
+    // ボス格で大型化 (ラスボス > 中ボス > 駅ボス)
+    boss.scale *= st.isFinalBoss ? 1.45 : st.isMidBoss ? 1.30 : 1.18;
     // stations.js の speed は抽象値(3〜13)なので歩行速度(px/s)へ換算
     boss.speed = 75 + (d.speed || 5) * 6;
     S.enemies.push(boss);

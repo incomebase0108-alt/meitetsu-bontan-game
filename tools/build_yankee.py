@@ -325,8 +325,8 @@ def bontan(p, cfg, hip_z, knee_z, bulk):
     pc = mat("pants", cfg["pants"], 0, 0.9)
     pd = mat("pants_dk", cfg["pants_dk"], 0, 0.9)
     shoe = mat("shoe", PAL["black"], 0.1, 0.4)
-    ankle = 0.052
-    stance = 0.115
+    ankle = 0.052 * max(1.0, bulk * 0.9)
+    stance = 0.105 * bulk    # 体格に応じて足幅も広げる
     for sy in (1, -1):
         y = sy * stance
         # 腰→ふくらはぎ (太く)
@@ -820,7 +820,7 @@ def setup_scene():
 CHARS = {
     # ラスボス 総長アンジョー: 白特攻服・金龍刺繍・長身・金バット・銀白髪
     "shin-anjo": {
-        "H": 1.88, "bulk": 1.12, "sh": 1.14,
+        "H": 2.05, "bulk": 1.30, "sh": 1.30,
         "coat": PAL["white"], "coat_dk": PAL["offwhite"],
         "pants": PAL["white"], "pants_dk": PAL["offwhite"],
         "hair": PAL["hair_sil"], "brow": C(0.36, 0.38, 0.44), "inner": PAL["black"],
@@ -830,7 +830,7 @@ CHARS = {
     },
     # 中ボス 吉良の若殿マサキ: 紫・金刺繍・ヤセ長身・豪華木刀・頬傷
     "kira-yoshida": {
-        "H": 1.84, "bulk": 0.88, "sh": 0.98,
+        "H": 2.00, "bulk": 1.00, "sh": 1.10,
         "coat": PAL["purple"], "coat_dk": PAL["purple_dk"],
         "pants": PAL["purple_dk"], "pants_dk": PAL["black"],
         "hair": PAL["hair_blk"], "inner": PAL["black"],
@@ -841,7 +841,7 @@ CHARS = {
     # 中ボス 西尾: スキンヘッド+上半身裸入れ墨+サングラス+青龍刀 (hoshiさん指定 2026-06-12)
     #          駅カラーの深緑はボンタンに反映
     "nishio": {
-        "H": 1.80, "bulk": 1.15, "sh": 1.12,
+        "H": 2.00, "bulk": 1.32, "sh": 1.28,
         "coat": PAL["dgreen"], "coat_dk": PAL["dgreen_dk"],
         "pants": PAL["dgreen"], "pants_dk": PAL["dgreen_dk"],
         "hair": PAL["hair_blk"], "brow": PAL["hair_blk"],
@@ -851,7 +851,7 @@ CHARS = {
     },
     # アーキタイプ17体目: スキンヘッドの殺し屋 (上半身裸・入れ墨・サングラス・青龍刀)
     "skinhead": {
-        "H": 1.82, "bulk": 1.18, "sh": 1.15,
+        "H": 1.95, "bulk": 1.35, "sh": 1.30,
         "coat": PAL["coal"], "coat_dk": PAL["black"],
         "pants": PAL["black"], "pants_dk": PAL["coal"],
         "hair": PAL["hair_blk"], "brow": PAL["hair_blk"],
