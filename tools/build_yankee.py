@@ -18,7 +18,9 @@ ONLY = None
 OUT_OVERRIDE = None
 ALL = False
 ZOOM = None
-FRAME = 1
+POSE = "idle"   # idle | idle2 | idle3 | atk | hit | grd
+POSES_ALL = ("idle", "idle2", "idle3", "atk", "hit", "grd")
+POSE_SUFFIX = {"idle": "", "idle2": "_2", "idle3": "_3", "atk": "_atk", "hit": "_hit", "grd": "_grd"}
 i = 0
 while i < len(argv):
     if argv[i] == "--only":
@@ -29,8 +31,10 @@ while i < len(argv):
         ALL = True; i += 1
     elif argv[i] == "--zoom":          # 頭部確認用: --zoom 0.6 1.65
         ZOOM = (float(argv[i + 1]), float(argv[i + 2])); i += 3
-    elif argv[i] == "--frame":         # 2 = 息継ぎポーズ(<id>_2.png)
-        FRAME = int(argv[i + 1]); i += 2
+    elif argv[i] == "--frame":         # 後方互換: --frame 2 = --pose idle2
+        POSE = "idle2" if argv[i + 1] == "2" else "idle"; i += 2
+    elif argv[i] == "--pose":          # idle/idle2/idle3/atk/hit/grd
+        POSE = argv[i + 1]; i += 2
     else:
         i += 1
 
@@ -423,6 +427,47 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
         ring((f[0] - 0.018, f[1], f[2] - 0.085), 0.050, 0.008, gold, rot=(0, 8, 0), parent=p)
         fist(p, f)
         return f
+    elif pose == "swing":
+        # 振り下ろし: 腕を前へ伸ばし切る
+        elbow = (0.16, y0 * 1.02, sh_z - 0.155)
+        f = (0.355, y0 * 0.82, sh_z - 0.065)
+        seg(sh_pos, elbow, 0.075 * bulk, 0.060 * bulk, cc, parent=p)
+        sph(elbow, 0.064 * bulk, cc, parent=p)
+        seg(elbow, (f[0] - 0.015, f[1], f[2]), 0.058 * bulk, 0.048, cc, parent=p)
+        ring((f[0] - 0.075, f[1], f[2] - 0.035), 0.050, 0.008, gold, rot=(0, 65, 0), parent=p)
+        fist(p, f)
+        return f
+    elif pose == "back":
+        # 攻撃の反対腕: 後ろへ振る
+        elbow = (-0.085, y0 * 1.16, sh_z - 0.255)
+        f = (-0.155, y0 * 1.18, sh_z - 0.510)
+        seg(sh_pos, elbow, 0.072 * bulk, 0.058 * bulk, cc, parent=p)
+        sph(elbow, 0.062 * bulk, cc, parent=p)
+        seg(elbow, (f[0], f[1], f[2] + 0.025), 0.054 * bulk, 0.045, cc, parent=p)
+        ring((f[0] + 0.01, f[1], f[2] + 0.08), 0.048, 0.008, gold, rot=(0, -14, 0), parent=p)
+        fist(p, f)
+        return f
+    elif pose == "flail":
+        # 被弾: 腕が跳ね上がる
+        elbow = (0.045, y0 * 1.18, sh_z - 0.235)
+        f = (0.145, y0 * 1.20, sh_z + 0.020)
+        seg(sh_pos, elbow, 0.072 * bulk, 0.058 * bulk, cc, parent=p)
+        sph(elbow, 0.062 * bulk, cc, parent=p)
+        seg(elbow, (f[0] - 0.01, f[1], f[2] - 0.02), 0.054 * bulk, 0.045, cc, parent=p)
+        ring((f[0] - 0.03, f[1], f[2] - 0.075), 0.048, 0.008, gold, rot=(0, 20, 0), parent=p)
+        fist(p, f)
+        return f
+    elif pose == "hold":
+        # ガード: 体の前で武器を縦に握る
+        elbow = (0.105, y0 * 1.05, sh_z - 0.275)
+        f = (0.275, y0 * 0.60, sh_z - 0.185)
+        seg(sh_pos, elbow, 0.072 * bulk, 0.058 * bulk, cc, parent=p)
+        sph(elbow, 0.062 * bulk, cc, parent=p)
+        seg(elbow, f, 0.055 * bulk, 0.046, cc, parent=p)
+        ring((f[0] - 0.05, f[1] + sy * 0.018, f[2] + 0.012), 0.048, 0.008, gold,
+             rot=(0, 75, sy * -16), parent=p)
+        fist(p, f)
+        return f
     elif pose == "grip":
         elbow = (0.10, y0 * 1.06, sh_z - 0.27)
         f = (0.27, y0 * 0.66, sh_z - 0.30)
@@ -449,8 +494,15 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
 # ============================================================
 
 def _shoulder_dir():
-    """肩担ぎ武器の軸: 後上方へ (顔に被らない)。frame2では少し立てて揺らす"""
-    d = (-0.76, -0.05, 0.65) if FRAME == 1 else (-0.70, -0.05, 0.71)
+    """武器の軸方向 (ポーズで変化)。idleは肩担ぎ後上方=顔に被らない"""
+    d = {
+        "idle":  (-0.76, -0.05, 0.65),
+        "idle2": (-0.71, -0.05, 0.70),
+        "idle3": (-0.66, -0.05, 0.75),
+        "atk":   (0.55, -0.06, -0.62),   # 前下へ振り下ろした瞬間
+        "hit":   (-0.55, -0.05, -0.72),  # 後ろ下へだらんと落ちる
+        "grd":   (0.05, -0.02, 1.00),    # 体の前で縦に構える
+    }[POSE]
     n = math.sqrt(sum(x * x for x in d))
     return tuple(x / n for x in d)
 
@@ -606,8 +658,8 @@ def build_character(cfg):
     head_r = H * 0.084
     cz_target = H - head_r * 1.05          # 頭頂(髪除く)がほぼ H
     sh_z = cz_target - head_r * 1.58
-    if FRAME == 2:
-        sh_z += 0.018                       # 息継ぎ: 肩・頭・腕がわずかに持ち上がる
+    # 息継ぎ/力み: 肩・頭・腕の持ち上がり量
+    sh_z += {"idle": 0.0, "idle2": 0.010, "idle3": 0.020, "atk": 0.012, "hit": 0.0, "grd": 0.006}[POSE]
     sh_w = H * 0.118 * cfg.get("sh", 1.0)
     hip_z = H * 0.515
     knee_z = H * 0.285
@@ -618,9 +670,17 @@ def build_character(cfg):
         tokkofuku(p, cfg, hip_z, sh_z, sh_w, bulk)
     head(p, cfg, sh_z, head_r)
     wp = cfg.get("weapon")
-    pose_cam = "shoulder" if wp in ("bat_gold", "bokuto", "guandao") else ("grip" if wp == "chasen" else "down")
+    if wp == "chasen":
+        pose_cam, pose_far = "grip", "down"
+    elif wp in ("bat_gold", "bokuto", "guandao"):
+        pose_cam, pose_far = {
+            "idle": ("shoulder", "down"), "idle2": ("shoulder", "down"), "idle3": ("shoulder", "down"),
+            "atk": ("swing", "back"), "hit": ("shoulder", "flail"), "grd": ("hold", "down"),
+        }[POSE]
+    else:
+        pose_cam, pose_far = "down", "down"
     grip = arm(p, cfg, -1, sh_z, sh_w, bulk, pose_cam)   # カメラ側(-Y)=武器側
-    arm(p, cfg, 1, sh_z, sh_w, bulk, "down")
+    arm(p, cfg, 1, sh_z, sh_w, bulk, pose_far)
     if wp == "bat_gold":
         weapon_bat_gold(p, grip)
     elif wp == "bokuto":
@@ -637,6 +697,11 @@ def build_character(cfg):
         wave_embroidery(p, sh_w, hem_z, hip_z)
     elif emb == "swirl":
         gold_swirl_embroidery(p, sh_w, hem_z, hip_z)
+    # 体全体のリーン (足元支点。atk=前傾 / hit=のけぞり / grd=半身)
+    lean = {"idle": 0, "idle2": 0, "idle3": 0, "atk": 9, "hit": -8, "grd": -3}[POSE]
+    p.rotation_euler = (0, D(lean), 0)
+    # リーンで画面外に出ないよう全体を引き戻す
+    p.location.x = {"atk": -0.13, "hit": 0.05}.get(POSE, 0.0)
     return p
 
 
@@ -696,6 +761,17 @@ def setup_scene():
     bg = world.node_tree.nodes.get("Background")
     bg.inputs["Color"].default_value = (1, 1, 1, 1)
     bg.inputs["Strength"].default_value = 0.42
+    # ゲームエンジンは左向き素材が正 (SPECの「右向き」は実装と逆、1号機が実機確認済み)。
+    # コンポジタでX反転して出力する。
+    scene.use_nodes = True
+    nt = scene.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    rl = nt.nodes.new("CompositorNodeRLayers")
+    flip = nt.nodes.new("CompositorNodeFlip")
+    comp = nt.nodes.new("CompositorNodeComposite")
+    nt.links.new(rl.outputs["Image"], flip.inputs["Image"])
+    nt.links.new(flip.outputs["Image"], comp.inputs["Image"])
 
 
 # ============================================================
@@ -751,8 +827,7 @@ def render_one(cid):
     cfg = CHARS[cid]
     build_character(cfg)
     sub, fn = cfg.get("out", ("boss", cid + ".png"))
-    if FRAME == 2:
-        fn = fn[:-4] + "_2.png"
+    fn = fn[:-4] + POSE_SUFFIX[POSE] + ".png"
     out = OUT_OVERRIDE or os.path.join(BOSS_DIR if sub == "boss" else CHAR_DIR, fn)
     bpy.context.scene.render.filepath = out
     bpy.ops.render.render(write_still=True)
@@ -760,7 +835,7 @@ def render_one(cid):
 
 
 targets = list(CHARS.keys()) if ALL else [ONLY or "shin-anjo"]
-frames = (1, 2) if ALL else (FRAME,)
+poses = POSES_ALL if ALL else (POSE,)
 for cid in targets:
-    for FRAME in frames:
+    for POSE in poses:
         render_one(cid)

@@ -43,24 +43,56 @@ window.Sprites = (function() {
   const SPRITE_CACHE = {};
 
   // スプライト画像のキャッシュバスター（画像を差し替えたらここを更新）
-  const SPRITE_VER = '?v=20260612-2';
+  const SPRITE_VER = '?v=20260612-3';
 
-  // 2フレーム目 (<id>_2.png) があれば交互に切り替えて呼吸アニメにする
-  function startIdleFrames(img, path) {
-    const path2 = path.replace(/\.png$/i, '_2.png');
-    if (SPRITE_CACHE[path2] === 'none') return;
+  // ポーズ画像があるか調べる (キャッシュ付き)
+  function probeSprite(path, cb) {
+    if (SPRITE_CACHE[path] === 'ok') return cb(true);
+    if (SPRITE_CACHE[path] === 'none') return cb(false);
     const probe = new Image();
-    probe.onload = () => {
-      SPRITE_CACHE[path2] = 'ok';
-      let flip = false;
-      const timer = setInterval(() => {
-        if (!img.isConnected) { clearInterval(timer); return; }
-        flip = !flip;
-        img.src = (flip ? path2 : path) + SPRITE_VER;
-      }, 550);
-    };
-    probe.onerror = () => { SPRITE_CACHE[path2] = 'none'; };
-    probe.src = path2 + SPRITE_VER;
+    probe.onload = () => { SPRITE_CACHE[path] = 'ok'; cb(true); };
+    probe.onerror = () => { SPRITE_CACHE[path] = 'none'; cb(false); };
+    probe.src = path + SPRITE_VER;
+  }
+
+  // フレームドライバ:
+  //  - <id>_2 / <id>_3 があれば 1→2→3→2 の呼吸ループ (280ms)
+  //  - .fighter のクラスを監視して <id>_atk / <id>_hit / <id>_grd に差し替え
+  //  - 無いポーズは idle のまま (従来挙動)
+  function startFrameDriver(img, charEl, path) {
+    const base = path.replace(/\.png$/i, '');
+    const pose = { atk: null, hit: null, grd: null };
+    const cycle = [path];
+    probeSprite(base + '_2.png', ok2 => {
+      if (ok2) cycle.push(base + '_2.png');
+      probeSprite(base + '_3.png', ok3 => {
+        if (ok3 && ok2) { cycle.push(base + '_3.png'); cycle.push(base + '_2.png'); } // 1,2,3,2
+      });
+    });
+    ['atk', 'hit', 'grd'].forEach(k => probeSprite(`${base}_${k}.png`, ok => { if (ok) pose[k] = `${base}_${k}.png`; }));
+
+    let state = 'idle';
+    let idx = 0;
+    const timer = setInterval(() => {
+      if (!img.isConnected) { clearInterval(timer); mo.disconnect(); return; }
+      if (state !== 'idle' || cycle.length < 2) return;
+      idx = (idx + 1) % cycle.length;
+      img.src = cycle[idx] + SPRITE_VER;
+    }, 280);
+
+    const ACT = ['act-punch', 'act-kick', 'act-special', 'act-dash', 'act-throw'];
+    const mo = new MutationObserver(() => {
+      if (!img.isConnected) { mo.disconnect(); return; }
+      const cl = charEl.classList;
+      let want = 'idle';
+      if (ACT.some(c => cl.contains(c))) want = 'atk';
+      else if (cl.contains('hit') || cl.contains('down-pose')) want = 'hit';
+      else if (cl.contains('guarding')) want = 'grd';
+      if (want === state) return;
+      state = want;
+      img.src = ((want !== 'idle' && pose[want]) ? pose[want] : cycle[idx % cycle.length]) + SPRITE_VER;
+    });
+    mo.observe(charEl, { attributes: true, attributeFilter: ['class'] });
   }
 
   // charEl（.fighter 構造を持つ要素）に不良スプライトを適用する。
@@ -109,7 +141,7 @@ window.Sprites = (function() {
         head.style.display = 'none';
         body.style.display = 'none';
         pants.style.display = 'none';
-        startIdleFrames(img, path);
+        startFrameDriver(img, charEl, path);
       };
       img.onerror = () => {
         SPRITE_CACHE[path] = 'none';
