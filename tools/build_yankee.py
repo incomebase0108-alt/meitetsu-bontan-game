@@ -356,7 +356,7 @@ def body_tattoo(p, sh_w, sh_z, hip_z):
         z = hip_z + 0.05 + t * (sh_z - hip_z)
         a = D(-30 - 65 * t + 30 * math.sin(t * math.pi * 2.2))
         rr = sh_w * (0.70 + 0.24 * t)
-        pts.append((rr * 0.62 * math.cos(a), rr * math.sin(a), z))
+        pts.append((rr * 0.74 * math.cos(a), rr * math.sin(a), z))
     tube(pts, 0.019, tat, parent=p)
     # 二重コイル (腹に巻く下段)
     pts2 = []
@@ -365,7 +365,7 @@ def body_tattoo(p, sh_w, sh_z, hip_z):
         z = hip_z + 0.04 + t * 0.10
         a = D(40 - 150 * t)
         rr = sh_w * 0.70
-        pts2.append((rr * 0.62 * math.cos(a), rr * math.sin(a), z))
+        pts2.append((rr * 0.74 * math.cos(a), rr * math.sin(a), z))
     tube(pts2, 0.015, tat, parent=p)
     # 龍頭 (カメラ側の鎖骨上・大きく) + 角 + 紅の目
     hx, hy, hz = sh_w * 0.28, -sh_w * 0.62, sh_z + 0.02
@@ -393,28 +393,30 @@ def bare_torso(p, cfg, hip_z, sh_z, sh_w, bulk):
     """上半身裸: 筋肉質の素肌 + 大胸筋 + 腹筋 + 入れ墨。腰はボンタンのベルト"""
     skin = mat("skin", PAL["skin"])
     skin_dk = mat("skin_dk", C(0.82, 0.60, 0.45), 0, 0.85)
-    # 胴 (逆三角)
+    # 胴 (逆三角)。前面サーフェス基準の半径を先に計算しておく
+    top_r = sh_w * 0.86 * 0.76          # 胸上部の前後半径
+    waist_r = sh_w * 0.60 * bulk * 0.76  # 腰の前後半径
     cyl((0, 0, (hip_z + sh_z) / 2 + 0.02), sh_w * 0.60 * bulk, sh_w * 0.86, (sh_z - hip_z) + 0.10,
-        skin, scale=(0.62, 1, 1), parent=p)
-    # 大胸筋 (デカく)
+        skin, scale=(0.76, 1, 1), parent=p)
+    # 大胸筋 (デカく・胸面に乗せる)
     for sy in (1, -1):
-        sph((sh_w * 0.40, sy * sh_w * 0.38, sh_z - 0.115), sh_w * 0.34, skin, scale=(0.62, 0.95, 0.72), parent=p)
+        sph((top_r * 0.84, sy * sh_w * 0.38, sh_z - 0.115), sh_w * 0.32, skin, scale=(0.55, 0.92, 0.65), parent=p)
     # 僧帽筋
     sph((-sh_w * 0.24, 0, sh_z - 0.05), sh_w * 0.48, skin, scale=(0.60, 1.00, 0.60), parent=p)
-    # 腹筋 (3段x2列・しっかり浮き出す)
+    # 腹筋 (3段x2列・腹面に乗せる)
     for row in range(3):
         for sy in (1, -1):
-            az = hip_z + 0.085 + row * 0.075
-            fr = sh_w * (0.58 - 0.04 * row)
-            sph((fr * 0.66, sy * sh_w * 0.17, az), 0.046, skin, scale=(0.62, 0.85, 0.78), parent=p)
+            az = hip_z + 0.105 + row * 0.080
+            sph((waist_r * (0.93 - 0.05 * row), sy * sh_w * 0.16, az), 0.042, skin,
+                scale=(0.58, 0.85, 0.78), parent=p)
     # 腹斜筋の影ライン
     for sy in (1, -1):
-        box((sh_w * 0.30, sy * sh_w * 0.34, hip_z + 0.16), (0.012, 0.012, 0.10), skin_dk,
+        box((waist_r * 0.72, sy * sh_w * 0.36, hip_z + 0.16), (0.012, 0.012, 0.10), skin_dk,
             rot=(sy * 12, 0, 0), parent=p, bevel=0.004)
     # ベルト+バックル (ボンタンの腰)
     cyl((0, 0, hip_z + 0.015), sh_w * 0.62 * bulk, sh_w * 0.60 * bulk, 0.055,
-        mat("belt", PAL["black"], 0.1, 0.5), scale=(0.66, 1, 1), parent=p)
-    sph((sh_w * 0.40, 0, hip_z + 0.015), 0.026, mat("buckle", PAL["gold"], 0.7, 0.3),
+        mat("belt", PAL["black"], 0.1, 0.5), scale=(0.80, 1, 1), parent=p)
+    sph((sh_w * 0.62 * bulk * 0.80, 0, hip_z + 0.015), 0.026, mat("buckle", PAL["gold"], 0.7, 0.3),
         scale=(0.5, 1.1, 1.0), parent=p)
     body_tattoo(p, sh_w, sh_z, hip_z)
 
@@ -426,30 +428,33 @@ def tokkofuku(p, cfg, hip_z, sh_z, sh_w, bulk):
     gold = mat("gold", PAL["gold"], 0.7, 0.35)
     inner = mat("inner", cfg.get("inner", PAL["black"]), 0, 0.8)
     hem_z = cfg.get("hem_z", 0.46)
-    # 胴 (逆三角: 肩広く腰すぼむ)
+    # 胴 (逆三角: 肩広く腰すぼむ)。前面サーフェス基準の半径を先に計算
+    top_r = sh_w * 0.88 * 0.76           # 胸上部の前後半径
+    waist_r = sh_w * 0.66 * bulk * 0.76  # 腰の前後半径
+    hem_r = sh_w * 0.70 * bulk * 0.80    # 裾の前後半径
     cyl((0, 0, (hip_z + sh_z) / 2 + 0.02), sh_w * 0.66 * bulk, sh_w * 0.88, (sh_z - hip_z) + 0.10,
-        cc, scale=(0.62, 1, 1), parent=p)
+        cc, scale=(0.76, 1, 1), parent=p)
     # 大胸筋
     for sy in (1, -1):
-        sph((sh_w * 0.38, sy * sh_w * 0.36, sh_z - 0.10), sh_w * 0.30, cc, scale=(0.60, 0.90, 0.70), parent=p)
+        sph((top_r * 0.82, sy * sh_w * 0.36, sh_z - 0.10), sh_w * 0.28, cc, scale=(0.55, 0.90, 0.65), parent=p)
     # 背中(僧帽筋)
     sph((-sh_w * 0.26, 0, sh_z - 0.06), sh_w * 0.50, cc, scale=(0.60, 1.00, 0.60), parent=p)
     # ロング裾 (膝まで・下に向かってフレア)
-    cyl((0, 0, (hip_z + hem_z) / 2 + 0.02), sh_w * 0.95, sh_w * 0.64 * bulk, (hip_z - hem_z) + 0.08,
-        cc, scale=(0.70, 1, 1), parent=p)
+    cyl((0, 0, (hip_z + hem_z) / 2 + 0.02), sh_w * 0.70 * bulk, sh_w * 0.64 * bulk, (hip_z - hem_z) + 0.08,
+        cc, scale=(0.80, 1, 1), parent=p)
     # 裾の折り返し
-    torus((0, 0, hem_z + 0.01), sh_w * 0.86, 0.013, cd, scale=(0.71, 1, 0.75), parent=p)
+    torus((0, 0, hem_z + 0.01), sh_w * 0.68 * bulk, 0.013, cd, scale=(0.80, 1, 0.75), parent=p)
     # 前合わせ縦ライン (胸/裾で面に沿わせて分割)
-    box((sh_w * 0.50, 0.012, (hip_z + sh_z) / 2), (0.013, 0.011, (sh_z - hip_z) * 0.46),
+    box(((top_r + waist_r) / 2 + 0.006, 0.012, (hip_z + sh_z) / 2), (0.013, 0.011, (sh_z - hip_z) * 0.46),
         cd, rot=(0, -6, 0), parent=p, bevel=0.004)
-    box((sh_w * 0.58, 0.012, (hip_z + hem_z) / 2), (0.013, 0.011, (hip_z - hem_z) * 0.46),
+    box(((waist_r + hem_r) / 2 + 0.006, 0.012, (hip_z + hem_z) / 2), (0.013, 0.011, (hip_z - hem_z) * 0.46),
         cd, rot=(0, 7, 0), parent=p, bevel=0.004)
     # 金ボタン5個 (胸の面に沿って)
     for k in range(5):
         t = k / 4.0
         bz = sh_z - 0.07 - t * (sh_z - hip_z - 0.02)
-        fr = sh_w * (0.54 - 0.06 * t) * (0.62 / 0.62)
-        sph((fr * 1.02, 0.030, bz), 0.0155, gold, parent=p)
+        fr = top_r * (1 - t) + waist_r * t + 0.012
+        sph((fr, 0.030, bz), 0.0155, gold, parent=p)
     # 詰襟 (立ち襟・内側黒・金パイピング)
     col_r = sh_w * 0.36
     cyl((0.005, 0, sh_z + 0.05), col_r * 1.16, col_r * 1.22, 0.09, cc, parent=p)
@@ -466,7 +471,7 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
     ring = (lambda *a, **kw: None) if bare else torus  # 袖口の金線は裸では描かない
     y0 = sy * sh_w * 0.92
     sh_pos = (0.01, y0, sh_z - 0.015)
-    sph(sh_pos, sh_w * 0.34 * bulk, cc, scale=(0.92, 0.80, 0.92), parent=p)  # 三角筋
+    sph(sh_pos, sh_w * 0.28 * bulk, cc, scale=(0.95, 0.82, 0.95), parent=p)  # 三角筋
     if pose == "shoulder":
         elbow = (0.075, y0 * 1.10, sh_z - 0.295)
         f = (0.155, y0 * 1.02, sh_z + 0.055)
@@ -820,7 +825,7 @@ def setup_scene():
 CHARS = {
     # ラスボス 総長アンジョー: 白特攻服・金龍刺繍・長身・金バット・銀白髪
     "shin-anjo": {
-        "H": 2.05, "bulk": 1.30, "sh": 1.30,
+        "H": 2.05, "bulk": 1.50, "sh": 1.45,
         "coat": PAL["white"], "coat_dk": PAL["offwhite"],
         "pants": PAL["white"], "pants_dk": PAL["offwhite"],
         "hair": PAL["hair_sil"], "brow": C(0.36, 0.38, 0.44), "inner": PAL["black"],
@@ -830,7 +835,7 @@ CHARS = {
     },
     # 中ボス 吉良の若殿マサキ: 紫・金刺繍・ヤセ長身・豪華木刀・頬傷
     "kira-yoshida": {
-        "H": 2.00, "bulk": 1.00, "sh": 1.10,
+        "H": 2.00, "bulk": 1.15, "sh": 1.22,
         "coat": PAL["purple"], "coat_dk": PAL["purple_dk"],
         "pants": PAL["purple_dk"], "pants_dk": PAL["black"],
         "hair": PAL["hair_blk"], "inner": PAL["black"],
@@ -841,7 +846,7 @@ CHARS = {
     # 中ボス 西尾: スキンヘッド+上半身裸入れ墨+サングラス+青龍刀 (hoshiさん指定 2026-06-12)
     #          駅カラーの深緑はボンタンに反映
     "nishio": {
-        "H": 2.00, "bulk": 1.32, "sh": 1.28,
+        "H": 2.00, "bulk": 1.55, "sh": 1.48,
         "coat": PAL["dgreen"], "coat_dk": PAL["dgreen_dk"],
         "pants": PAL["dgreen"], "pants_dk": PAL["dgreen_dk"],
         "hair": PAL["hair_blk"], "brow": PAL["hair_blk"],
@@ -851,7 +856,7 @@ CHARS = {
     },
     # アーキタイプ17体目: スキンヘッドの殺し屋 (上半身裸・入れ墨・サングラス・青龍刀)
     "skinhead": {
-        "H": 1.95, "bulk": 1.35, "sh": 1.30,
+        "H": 1.95, "bulk": 1.60, "sh": 1.50,
         "coat": PAL["coal"], "coat_dk": PAL["black"],
         "pants": PAL["black"], "pants_dk": PAL["coal"],
         "hair": PAL["hair_blk"], "brow": PAL["hair_blk"],
@@ -862,6 +867,23 @@ CHARS = {
 }
 
 
+def flip_image_x(path):
+    """ファイル基準の向きは『素のPNGで顔が左向き』(aad3447 時点の main に一致)。
+    カメラ既定は右向きなのでレンダ後に左右反転して保存する。
+    ※向きがおかしく見えても画像を反転せず #名鉄 で要相談 (反転合戦が3回起きた)"""
+    import numpy as np
+    img = bpy.data.images.load(path)
+    w, h = img.size
+    px = np.empty(w * h * 4, dtype=np.float32)
+    img.pixels.foreach_get(px)
+    px = px.reshape(h, w, 4)[:, ::-1, :].ravel()
+    img.pixels.foreach_set(px)
+    img.filepath_raw = path
+    img.file_format = "PNG"
+    img.save()
+    bpy.data.images.remove(img)
+
+
 def render_one(cid):
     clear()
     setup_scene()
@@ -870,9 +892,9 @@ def render_one(cid):
     sub, fn = cfg.get("out", ("boss", cid + ".png"))
     fn = fn[:-4] + POSE_SUFFIX[POSE] + ".png"
     out = OUT_OVERRIDE or os.path.join(BOSS_DIR if sub == "boss" else CHAR_DIR, fn)
-    # 向きは右向きで出力 (a111d30 で確定。カメラ既定の向きのまま反転しない)
     bpy.context.scene.render.filepath = out
     bpy.ops.render.render(write_still=True)
+    flip_image_x(out)
     print("WROTE", out)
 
 
