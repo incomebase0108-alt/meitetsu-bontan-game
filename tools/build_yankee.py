@@ -716,8 +716,11 @@ def build_rider(p, cfg):
     vib = 0.010 if POSE == "idle2" else 0.0
     tire = mat("tire", C(0.09, 0.09, 0.10), 0, 0.85)
     chrome = mat("chrome", C(0.80, 0.83, 0.88), 0.9, 0.18)
-    steel_dk = mat("steel_dk", C(0.30, 0.31, 0.35), 0.6, 0.4)
-    body_c = mat("bike_body", cfg.get("bike", PAL["red"]), 0.15, 0.5)
+    steel_dk = mat("steel_dk", C(0.22, 0.23, 0.27), 0.6, 0.4)
+    # 採用見本 (Slack F0BA7S82H60): 青ボディ+白タンク赤ライン+白三段シート+クローム集合管
+    body_c = mat("bike_body", cfg.get("bike", C(0.12, 0.22, 0.58)), 0.15, 0.5)
+    seat_w = mat("seat_w", C(0.92, 0.91, 0.88), 0, 0.8)
+    accent_r = mat("accent_r", C(0.75, 0.12, 0.12), 0.1, 0.5)
     gold = mat("gold", PAL["gold"], 0.7, 0.35)
     # ---- 車輪 (接地・振動しない) ----
     wr = 0.30
@@ -738,30 +741,39 @@ def build_rider(p, cfg):
     for k in range(3):  # 冷却フィン
         box((0.10, 0, 0.40 + 0.05 * k + v), (0.38, 0.27, 0.018), chrome, parent=p, bevel=0.004)
     cyl((0.13, 0, 0.36 + v), 0.085, 0.085, 0.30, chrome, rot=(90, 0, 0), parent=p)  # クランクケース
-    # タンク (車体色)
-    sph((0.33, 0, 0.74 + v), 0.20, body_c, scale=(1.15, 0.62, 0.52), parent=p)
-    # 三段シート (後ろへ段々高く・車体と一体) + シシーバー
-    box((-0.28, 0, 0.62 + v), (0.40, 0.22, 0.10), tire, parent=p, bevel=0.02)
+    # タンク (白ベース+赤ライン+青ライン: 見本のトリコロール)
+    sph((0.33, 0, 0.74 + v), 0.20, mat("tank_w", C(0.90, 0.90, 0.88), 0.1, 0.5),
+        scale=(1.15, 0.62, 0.52), parent=p)
+    box((0.33, -0.125, 0.745 + v), (0.40, 0.012, 0.035), accent_r, rot=(0, -4, 0), parent=p, bevel=0.004)
+    box((0.33, -0.126, 0.705 + v), (0.40, 0.012, 0.022), body_c, rot=(0, -4, 0), parent=p, bevel=0.004)
+    # 白の三段シート (タックロール風・赤パイピング・車体と一体) + シシーバー
+    box((-0.28, 0, 0.62 + v), (0.40, 0.22, 0.10), seat_w, parent=p, bevel=0.02)
     for k in range(3):
-        box((-0.47 - 0.05 * k, 0, 0.63 + 0.12 * k + v), (0.10, 0.20, 0.15), body_c,
+        box((-0.47 - 0.05 * k, 0, 0.64 + 0.13 * k + v), (0.10, 0.20, 0.16), seat_w,
             rot=(0, -8, 0), parent=p, bevel=0.015)
+        box((-0.505 - 0.05 * k, -0.101, 0.64 + 0.13 * k + v), (0.07, 0.006, 0.115), accent_r,
+            rot=(0, -8, 0), parent=p, bevel=0.003)
     for sy in (1, -1):
-        seg((-0.82, sy * 0.075, 0.42 + v), (-0.60, sy * 0.055, 1.02 + v), 0.016, 0.013, chrome, parent=p)
-    seg((-0.60, 0.055, 1.02 + v), (-0.60, -0.055, 1.02 + v), 0.013, 0.013, chrome, parent=p)
-    # 絞りハンドル (高く立ち上げて手前に絞る)
+        seg((-0.82, sy * 0.075, 0.42 + v), (-0.62, sy * 0.055, 1.08 + v), 0.016, 0.013, chrome, parent=p)
+    seg((-0.62, 0.055, 1.08 + v), (-0.62, -0.055, 1.08 + v), 0.013, 0.013, chrome, parent=p)
+    # 絞りハンドル (見本に合わせ中庸の高さ)
     for sy in (1, -1):
-        seg((0.60, sy * 0.10, 0.84 + v), (0.46, sy * 0.085, 1.38 + v), 0.020, 0.018, chrome, parent=p)
-        seg((0.46, sy * 0.085, 1.38 + v), (0.38, sy * 0.075, 1.42 + v), 0.018, 0.022, tire, parent=p)  # グリップ
-    # ロケットカウル + ヘッドライト
-    cyl((0.86, 0, 0.86 + v), 0.15, 0.085, 0.34, body_c, rot=(0, 96, 0), parent=p)
-    sph((1.02, 0, 0.84 + v), 0.075, chrome, scale=(0.4, 1, 1), parent=p)
-    # 竹やりマフラー x2 (後上方へ突き上げる)
+        seg((0.60, sy * 0.10, 0.84 + v), (0.46, sy * 0.085, 1.20 + v), 0.020, 0.018, chrome, parent=p)
+        seg((0.46, sy * 0.085, 1.20 + v), (0.38, sy * 0.075, 1.24 + v), 0.018, 0.022, tire, parent=p)  # グリップ
+    # ロケットカウル (青+赤ライン) + 丸目ヘッドライト
+    cyl((0.86, 0, 0.86 + v), 0.16, 0.09, 0.34, body_c, rot=(0, 96, 0), parent=p)
+    torus((0.84, 0, 0.875 + v), 0.145, 0.012, accent_r, rot=(0, 6, 0), scale=(1, 1, 0.85), parent=p)
+    sph((1.03, 0, 0.83 + v), 0.085, chrome, scale=(0.45, 1, 1), parent=p)
+    # クローム集合マフラー (低く後ろへ流して跳ね上げ・左右2本ずつ)
     for sy in (1, -1):
-        seg((0.05, sy * 0.13, 0.34 + v), (-1.30, sy * 0.17, 1.00 + v), 0.040, 0.024, chrome, parent=p)
+        for k in range(2):
+            y = sy * (0.12 + 0.05 * k)
+            seg((0.10, y, 0.30 + v), (-0.78, y * 1.1, 0.26 + v), 0.030, 0.030, chrome, parent=p)
+            seg((-0.78, y * 1.1, 0.26 + v), (-1.16, y * 1.15, 0.46 + v), 0.032, 0.040, chrome, parent=p)
     if POSE == "idle2":  # 排気
         smoke = mat("smoke", C(0.62, 0.62, 0.64), 0, 1.0)
-        sph((-1.42, -0.18, 1.10), 0.075, smoke, parent=p)
-        sph((-1.54, -0.17, 1.20), 0.055, smoke, parent=p)
+        sph((-1.28, -0.20, 0.50), 0.075, smoke, parent=p)
+        sph((-1.40, -0.19, 0.60), 0.055, smoke, parent=p)
     # リアフェンダー+ナンバー
     box((-0.95, 0, 0.62 + v), (0.22, 0.18, 0.04), body_c, rot=(0, 24, 0), parent=p, bevel=0.01)
     box((-1.02, 0, 0.52 + v), (0.015, 0.16, 0.09), mat("plate", PAL["white"], 0, 0.7),
@@ -797,12 +809,19 @@ def build_rider(p, cfg):
     cyl((hip[0] + 0.13, 0, sh_z + 0.045), sh_w * 0.42, sh_w * 0.45, 0.08, cc, parent=p)
     # 腕: ハンドルグリップへ伸ばす
     for sy in (1, -1):
-        grip_pos = (0.40, sy * 0.085, 1.40 + v)
+        grip_pos = (0.40, sy * 0.085, 1.26 + v)
         elbow = (0.08, sy * (sh_w + 0.06), 1.30 + v)
         seg((hip[0] + 0.12, sy * sh_w * 0.92, sh_z - 0.02), elbow, 0.068 * bulk, 0.058, cc, parent=p)
         sph(elbow, 0.060, cc, parent=p)
         seg(elbow, grip_pos, 0.054, 0.045, cc, parent=p)
         fist(p, grip_pos, r=0.046)
+    # 赤帯 (見本の特攻服)
+    cyl((hip[0] + 0.05, 0, hip[2] + 0.10), sh_w * 0.66, sh_w * 0.64, 0.06,
+        mat("obi_r", C(0.72, 0.10, 0.10), 0, 0.7), scale=(0.74, 1, 1), rot=(0, 10, 0), parent=p)
+    # 刺繍文字風 (背中の縦ダッシュ列)
+    for k in range(3):
+        box((hip[0] - 0.115, -0.065, sh_z - 0.16 - 0.085 * k), (0.012, 0.012, 0.055),
+            mat("emb_k", C(0.12, 0.10, 0.10), 0, 0.7), rot=(0, 8, 0), parent=p, bevel=0.003)
     # 特攻服のロング裾 (シートの後ろへ垂らす)
     for sy in (1, -1):
         box((hip[0] - 0.16, sy * 0.10, hip[2] - 0.16), (0.16, 0.085, 0.30), cc,
@@ -991,7 +1010,7 @@ CHARS = {
         "rider": True,
         "coat": PAL["white"], "coat_dk": PAL["offwhite"],
         "pants": PAL["white"], "pants_dk": PAL["offwhite"],
-        "hair": PAL["hair_blk"], "bike": PAL["red"],
+        "hair": PAL["hair_blk"], "bike": C(0.12, 0.22, 0.58),
         "pompadour": 1.15,
         "res": (900, 700), "ortho": 2.85,
         "out": (None, "rider.png"),
