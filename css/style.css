@@ -1420,3 +1420,47 @@ img.char-sprite {
   font-family: inherit;
 }
 .credits-link:hover { color: #ccc; border-color: #888; }
+.title-links { display: flex; gap: 10px; }
+
+/* ==== ボス編集画面 ==== */
+.edit-list {
+  width: 100%;
+  max-width: 640px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: 52vh;
+  padding: 0 10px;
+}
+.edit-row {
+  background: #161616;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+.edit-station { color: #ffcc00; font-size: 13px; font-weight: bold; margin-bottom: 4px; }
+.edit-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #999;
+  margin: 4px 0;
+  white-space: nowrap;
+}
+.edit-row input {
+  flex: 1;
+  min-width: 0;
+  background: #222;
+  border: 1px solid #555;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.edit-row input:focus { border-color: #ff9933; outline: none; }
+.edit-actions { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+.edit-actions .big-btn { padding: 10px 16px; font-size: 15px; min-height: 44px; margin: 6px 2px; }

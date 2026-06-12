@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1a1a1a">
 <title>名鉄ボンタン狩り 〜蒲郡から新安城まで〜</title>
-<link rel="stylesheet" href="css/style.css?v=20260612h">
+<link rel="stylesheet" href="css/style.css?v=20260612i">
 </head>
 <body>
 
@@ -26,7 +26,23 @@
     <p class="title-credit">名鉄蒲郡線 + 西尾線 完全踏破RPG</p>
     <p class="title-help">スマホ：左の仮想パッドで移動＋右のボタンで攻撃／PC：矢印キー移動＋A(パンチ) S(キック) D(必殺)</p>
     <p class="title-help">右へ進んで雑魚を蹴散らし、駅前のボスを倒せ！敵が光って溜めたら離れろ！</p>
-    <button id="btn-credits" class="credits-link">写真クレジット</button>
+    <div class="title-links">
+      <button id="btn-edit" class="credits-link">⚙ ボス編集</button>
+      <button id="btn-credits" class="credits-link">写真クレジット</button>
+    </div>
+  </section>
+
+  <!-- ボス編集画面 -->
+  <section id="screen-edit" class="screen">
+    <h2 class="credits-title">ボス編集</h2>
+    <p class="credits-note">各駅のボスの名前・二つ名・登場セリフを自由に変更できます（この端末に保存）。空欄にすると初期設定に戻ります。</p>
+    <div id="edit-list" class="edit-list"></div>
+    <div class="edit-actions">
+      <button id="btn-edit-save" class="big-btn">保存</button>
+      <button id="btn-edit-reset" class="big-btn" style="background:#555">全部元に戻す</button>
+      <button id="btn-edit-back" class="big-btn" style="background:#555">タイトルへ</button>
+    </div>
+    <p id="edit-msg" class="credits-note"></p>
   </section>
 
   <!-- マップ画面（路線図） -->
@@ -171,14 +187,15 @@
 
 </div>
 
-<script src="js/audio.js?v=20260612h"></script>
-<script src="js/save.js?v=20260612h"></script>
-<script src="js/stations.js?v=20260612h"></script>
-<script src="js/scenes.js?v=20260612h"></script>
-<script src="js/sprites.js?v=20260612h"></script>
-<script src="js/credits.js?v=20260612h"></script>
-<script src="js/belt.js?v=20260612h"></script>
-<script src="js/map.js?v=20260612h"></script>
-<script src="js/game.js?v=20260612h"></script>
+<script src="js/audio.js?v=20260612i"></script>
+<script src="js/save.js?v=20260612i"></script>
+<script src="js/stations.js?v=20260612i"></script>
+<script src="js/customize.js?v=20260612i"></script>
+<script src="js/scenes.js?v=20260612i"></script>
+<script src="js/sprites.js?v=20260612i"></script>
+<script src="js/credits.js?v=20260612i"></script>
+<script src="js/belt.js?v=20260612i"></script>
+<script src="js/map.js?v=20260612i"></script>
+<script src="js/game.js?v=20260612i"></script>
 </body>
 </html>
