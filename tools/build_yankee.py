@@ -453,12 +453,26 @@ def tokkofuku(p, cfg, hip_z, sh_z, sh_w, bulk):
         cd, rot=(0, -6, 0), parent=p, bevel=0.004)
     box(((waist_r + hem_r) / 2 + 0.006, 0.012, (hip_z + hem_z) / 2), (0.013, 0.011, (hip_z - hem_z) * 0.46),
         cd, rot=(0, 7, 0), parent=p, bevel=0.004)
-    # 金ボタン5個 (胸の面に沿って)
-    for k in range(5):
-        t = k / 4.0
-        bz = sh_z - 0.07 - t * (sh_z - hip_z - 0.02)
-        fr = top_r * (1 - t) + waist_r * t + 0.012
-        sph((fr, 0.030, bz), 0.0155, gold, parent=p)
+    if cfg.get("sarashi"):
+        # 前開き: 白さらしの帯パネル + 巻き線 (ボタンは省略)
+        sar = mat("sarashi", C(0.93, 0.92, 0.89), 0, 0.85)
+        sar_d = mat("sarashi_d", C(0.78, 0.77, 0.74), 0, 0.85)
+        # 胴に沿う白さらし (太い帯を体に食い込ませる) + 巻き線 + 前開きの襟边
+        cyl((0, 0, (sh_z + hip_z) / 2 - 0.02), sh_w * 0.70 * bulk, sh_w * 0.84, (sh_z - hip_z) * 0.66,
+            sar, scale=(0.86, 0.90, 1), parent=p)
+        for k in range(3):
+            torus((0, 0, hip_z + 0.10 + k * 0.10), sh_w * 0.74 * bulk, 0.007, sar_d,
+                  scale=(0.85, 0.89, 0.8), parent=p)
+        for sy in (1, -1):  # 学ランの前端 (さらしの両脇の濃い縁)
+            box((top_r * 0.90, sy * sh_w * 0.34, (sh_z + hip_z) / 2), (0.030, 0.035, (sh_z - hip_z) * 0.50),
+                cd, rot=(0, -5, sy * 3), parent=p, bevel=0.008)
+    else:
+        # 金ボタン5個 (胸の面に沿って)
+        for k in range(5):
+            t = k / 4.0
+            bz = sh_z - 0.07 - t * (sh_z - hip_z - 0.02)
+            fr = top_r * (1 - t) + waist_r * t + 0.012
+            sph((fr, 0.030, bz), 0.0155, gold, parent=p)
     # 詰襟 (立ち襟・内側黒・金パイピング)
     col_r = sh_w * 0.36
     cyl((0.005, 0, sh_z + 0.05), col_r * 1.16, col_r * 1.22, 0.09, cc, parent=p)
@@ -846,7 +860,7 @@ def build_character(cfg):
     p = root()
     H = cfg["H"]
     bulk = cfg["bulk"]
-    head_r = H * 0.084
+    head_r = H * 0.084 * cfg.get("head_scale", 1.0)
     cz_target = H - head_r * 1.05          # 頭頂(髪除く)がほぼ H
     sh_z = cz_target - head_r * 1.58
     # 息継ぎ/力み: 肩・頭・腕の持ち上がり量
@@ -869,7 +883,11 @@ def build_character(cfg):
             "atk": ("swing", "back"), "hit": ("shoulder", "flail"), "grd": ("hold", "down"),
         }[POSE]
     else:
-        pose_cam, pose_far = "down", "down"
+        # 素手: 攻撃=正拳/被弾=のけぞり/ガード=ボクシング風の構え
+        pose_cam, pose_far = {
+            "idle": ("down", "down"), "idle2": ("down", "down"), "idle3": ("down", "down"),
+            "atk": ("swing", "back"), "hit": ("flail", "down"), "grd": ("hold", "flail"),
+        }[POSE]
     grip = arm(p, cfg, -1, sh_z, sh_w, bulk, pose_cam)   # カメラ側(-Y)=武器側
     arm(p, cfg, 1, sh_z, sh_w, bulk, pose_far)
     if wp == "bat_gold":
@@ -966,10 +984,11 @@ def setup_scene(cfg=None):
 CHARS = {
     # ラスボス 総長アンジョー: 白特攻服・金龍刺繍・長身・金バット・銀白髪
     "shin-anjo": {
-        "H": 2.05, "bulk": 1.50, "sh": 1.45,
-        "coat": PAL["white"], "coat_dk": PAL["offwhite"],
-        "pants": PAL["white"], "pants_dk": PAL["offwhite"],
-        "hair": PAL["hair_sil"], "brow": C(0.36, 0.38, 0.44), "inner": PAL["black"],
+        "H": 2.05, "bulk": 1.42, "sh": 1.38, "head_scale": 1.14,
+        "coat": PAL["white"], "coat_dk": C(0.48, 0.48, 0.52),
+        "pants": PAL["white"], "pants_dk": C(0.55, 0.55, 0.58),
+        "hair": C(0.58, 0.60, 0.66), "brow": C(0.22, 0.23, 0.28), "inner": PAL["black"],
+        "scar": True,
         "weapon": "bat_gold", "embroidery": "dragon",
         "hem_z": 0.44, "pompadour": 1.3,
         "out": ("boss", "shin-anjo.png"),
@@ -1004,6 +1023,16 @@ CHARS = {
         "weapon": "guandao", "skinhead": True, "shirtless": True, "sunglasses": True,
         "face_scar_x": True,
         "out": (None, "skinhead.png"),
+    },
+    # 主人公: 黒髪リーゼント・黒長ラン前開き+白さらし・黒ボンタン・不敵 (一番かっこよく)
+    "player": {
+        "H": 1.80, "bulk": 1.08, "sh": 1.10, "head_scale": 1.10,
+        "coat": PAL["coal"], "coat_dk": PAL["black"],
+        "pants": PAL["black"], "pants_dk": PAL["coal"],
+        "hair": C(0.04, 0.04, 0.06), "brow": C(0.04, 0.04, 0.06), "inner": PAL["black"],
+        "sarashi": True, "pompadour": 1.4,
+        "hem_z": 0.50,
+        "out": (None, "player.png"),
     },
     # 暴走族ライダー: 旧車會単車に跨がった特攻服の不良 (idle/idle2=エンジン振動 のみ)
     "rider": {
