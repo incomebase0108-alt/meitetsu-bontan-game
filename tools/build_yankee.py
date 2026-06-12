@@ -18,6 +18,7 @@ ONLY = None
 OUT_OVERRIDE = None
 ALL = False
 ZOOM = None
+FRAME = 1
 i = 0
 while i < len(argv):
     if argv[i] == "--only":
@@ -28,6 +29,8 @@ while i < len(argv):
         ALL = True; i += 1
     elif argv[i] == "--zoom":          # 頭部確認用: --zoom 0.6 1.65
         ZOOM = (float(argv[i + 1]), float(argv[i + 2])); i += 3
+    elif argv[i] == "--frame":         # 2 = 息継ぎポーズ(<id>_2.png)
+        FRAME = int(argv[i + 1]); i += 2
     else:
         i += 1
 
@@ -446,8 +449,8 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
 # ============================================================
 
 def _shoulder_dir():
-    """肩担ぎ武器の軸: 後上方へ (顔に被らない)"""
-    d = (-0.76, -0.05, 0.65)
+    """肩担ぎ武器の軸: 後上方へ (顔に被らない)。frame2では少し立てて揺らす"""
+    d = (-0.76, -0.05, 0.65) if FRAME == 1 else (-0.70, -0.05, 0.71)
     n = math.sqrt(sum(x * x for x in d))
     return tuple(x / n for x in d)
 
@@ -603,6 +606,8 @@ def build_character(cfg):
     head_r = H * 0.084
     cz_target = H - head_r * 1.05          # 頭頂(髪除く)がほぼ H
     sh_z = cz_target - head_r * 1.58
+    if FRAME == 2:
+        sh_z += 0.018                       # 息継ぎ: 肩・頭・腕がわずかに持ち上がる
     sh_w = H * 0.118 * cfg.get("sh", 1.0)
     hip_z = H * 0.515
     knee_z = H * 0.285
@@ -746,6 +751,8 @@ def render_one(cid):
     cfg = CHARS[cid]
     build_character(cfg)
     sub, fn = cfg.get("out", ("boss", cid + ".png"))
+    if FRAME == 2:
+        fn = fn[:-4] + "_2.png"
     out = OUT_OVERRIDE or os.path.join(BOSS_DIR if sub == "boss" else CHAR_DIR, fn)
     bpy.context.scene.render.filepath = out
     bpy.ops.render.render(write_still=True)
@@ -753,5 +760,7 @@ def render_one(cid):
 
 
 targets = list(CHARS.keys()) if ALL else [ONLY or "shin-anjo"]
+frames = (1, 2) if ALL else (FRAME,)
 for cid in targets:
-    render_one(cid)
+    for FRAME in frames:
+        render_one(cid)

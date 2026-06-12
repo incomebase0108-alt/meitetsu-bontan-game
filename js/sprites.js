@@ -42,6 +42,24 @@ window.Sprites = (function() {
   // PNG差し替えの存在キャッシュ（archetypeId → 'ok' | 'none'）
   const SPRITE_CACHE = {};
 
+  // 2フレーム目 (<id>_2.png) があれば交互に切り替えて呼吸アニメにする
+  function startIdleFrames(img, path) {
+    const path2 = path.replace(/\.png$/i, '_2.png');
+    if (SPRITE_CACHE[path2] === 'none') return;
+    const probe = new Image();
+    probe.onload = () => {
+      SPRITE_CACHE[path2] = 'ok';
+      let flip = false;
+      const timer = setInterval(() => {
+        if (!img.isConnected) { clearInterval(timer); return; }
+        flip = !flip;
+        img.src = flip ? path2 : path;
+      }, 550);
+    };
+    probe.onerror = () => { SPRITE_CACHE[path2] = 'none'; };
+    probe.src = path2;
+  }
+
   // charEl（.fighter 構造を持つ要素）に不良スプライトを適用する。
   // assets/characters/<archetypeId>.png があれば画像を優先（Blender製スプライト差し替え用）、
   // 無ければCSS描画。戻り値: 推奨スケール（ボス大型化等。位置側で transform scale に乗せる）
@@ -88,6 +106,7 @@ window.Sprites = (function() {
         head.style.display = 'none';
         body.style.display = 'none';
         pants.style.display = 'none';
+        startIdleFrames(img, path);
       };
       img.onerror = () => {
         SPRITE_CACHE[path] = 'none';

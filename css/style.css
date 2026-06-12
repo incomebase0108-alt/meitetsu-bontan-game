@@ -803,8 +803,15 @@ img.char-sprite {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+  transform-origin: 50% 100%;
+  animation: sprite-breathe 1.2s ease-in-out infinite;
   pointer-events: none;
   filter: drop-shadow(0 2px 2px rgba(0,0,0,0.35));
+}
+/* PNG剛体が銅像に見えないよう、足元基準で軽く伸縮する呼吸 */
+@keyframes sprite-breathe {
+  0%, 100% { transform: translateX(-50%) scale(1, 1); }
+  50% { transform: translateX(-50%) scale(1.015, 0.982); }
 }
 
 .hit-effect {
