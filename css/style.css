@@ -1343,6 +1343,72 @@ img.char-sprite {
   0% { transform: translateY(0) scale(0.5); opacity: 0.7; }
   100% { transform: translateY(-26px) scale(1.6); opacity: 0; }
 }
+/* 暴走族の単車（ライダーは腰を落として乗る） */
+.belt-f.riding {
+  animation: none;
+  transform: translateY(16px);
+}
+.dq-bike {
+  position: absolute;
+  bottom: -14px;
+  left: -12px;
+  width: 112px;
+  height: 36px;
+  z-index: 2;
+  pointer-events: none;
+}
+/* 車体 */
+.dq-bike b {
+  position: absolute;
+  left: 10px;
+  right: 14px;
+  top: 8px;
+  height: 13px;
+  background: linear-gradient(180deg, #d23a2a, #7e1a10);
+  border: 2px solid #000;
+  border-radius: 4px 16px 4px 8px;
+}
+/* ハンドル */
+.dq-bike b::before {
+  content: '';
+  position: absolute;
+  right: 4px;
+  top: -16px;
+  width: 4px;
+  height: 18px;
+  background: #999;
+  border: 1px solid #000;
+  transform: rotate(20deg);
+}
+/* 排気煙 */
+.dq-bike b::after {
+  content: '';
+  position: absolute;
+  left: -18px;
+  bottom: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(190,190,190,0.6);
+  animation: exhaust-puff 0.5s linear infinite;
+}
+@keyframes exhaust-puff {
+  0% { transform: translateX(0) scale(0.5); opacity: 0.8; }
+  100% { transform: translateX(-22px) scale(1.7); opacity: 0; }
+}
+/* 車輪 */
+.dq-bike i.bw {
+  position: absolute;
+  bottom: -4px;
+  width: 27px;
+  height: 27px;
+  background: radial-gradient(circle, #555 0 22%, #111 22% 100%);
+  border: 3px solid #2c2c2c;
+  border-radius: 50%;
+}
+.dq-bike i.bw.f { right: -4px; }
+.dq-bike i.bw.b { left: -2px; }
+
 /* 立ち上がり（絡みモード突入） */
 .belt-f.stand-up { animation: stand-hop 0.32s ease-out; }
 @keyframes stand-hop {

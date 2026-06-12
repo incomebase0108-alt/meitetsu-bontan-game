@@ -541,6 +541,8 @@ window.Battle = (function() {
     victims.forEach(e => {
       // たむろ中の雑魚への先制攻撃でも集団が起動する
       if (e.state === 'loiter') activateWave(e.wave);
+      // ライダーは殴られたら単車から吹っ飛ぶ
+      if (e.kind === 'rider') dismountRider(e);
       const isCrit = Math.random() < 0.12;
       let dmg = Math.max(1, Math.floor(p.atk * mv.mult * (isCrit ? 1.8 : 1) * (smash ? 1.4 : 1) * (1 + Math.min(0.4, S.combo * 0.06)) + Math.random() * 3 - 1));
       e.hp -= dmg;
@@ -551,7 +553,7 @@ window.Battle = (function() {
       setTimeout(() => window.Audio8 && window.Audio8.SFX[(isCrit || smash) ? 'critical' : 'hit'](), 60);
 
       const dead = e.hp <= 0;
-      const knockdown = dead || mv.down || isCrit || smash;
+      const knockdown = dead || mv.down || isCrit || smash || e.kind === 'rider';
       if (e.attackToken) { releaseToken(e); }
       e.move = null;
       if (knockdown) {
@@ -681,6 +683,39 @@ window.Battle = (function() {
     }
   }
 
+  // 暴走族ライダー：単車で画面を横切りプレイヤーを轢きに来る。殴れば一撃で吹っ飛ぶ
+  function spawnRider() {
+    const HAIRS = ['#15110c', '#e8c34a', '#e8c34a', '#6b3f16'];
+    const rider = makeEntity('mob', 'yankee-basic', {
+      name: '暴走族',
+      hp: Math.max(4, Math.ceil(S.bossData.hp * 0.12)),
+      atk: Math.max(3, Math.round(S.bossData.atk * 0.6)),
+      speed: 430,
+      color: '#16161c',
+      bontanColor: '#101014',
+      gakOverride: '#16161c',
+      hairOverride: HAIRS[Math.floor(Math.random() * HAIRS.length)]
+    }, S.cam + S.viewW + 140, 16 + Math.random() * (S.yMax - 16));
+    rider.kind = 'rider';
+    rider.state = 'ride';
+    rider.dir = -1;
+    rider.fEl.classList.add('riding');
+    const bike = document.createElement('div');
+    bike.className = 'dq-bike';
+    bike.innerHTML = '<b></b><i class="bw f"></i><i class="bw b"></i>';
+    rider.fEl.appendChild(bike);
+    S.enemies.push(rider);
+    setTimeout(() => { if (S && rider.state === 'ride') showTaunt(rider, 'どけどけぇーー！！'); }, 350);
+    window.Audio8 && window.Audio8.SFX.dash && window.Audio8.SFX.dash();
+  }
+
+  // ライダーから単車を外す（殴り落とした時）
+  function dismountRider(e) {
+    e.fEl.classList.remove('riding');
+    const bk = e.fEl.querySelector('.dq-bike');
+    if (bk) bk.remove();
+  }
+
   // たむろ集団が絡んでくる（接近 or 先制攻撃で発動）
   function activateWave(waveIdx) {
     const w = S.waves[waveIdx];
@@ -753,8 +788,17 @@ window.Battle = (function() {
         spawnBoss();
       }
     }
-    // 戦闘中（たむろ以外の敵がいる）はカメラロック
-    const fighting = S.enemies.some(e => e.state !== 'loiter');
+    // 暴走族ライダーの襲来（進行度トリガー、駅ごとに2回）
+    for (const r of S.riderEvents) {
+      if (!r.done && progress >= r.at) {
+        r.done = true;
+        log('<span style="color:#ff9966">🏍 単車の爆音が近づいてくる…！</span>');
+        setTimeout(() => { if (S && !S.finished) spawnRider(); }, 700);
+      }
+    }
+
+    // 戦闘中（たむろ・通過中ライダー以外の敵がいる）はカメラロック
+    const fighting = S.enemies.some(e => e.state !== 'loiter' && !(e.kind === 'rider' && e.state === 'ride'));
     if (fighting) {
       S.lockCam = true;
       S.wasFighting = true;
@@ -776,6 +820,17 @@ window.Battle = (function() {
   function updateEnemy(e, dt) {
     e.stateT += dt;
     e.cdLeft -= dt;
+
+    // 暴走族ライダー：走行中は直進、轢き判定、画面外で消える
+    if (e.kind === 'rider' && e.state === 'ride') {
+      e.x += e.dir * 430 * dt;
+      if (!e.hitDone && Math.abs(S.player.x - e.x) < 50 && Math.abs(S.player.y - e.y) < 26) {
+        e.hitDone = true;
+        hurtPlayer(e, 1.6, '単車アタック');
+      }
+      if (e.x < S.cam - 180) { e.state = 'dead'; removeEntity(e); }
+      return;
+    }
 
     switch (e.state) {
       case 'loiter':
@@ -1040,6 +1095,7 @@ window.Battle = (function() {
       meter: 0, combo: 0, lastHitAt: 0,
       tokens: 2,
       stats: { hits: 0, misses: 0 },
+      riderEvents: [{ at: 0.3, done: false }, { at: 0.6, done: false }],
       log: [],
       lastT: performance.now(),
       pad: { mx: 0, my: 0 },
