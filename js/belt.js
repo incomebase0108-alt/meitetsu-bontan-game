@@ -108,8 +108,8 @@ window.Battle = (function() {
       { name: '瓦割り掌', mult: 2.5, weight: 2, anim: 'special', reach: 100 }
     ],
     'skinhead': [
-      { name: '青龍刀斬り', mult: 1.6, weight: 4, anim: 'kick', reach: 105 },
-      { name: '兜割り', mult: 2.4, weight: 2, anim: 'special', reach: 112 },
+      { name: '青龍刀斬り', mult: 1.6, weight: 4, anim: 'slash', reach: 105 },
+      { name: '兜割り', mult: 2.4, weight: 2, anim: 'slash', reach: 112 },
       { name: '突進斬り', mult: 2.0, weight: 2, anim: 'dash' },
       { name: '刀を構える', weight: 1, anim: 'guard' }
     ]
@@ -202,7 +202,7 @@ window.Battle = (function() {
   }
 
   function setAnim(e, anim, dur) {
-    e.fEl.classList.remove('act-punch', 'act-kick', 'act-special', 'act-dash', 'act-throw');
+    e.fEl.classList.remove('act-punch', 'act-kick', 'act-special', 'act-dash', 'act-throw', 'act-slash');
     if (anim) {
       void e.fEl.offsetWidth;
       e.fEl.classList.add('act-' + anim);
@@ -246,6 +246,18 @@ window.Battle = (function() {
     fx.classList.remove('show');
     void fx.offsetWidth;
     fx.classList.add('show');
+  }
+
+  // 斬撃の軌跡（青龍刀を振った時の白い弧）
+  function showSlash(att) {
+    const stage = $('battle-stage');
+    const p = screenPos(att);
+    const s = document.createElement('div');
+    s.className = 'slash-arc';
+    s.style.left = (p.x + att.dir * 30 - 38) + 'px';
+    s.style.top = (p.y - SPR_H * 0.82) + 'px';
+    stage.appendChild(s);
+    setTimeout(() => s.remove(), 320);
   }
 
   // ヒット火花（命中地点に星形スパーク）
@@ -769,8 +781,9 @@ window.Battle = (function() {
         } else {
           if (!e.hitDone && e.stateT >= 0.18) {
             e.hitDone = true;
+            if (mv.anim === 'slash') showSlash(e); // 青龍刀の斬撃軌跡
             if (canHit(e, S.player, mv.reach, 30)) hurtPlayer(e, mv.mult, mv.name);
-            const sfx = { punch: 'punch', kick: 'kick', special: 'special', throw: 'throw' }[mv.anim] || 'punch';
+            const sfx = { punch: 'punch', kick: 'kick', special: 'special', throw: 'throw', slash: 'kick' }[mv.anim] || 'punch';
             window.Audio8 && window.Audio8.SFX[sfx] && window.Audio8.SFX[sfx]();
           }
           if (e.stateT > 0.5) { e.state = 'idle'; e.cdLeft = e.cdAfter || 1.2; releaseToken(e); }

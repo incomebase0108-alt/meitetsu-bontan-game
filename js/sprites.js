@@ -42,6 +42,9 @@ window.Sprites = (function() {
   // PNG差し替えの存在キャッシュ（archetypeId → 'ok' | 'none'）
   const SPRITE_CACHE = {};
 
+  // スプライト画像のキャッシュバスター（画像を差し替えたらここを更新）
+  const SPRITE_VER = '?v=20260612-2';
+
   // 2フレーム目 (<id>_2.png) があれば交互に切り替えて呼吸アニメにする
   function startIdleFrames(img, path) {
     const path2 = path.replace(/\.png$/i, '_2.png');
@@ -53,11 +56,11 @@ window.Sprites = (function() {
       const timer = setInterval(() => {
         if (!img.isConnected) { clearInterval(timer); return; }
         flip = !flip;
-        img.src = flip ? path2 : path;
+        img.src = (flip ? path2 : path) + SPRITE_VER;
       }, 550);
     };
     probe.onerror = () => { SPRITE_CACHE[path2] = 'none'; };
-    probe.src = path2;
+    probe.src = path2 + SPRITE_VER;
   }
 
   // charEl（.fighter 構造を持つ要素）に不良スプライトを適用する。
@@ -112,7 +115,7 @@ window.Sprites = (function() {
         SPRITE_CACHE[path] = 'none';
         tryLoad(i + 1);
       };
-      img.src = path;
+      img.src = path + SPRITE_VER;
     })(0);
 
     return v.scale || (data.isBig ? 1.22 : 1);
