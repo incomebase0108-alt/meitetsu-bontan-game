@@ -545,6 +545,58 @@ body {
   top: -7px;
 }
 
+/* スキンヘッド（坊主頭ドーム） */
+.dq-dome {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 22px;
+  background: var(--skin, #f0c08a);
+  border: 2px solid #000;
+  border-bottom: none;
+  border-radius: 55% 55% 0 0;
+  z-index: 2;
+}
+/* 頭の入れ墨 */
+.dq-tattoo {
+  position: absolute;
+  top: 5px;
+  right: 4px;
+  font-size: 11px;
+  font-weight: 900;
+  color: #2a6fb0;
+  transform: rotate(12deg);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* 青龍刀（常時携帯、攻撃時は体ごと振る） */
+.dq-blade {
+  position: absolute;
+  right: -24px;
+  top: -14px;
+  width: 15px;
+  height: 58px;
+  background: linear-gradient(105deg, #e8e8ee 40%, #9aa0aa 60%);
+  clip-path: polygon(28% 0, 72% 0, 100% 74%, 50% 100%, 4% 74%);
+  transform: rotate(10deg);
+  z-index: 3;
+  filter: drop-shadow(1px 1px 0 #000);
+}
+.dq-blade::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  width: 6px;
+  height: 12px;
+  transform: translateX(-50%);
+  background: #5a2c10;
+  border: 1px solid #000;
+}
+
 /* 改造学ラン（長ラン）：詰襟＋金ボタン */
 .fighter .char-body {
   position: relative;
@@ -1462,5 +1514,16 @@ img.char-sprite {
   -webkit-user-select: text;
 }
 .edit-row input:focus { border-color: #ff9933; outline: none; }
+.edit-row select {
+  flex: 1;
+  min-width: 0;
+  background: #222;
+  border: 1px solid #555;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px;
+  border-radius: 4px;
+}
 .edit-actions { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
 .edit-actions .big-btn { padding: 10px 16px; font-size: 15px; min-height: 44px; margin: 6px 2px; }

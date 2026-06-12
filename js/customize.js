@@ -4,6 +4,26 @@ window.BossEdit = (function() {
   const KEY = 'meitetsu-bontan-custom-v1';
   let defaults = null; // 初期値スナップショット
 
+  // ボスに選べるキャラ（見た目＋技パターンが変わる）
+  const ARCH_LABELS = {
+    'yankee-basic':  '標準不良',
+    'yankee-fisher': '漁師ヤンキー',
+    'yankee-fire':   '炎の不良',
+    'kid-boss':      'ガキ大将',
+    'samurai-yanki': '侍ヤンキー（木刀）',
+    'matcha-boss':   '抹茶番長',
+    'girl-yankee':   'スケバン',
+    'big-boss':      '巨漢',
+    'final-boss':    '白ラン総長',
+    'yakuza':        '極道（サングラス）',
+    'gambler-boss':  '博打うち',
+    'thrower-boss':  '投擲使い',
+    'onsen-boss':    '温泉の主',
+    'riezent-boss':  '特大リーゼント',
+    'karate-boss':   '空手家',
+    'skinhead':      'スキンヘッド（入れ墨・青龍刀）'
+  };
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -21,7 +41,7 @@ window.BossEdit = (function() {
     if (defaults) return;
     defaults = {};
     window.STATIONS.forEach(st => {
-      defaults[st.id] = { name: st.enemy.name, title: st.enemy.title, voice: st.enemy.voice };
+      defaults[st.id] = { name: st.enemy.name, title: st.enemy.title, voice: st.enemy.voice, archetypeId: st.enemy.archetypeId };
     });
   }
 
@@ -35,6 +55,8 @@ window.BossEdit = (function() {
       st.enemy.name = o.name || d.name;
       st.enemy.title = o.title || d.title;
       st.enemy.voice = o.voice || d.voice;
+      st.enemy.archetypeId = o.archetypeId || d.archetypeId;
+      st.enemy._customArch = !!o.archetypeId; // 選択時は駅専用画像より選んだ見た目を優先
     });
   }
 
@@ -43,11 +65,15 @@ window.BossEdit = (function() {
     const list = document.getElementById('edit-list');
     list.innerHTML = window.STATIONS.map(st => {
       const mark = st.isFinalBoss ? '👑' : (st.isMidBoss ? '⚔️' : '');
+      const opts = Object.keys(ARCH_LABELS).map(k =>
+        `<option value="${k}" ${st.enemy.archetypeId === k ? 'selected' : ''}>${ARCH_LABELS[k]}${defaults[st.id].archetypeId === k ? '（標準）' : ''}</option>`
+      ).join('');
       return `<div class="edit-row" data-id="${st.id}">
         <div class="edit-station">${esc(st.name)}駅 ${mark}</div>
         <label>名前 <input class="ed-name" maxlength="16" value="${esc(st.enemy.name)}" placeholder="${esc(defaults[st.id].name)}"></label>
         <label>二つ名 <input class="ed-title" maxlength="26" value="${esc(st.enemy.title)}" placeholder="${esc(defaults[st.id].title)}"></label>
         <label>セリフ <input class="ed-voice" maxlength="44" value="${esc(st.enemy.voice)}" placeholder="${esc(defaults[st.id].voice)}"></label>
+        <label>キャラ <select class="ed-arch">${opts}</select></label>
       </div>`;
     }).join('');
   }
@@ -61,10 +87,12 @@ window.BossEdit = (function() {
       const name = row.querySelector('.ed-name').value.trim();
       const title = row.querySelector('.ed-title').value.trim();
       const voice = row.querySelector('.ed-voice').value.trim();
+      const arch = row.querySelector('.ed-arch').value;
       const o = {};
       if (name && name !== d.name) o.name = name;
       if (title && title !== d.title) o.title = title;
       if (voice && voice !== d.voice) o.voice = voice;
+      if (arch && arch !== d.archetypeId) o.archetypeId = arch;
       if (Object.keys(o).length) c[id] = o;
     });
     saveCustom(c);

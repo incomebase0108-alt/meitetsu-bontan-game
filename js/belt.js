@@ -106,6 +106,12 @@ window.Battle = (function() {
       { name: '上段蹴り', mult: 1.8, weight: 3, anim: 'kick', reach: 98 },
       { name: '型', weight: 1, anim: 'guard' },
       { name: '瓦割り掌', mult: 2.5, weight: 2, anim: 'special', reach: 100 }
+    ],
+    'skinhead': [
+      { name: '青龍刀斬り', mult: 1.6, weight: 4, anim: 'kick', reach: 105 },
+      { name: '兜割り', mult: 2.4, weight: 2, anim: 'special', reach: 112 },
+      { name: '突進斬り', mult: 2.0, weight: 2, anim: 'dash' },
+      { name: '刀を構える', weight: 1, anim: 'guard' }
     ]
   };
 
@@ -658,13 +664,14 @@ window.Battle = (function() {
   function spawnBoss() {
     const st = S.station;
     const d = S.bossData;
-    // 駅専用ボス画像があれば最優先（assets/characters/boss/<駅id>.png）
+    // 駅専用ボス画像があれば最優先（assets/characters/boss/<駅id>.png）。
+    // ただしボス編集でキャラを変更している場合は駅専用画像をスキップ（選んだ見た目を尊重）
+    const arch = d.archetypeId || 'yankee-basic';
     const bossData = {
       ...d,
-      spritePaths: [
-        `assets/characters/boss/${S.stationId}.png`,
-        `assets/characters/${d.archetypeId || 'yankee-basic'}.png`
-      ]
+      spritePaths: d._customArch
+        ? [`assets/characters/${arch}.png`]
+        : [`assets/characters/boss/${S.stationId}.png`, `assets/characters/${arch}.png`]
     };
     const boss = makeEntity('boss', d.archetypeId || 'yankee-basic', bossData, S.cam + S.viewW + 80, S.yMax * 0.5);
     boss.kind = 'boss';

@@ -20,11 +20,15 @@ window.Sprites = (function() {
     'thrower-boss':  { hair: '#33200c', acc: '🎯' },
     'onsen-boss':    { hair: '#5a4a42', acc: '♨️' },
     'riezent-boss':  { hair: '#050505', acc: '💈', pompXL: true },
-    'karate-boss':   { hair: '#1a1a1a', acc: '🥋', scar: true }
+    'karate-boss':   { hair: '#1a1a1a', acc: '🥋', scar: true },
+    'skinhead':      { bald: true, tattoo: true, blade: true, skin: '#e8b486', gak: '#26262e', scar: true }
   };
 
-  // リーゼント頭のHTML（CSSで描画）
+  // リーゼント頭（またはスキンヘッド）のHTML（CSSで描画）
   function delinquentHeadHTML(v) {
+    const hair = v.bald
+      ? `<div class="dq-dome"></div>${v.tattoo ? '<div class="dq-tattoo">龍</div>' : ''}`
+      : `<div class="dq-hair${v.pompXL ? ' xl' : ''}"><div class="dq-pomp"></div></div>`;
     return `
       <div class="dq-face">
         <div class="dq-brow l"></div><div class="dq-brow r"></div>
@@ -32,7 +36,7 @@ window.Sprites = (function() {
         <div class="dq-mouth"></div>
         ${v.scar ? '<div class="dq-scar"></div>' : ''}
       </div>
-      <div class="dq-hair${v.pompXL ? ' xl' : ''}"><div class="dq-pomp"></div></div>`;
+      ${hair}`;
   }
 
   // PNG差し替えの存在キャッシュ（archetypeId → 'ok' | 'none'）
@@ -62,7 +66,8 @@ window.Sprites = (function() {
     charEl.style.setProperty('--skin', v.skin || '#f0c08a');
     charEl.style.setProperty('--bontan', data.bontanColor || '#1a1a1a');
     head.innerHTML = delinquentHeadHTML(v);
-    body.innerHTML = v.sarashi ? '<div class="dq-sarashi"></div>' : '';
+    body.innerHTML = (v.sarashi ? '<div class="dq-sarashi"></div>' : '') +
+                     (v.blade ? '<div class="dq-blade"></div>' : ''); // 青龍刀
     body.classList.toggle('white-gak', !!v.white);
 
     // PNG差し替え（候補を順に試す：駅専用ボス画像 → アーキタイプ画像 → CSS描画のまま）
