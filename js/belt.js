@@ -702,7 +702,7 @@ window.Battle = (function() {
     rider.fEl.classList.add('riding');
     const bike = document.createElement('div');
     bike.className = 'dq-bike';
-    bike.innerHTML = '<b></b><i class="bw f"></i><i class="bw b"></i>';
+    bike.innerHTML = '<u class="muf"></u><b></b><u class="cowl"></u><i class="bw f"></i><i class="bw b"></i>';
     rider.fEl.appendChild(bike);
     S.enemies.push(rider);
     setTimeout(() => { if (S && rider.state === 'ride') showTaunt(rider, 'どけどけぇーー！！'); }, 350);
