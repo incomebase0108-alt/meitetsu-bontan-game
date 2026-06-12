@@ -43,7 +43,7 @@ window.Sprites = (function() {
   const SPRITE_CACHE = {};
 
   // スプライト画像のキャッシュバスター（画像を差し替えたらここを更新）
-  const SPRITE_VER = '?v=20260612-11';
+  const SPRITE_VER = '?v=20260612-12';
 
   // ポーズ画像があるか調べる (キャッシュ付き)
   function probeSprite(path, cb) {
