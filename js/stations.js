@@ -473,7 +473,7 @@ window.STATION_ARCHETYPE = {
   // 西尾線
   'kami-yokosuka':      'yankee-basic',
   'fukuchi':            'gambler-boss',     // フク兄ィ：博打使い
-  'nishio':             'matcha-boss',      // 抹茶の総番
+  'nishio':             'skinhead',         // 西尾はスキンヘッド（入れ墨・青龍刀）固定（2026-06-12 hoshiさん指定）
   'nishio-guchi':       'yankee-basic',
   'sakuramachi-mae':    'thrower-boss',     // マチオ：シャッター叩き
   'yonezu':             'big-boss',         // 米兄ィ：米俵パワー
