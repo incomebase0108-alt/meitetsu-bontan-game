@@ -1083,10 +1083,41 @@ img.char-sprite {
   position: absolute;
   left: -200px;
   bottom: 22%;
-  font-size: 60px;
-  letter-spacing: -10px;
+  display: flex;
+  gap: 3px;
   z-index: 3;
-  filter: drop-shadow(2px 2px 0 #000);
+  filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.45));
+}
+/* 名鉄電車（スカーレット一色） */
+.mt-car {
+  width: 84px;
+  height: 42px;
+  background: linear-gradient(180deg, #e8392b 0 12%, #d32f21 12% 68%, #a31f13 68% 100%);
+  border: 2px solid #571008;
+  border-radius: 6px 6px 4px 4px;
+  position: relative;
+}
+.mt-car.head { border-radius: 18px 6px 4px 4px; } /* 先頭車の丸み */
+.mt-car::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  right: 7px;
+  height: 13px;
+  background: repeating-linear-gradient(90deg, #cfe7f5 0 15px, #571008 15px 19px);
+  border: 1px solid #571008;
+}
+.mt-car::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 12px;
+  width: 12px;
+  height: 12px;
+  background: #1c1c1c;
+  border-radius: 50%;
+  box-shadow: 44px 0 0 #1c1c1c;
 }
 .train-sprite.moving {
   animation: train-cross 2.5s linear forwards;

@@ -43,7 +43,7 @@ window.Sprites = (function() {
   const SPRITE_CACHE = {};
 
   // スプライト画像のキャッシュバスター（画像を差し替えたらここを更新）
-  const SPRITE_VER = '?v=20260612-3';
+  const SPRITE_VER = '?v=20260612-4';
 
   // ポーズ画像があるか調べる (キャッシュ付き)
   function probeSprite(path, cb) {
@@ -80,7 +80,7 @@ window.Sprites = (function() {
       img.src = cycle[idx] + SPRITE_VER;
     }, 280);
 
-    const ACT = ['act-punch', 'act-kick', 'act-special', 'act-dash', 'act-throw'];
+    const ACT = ['act-punch', 'act-kick', 'act-special', 'act-dash', 'act-throw', 'act-slash'];
     const mo = new MutationObserver(() => {
       if (!img.isConnected) { mo.disconnect(); return; }
       const cl = charEl.classList;
