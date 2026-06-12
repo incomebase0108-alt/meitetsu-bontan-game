@@ -186,57 +186,78 @@ def fist(p, loc, r=0.050):
 
 
 def face(p, cz, r, cfg):
-    """顔: 目(白目+虹彩)・怒り眉・鼻・への字口+歯・耳・傷"""
+    """顔: 三白眼の睨み・極太の八の字眉・眉間の皺・への字大口+食いしばり・エラ顎・青髭・傷"""
     skin = mat("skin", PAL["skin"])
+    skin_dk = mat("skin_dk", C(0.72, 0.52, 0.40), 0, 0.85)
     ew = mat("eye_w", PAL["eye_w"], 0, 0.35)
     ir = mat("iris", PAL["iris"], 0, 0.3)
     brow = mat("brow", cfg.get("brow", cfg["hair"]), 0, 0.7)
-    # 顎(角ばった顎) と 頬骨
-    sph((r * 0.14, 0, cz - r * 0.52), r * 0.80, skin, scale=(0.98, 0.84, 0.76), parent=p)
+    # 顎: 大きく角ばったエラ + 突き出る顎先
+    sph((r * 0.10, 0, cz - r * 0.55), r * 0.86, skin, scale=(1.00, 0.90, 0.78), parent=p)
+    for sy in (1, -1):  # エラの角
+        sph((r * 0.02, sy * r * 0.60, cz - r * 0.58), r * 0.30, skin, parent=p)
+    sph((r * 0.80, 0, cz - r * 0.88), r * 0.26, skin, scale=(0.9, 0.85, 0.7), parent=p)  # 顎先
+    # 頬骨 (高く張る)
     for sy in (1, -1):
-        sph((r * 0.40, sy * r * 0.55, cz - r * 0.08), r * 0.28, skin, parent=p)
-    # 鼻
-    sph((r * 0.97, 0, cz - r * 0.16), r * 0.14, skin, scale=(0.85, 0.6, 1.1), parent=p)
-    sph((r * 0.88, 0, cz + r * 0.06), r * 0.09, skin, scale=(0.9, 0.5, 1.7), parent=p)
-    # 目: 顔正面から±27度 / 大きめ・吊り目 (sunglasses指定なら黒レンズ)
+        sph((r * 0.42, sy * r * 0.58, cz + r * 0.04), r * 0.27, skin, parent=p)
+    # 青髭 (顎まわりの剃り跡。口より奥に収める)
+    sph((r * 0.26, 0, cz - r * 0.76), r * 0.58, skin_dk, scale=(0.70, 0.78, 0.44), parent=p)
+    # 鼻: 喧嘩鼻 (低く幅広)
+    sph((r * 0.96, 0, cz - r * 0.18), r * 0.165, skin, scale=(0.95, 0.80, 0.95), parent=p)
+    sph((r * 0.88, 0, cz + r * 0.04), r * 0.10, skin, scale=(0.9, 0.6, 1.5), parent=p)
+    # 目: 細い三白眼スリット + 上目遣いの睨み (sunglasses指定なら角型バイザー)
     for sy in (1, -1):
         th = D(27)
         ex, ey = r * math.cos(th) * 0.90, sy * r * math.sin(th) * 1.40
-        ez = cz + r * 0.06
+        ez = cz + r * 0.10
         if not cfg.get("sunglasses"):
-            sph((ex, ey, ez), r * 0.235, ew, scale=(0.40, 1.05, 0.80), rot=(sy * -8, 0, sy * 12), parent=p)
-            sph((ex + r * 0.075, ey - sy * r * 0.02, ez + r * 0.01), r * 0.135, ir, scale=(0.45, 0.95, 1.0), parent=p)
-            # 上まぶた (三白眼の睨み: 目の上を太い線で切る)
-            box((ex + r * 0.045, ey + sy * r * 0.01, ez + r * 0.135), (r * 0.095, r * 0.27, r * 0.06),
-                mat("lid", C(0.45, 0.30, 0.22), 0, 0.7), rot=(sy * -20, 4, sy * 12), parent=p, bevel=0.006)
-        # 怒り眉 (内側が下がる極太眉)
-        box((ex + r * 0.03, ey + sy * r * 0.02, ez + r * 0.34), (r * 0.14, r * 0.33, r * 0.105),
-            brow, rot=(sy * -24, 6, sy * 14), parent=p, bevel=0.012)
+            sph((ex, ey, ez), r * 0.21, ew, scale=(0.36, 0.95, 0.50), rot=(sy * -10, 0, sy * 14), parent=p)
+            sph((ex + r * 0.065, ey - sy * r * 0.02, ez + r * 0.015), r * 0.10, ir, scale=(0.45, 0.85, 1.0), parent=p)
+            # 重い上まぶた (目の上半分を潰す)
+            box((ex + r * 0.04, ey + sy * r * 0.01, ez + r * 0.105), (r * 0.10, r * 0.28, r * 0.075),
+                mat("lid", C(0.45, 0.30, 0.22), 0, 0.7), rot=(sy * -26, 4, sy * 14), parent=p, bevel=0.006)
+        # 極太の八の字眉 (目に密着・急角度)
+        box((ex + r * 0.035, ey + sy * r * 0.03, ez + r * 0.26), (r * 0.155, r * 0.40, r * 0.13),
+            brow, rot=(sy * -30, 6, sy * 17), parent=p, bevel=0.012)
+    # 眉間の縦皺 x2
+    for sy in (1, -1):
+        box((r * 0.95, sy * r * 0.065, cz + r * 0.30), (r * 0.045, r * 0.028, r * 0.15),
+            skin_dk, rot=(sy * 6, -12, 0), parent=p, bevel=0.004)
     if cfg.get("sunglasses"):
-        # ラップアラウンドの黒バイザー (両目を覆う一体型) + テンプル
+        # 角型の黒バイザー (任侠系。丸より角ばらせて凄みを出す) + テンプル
         lens = mat("lens", C(0.03, 0.03, 0.045), 0.35, 0.12)
-        sph((r * 0.80, 0, cz + r * 0.07), r * 0.30, lens,
-            scale=(0.55, 2.05, 0.78), parent=p)
+        box((r * 0.80, 0, cz + r * 0.10), (r * 0.30, r * 1.45, r * 0.36), lens, parent=p, bevel=0.015)
         for sy in (1, -1):
-            seg((r * 0.42, sy * r * 0.80, cz + r * 0.08), (-r * 0.05, sy * r * 0.92, cz + r * 0.00),
+            box((r * 0.55, sy * r * 0.74, cz + r * 0.11), (r * 0.14, r * 0.34, r * 0.34), lens,
+                rot=(0, 0, sy * 35), parent=p, bevel=0.012)
+            seg((r * 0.30, sy * r * 0.88, cz + r * 0.10), (-r * 0.05, sy * r * 0.94, cz + r * 0.02),
                 r * 0.045, r * 0.035, lens, parent=p)
-    # 口: への字 + 食いしばった歯
-    mz = cz - r * 0.60
-    box((r * 0.80, 0, mz), (r * 0.05, r * 0.32, r * 0.105), mat("mouth", PAL["mouth"], 0, 0.5),
+    # 口: 大きいへの字 + 食いしばった歯 + 下がり切った口角
+    mz = cz - r * 0.64
+    box((r * 0.78, 0, mz), (r * 0.055, r * 0.42, r * 0.115), mat("mouth", PAL["mouth"], 0, 0.5),
         rot=(0, 10, 0), parent=p, bevel=0.008)
-    box((r * 0.825, 0, mz + r * 0.005), (r * 0.04, r * 0.24, r * 0.055), mat("teeth", PAL["teeth"], 0, 0.4),
+    box((r * 0.805, 0, mz + r * 0.005), (r * 0.045, r * 0.33, r * 0.06), mat("teeth", PAL["teeth"], 0, 0.4),
         rot=(0, 10, 0), parent=p, bevel=0.005)
-    for sy in (1, -1):  # 口角を下げる
-        box((r * 0.74, sy * r * 0.19, mz + r * 0.075), (r * 0.045, r * 0.10, r * 0.05),
-            mat("mouth", PAL["mouth"], 0, 0.5), rot=(sy * 32, 0, 0), parent=p, bevel=0.006)
+    for sy in (1, -1):
+        box((r * 0.70, sy * r * 0.245, mz + r * 0.095), (r * 0.05, r * 0.13, r * 0.055),
+            mat("mouth", PAL["mouth"], 0, 0.5), rot=(sy * 40, 0, 0), parent=p, bevel=0.006)
+        # ほうれい線 (鼻横→口角)
+        box((r * 0.82, sy * r * 0.30, cz - r * 0.42), (r * 0.035, r * 0.028, r * 0.24),
+            skin_dk, rot=(sy * 16, -8, 0), parent=p, bevel=0.004)
     # 耳
     for sy in (1, -1):
         sph((-r * 0.06, sy * r * 0.94, cz - r * 0.10), r * 0.24, skin, scale=(0.55, 0.35, 0.85), parent=p)
-    # 頬傷 (カメラ側)
+    # 頬傷 (カメラ側・大きく)
     if cfg.get("scar"):
-        for k in range(3):
-            box((r * 0.52, -r * 0.76, cz - r * (0.14 + 0.15 * k)), (r * 0.11, r * 0.028, r * 0.04),
+        for k in range(4):
+            box((r * 0.50, -r * 0.76, cz - r * (0.04 + 0.16 * k)), (r * 0.13, r * 0.030, r * 0.045),
                 mat("scar", PAL["scar"], 0, 0.6), rot=(0, -16, -10), parent=p, bevel=0.004)
+    # 額の向こう傷 (X字。skinhead等の凶相用)
+    if cfg.get("face_scar_x"):
+        sc = mat("scar", PAL["scar"], 0, 0.6)
+        for a in (32, -32):
+            box((r * 0.66, -r * 0.46, cz + r * 0.62), (r * 0.035, r * 0.26, r * 0.05),
+                sc, rot=(a, -28, -18), parent=p, bevel=0.004)
 
 
 def pompadour(p, cz, r, cfg):
@@ -285,13 +306,15 @@ def head(p, cfg, sh_z, r):
     skin = mat("skin", PAL["skin"])
     cz = sh_z + r * 1.58
     sph((0, 0, cz), r, skin, scale=(0.95, 0.92, 1.04), parent=p)
-    cyl((0.005, 0, sh_z + r * 0.40), r * 0.42, r * 0.47, r * 1.15, skin, parent=p)  # 首
+    cyl((0.005, 0, sh_z + r * 0.40), r * 0.48, r * 0.52, r * 1.15, skin, parent=p)  # 極太の首
     face(p, cz, r, cfg)
     if cfg.get("skinhead"):
-        # 坊主頭: 地肌より僅かに暗い剃り跡 + 入れ墨
+        # 坊主頭: 地肌より僅かに暗い剃り跡 + 入れ墨 + 顎髭
         buzz = mat("buzz", C(0.80, 0.62, 0.49), 0, 0.8)
         sph((-r * 0.04, 0, cz + r * 0.30), r * 0.97, buzz, scale=(0.97, 0.94, 0.92), parent=p)
         skinhead_tattoo(p, cz, r)
+        goatee = mat("goatee", C(0.16, 0.13, 0.11), 0, 0.7)
+        sph((r * 0.82, 0, cz - r * 0.94), r * 0.20, goatee, scale=(0.92, 0.75, 0.58), parent=p)
     else:
         pompadour(p, cz, r, cfg)
     return cz
@@ -322,22 +345,48 @@ def bontan(p, cfg, hip_z, knee_z, bulk):
 
 
 def body_tattoo(p, sh_w, sh_z, hip_z):
-    """上半身の龍の入れ墨: 腹→胸→肩→上腕(カメラ側)に巻きつく"""
+    """上半身の和彫り: 龍の胴巻き(太)+二重コイル+波・雲文様+肩当て彫り(カメラ側)"""
     tat = mat("tattoo", PAL["tattoo"], 0, 0.75)
+    tat_r = mat("tattoo_r", C(0.55, 0.16, 0.12), 0, 0.75)   # 紅差し
+    # 龍の胴: 脇腹→胸→肩へ太く巻きつく
     pts = []
-    n = 14
+    n = 16
     for k in range(n):
         t = k / (n - 1)
-        z = hip_z + 0.06 + t * (sh_z - hip_z - 0.02)
-        a = D(-35 - 60 * t + 28 * math.sin(t * math.pi * 2.0))   # 脇腹→カメラ側肩へ回り込む
-        rr = sh_w * (0.68 + 0.24 * t)
+        z = hip_z + 0.05 + t * (sh_z - hip_z)
+        a = D(-30 - 65 * t + 30 * math.sin(t * math.pi * 2.2))
+        rr = sh_w * (0.70 + 0.24 * t)
         pts.append((rr * 0.62 * math.cos(a), rr * math.sin(a), z))
-    tube(pts, 0.013, tat, parent=p)
-    # 龍頭 (カメラ側の肩・鎖骨の上)
-    hx, hy, hz = sh_w * 0.26, -sh_w * 0.62, sh_z + 0.015
-    sph((hx, hy, hz), 0.036, tat, scale=(1.4, 0.6, 0.80), rot=(0, -18, -35), parent=p)
+    tube(pts, 0.019, tat, parent=p)
+    # 二重コイル (腹に巻く下段)
+    pts2 = []
+    for k in range(10):
+        t = k / 9.0
+        z = hip_z + 0.04 + t * 0.10
+        a = D(40 - 150 * t)
+        rr = sh_w * 0.70
+        pts2.append((rr * 0.62 * math.cos(a), rr * math.sin(a), z))
+    tube(pts2, 0.015, tat, parent=p)
+    # 龍頭 (カメラ側の鎖骨上・大きく) + 角 + 紅の目
+    hx, hy, hz = sh_w * 0.28, -sh_w * 0.62, sh_z + 0.02
+    sph((hx, hy, hz), 0.052, tat, scale=(1.5, 0.65, 0.85), rot=(0, -18, -35), parent=p)
     for sy in (1, -1):
-        cyl((hx - 0.014, hy + sy * 0.018, hz + 0.045), 0.006, 0.0018, 0.045, tat, rot=(sy * 18, -18, 0), parent=p)
+        cyl((hx - 0.02, hy + sy * 0.026, hz + 0.06), 0.008, 0.002, 0.06, tat, rot=(sy * 18, -18, 0), parent=p)
+    sph((hx + 0.045, hy - 0.02, hz + 0.018), 0.009, tat_r, parent=p)
+    # 波文様 (脇腹・カメラ側に半円弧を重ねる)
+    for k in range(3):
+        zz = hip_z + 0.10 + k * 0.085
+        torus((sh_w * (0.30 - 0.06 * k), -sh_w * (0.78 - 0.04 * k), zz), 0.040, 0.0095, tat,
+              rot=(78, -16, 20 + 10 * k), parent=p)
+    # 雲の渦 (胸上部と腹)
+    torus((sh_w * 0.50, -sh_w * 0.30, sh_z - 0.16), 0.026, 0.008, tat, rot=(0, 78, 0), parent=p)
+    torus((sh_w * 0.52, -sh_w * 0.18, hip_z + 0.13), 0.022, 0.0075, tat_r, rot=(0, 80, 15), parent=p)
+    # 肩当て彫り (カメラ側の三角筋を覆う環+放射)
+    dy = -sh_w * 0.92
+    torus((0.01, dy, sh_z + 0.035), sh_w * 0.30, 0.011, tat, rot=(8, 6, 0), scale=(0.95, 0.85, 1), parent=p)
+    for a in (-30, 10, 50):
+        box((0.01 + math.cos(D(a)) * sh_w * 0.20, dy - 0.015, sh_z - 0.05 + math.sin(D(a)) * sh_w * 0.18),
+            (0.045, 0.012, 0.016), tat, rot=(0, a, 0), parent=p, bevel=0.004)
 
 
 def bare_torso(p, cfg, hip_z, sh_z, sh_w, bulk):
@@ -496,9 +545,9 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
 def _shoulder_dir():
     """武器の軸方向 (ポーズで変化)。idleは肩担ぎ後上方=顔に被らない"""
     d = {
-        "idle":  (-0.76, -0.05, 0.65),
-        "idle2": (-0.71, -0.05, 0.70),
-        "idle3": (-0.66, -0.05, 0.75),
+        "idle":  (-0.85, -0.05, 0.52),
+        "idle2": (-0.81, -0.05, 0.57),
+        "idle3": (-0.77, -0.05, 0.62),
         "atk":   (0.55, -0.06, -0.62),   # 前下へ振り下ろした瞬間
         "hit":   (-0.55, -0.05, -0.72),  # 後ろ下へだらんと落ちる
         "grd":   (0.05, -0.02, 1.00),    # 体の前で縦に構える
@@ -761,17 +810,7 @@ def setup_scene():
     bg = world.node_tree.nodes.get("Background")
     bg.inputs["Color"].default_value = (1, 1, 1, 1)
     bg.inputs["Strength"].default_value = 0.42
-    # ゲームエンジンは左向き素材が正 (SPECの「右向き」は実装と逆、1号機が実機確認済み)。
-    # コンポジタでX反転して出力する。
-    scene.use_nodes = True
-    nt = scene.node_tree
-    for n in list(nt.nodes):
-        nt.nodes.remove(n)
-    rl = nt.nodes.new("CompositorNodeRLayers")
-    flip = nt.nodes.new("CompositorNodeFlip")
-    comp = nt.nodes.new("CompositorNodeComposite")
-    nt.links.new(rl.outputs["Image"], flip.inputs["Image"])
-    nt.links.new(flip.outputs["Image"], comp.inputs["Image"])
+    # (左右反転はレンダ後に flip_image_x() で行う。Blender5 は scene.node_tree 廃止のため)
 
 
 # ============================================================
@@ -781,7 +820,7 @@ def setup_scene():
 CHARS = {
     # ラスボス 総長アンジョー: 白特攻服・金龍刺繍・長身・金バット・銀白髪
     "shin-anjo": {
-        "H": 1.88, "bulk": 1.05, "sh": 1.08,
+        "H": 1.88, "bulk": 1.12, "sh": 1.14,
         "coat": PAL["white"], "coat_dk": PAL["offwhite"],
         "pants": PAL["white"], "pants_dk": PAL["offwhite"],
         "hair": PAL["hair_sil"], "brow": C(0.36, 0.38, 0.44), "inner": PAL["black"],
@@ -791,7 +830,7 @@ CHARS = {
     },
     # 中ボス 吉良の若殿マサキ: 紫・金刺繍・ヤセ長身・豪華木刀・頬傷
     "kira-yoshida": {
-        "H": 1.84, "bulk": 0.85, "sh": 0.93,
+        "H": 1.84, "bulk": 0.88, "sh": 0.98,
         "coat": PAL["purple"], "coat_dk": PAL["purple_dk"],
         "pants": PAL["purple_dk"], "pants_dk": PAL["black"],
         "hair": PAL["hair_blk"], "inner": PAL["black"],
@@ -802,20 +841,22 @@ CHARS = {
     # 中ボス 西尾: スキンヘッド+上半身裸入れ墨+サングラス+青龍刀 (hoshiさん指定 2026-06-12)
     #          駅カラーの深緑はボンタンに反映
     "nishio": {
-        "H": 1.80, "bulk": 1.05, "sh": 1.06,
+        "H": 1.80, "bulk": 1.15, "sh": 1.12,
         "coat": PAL["dgreen"], "coat_dk": PAL["dgreen_dk"],
         "pants": PAL["dgreen"], "pants_dk": PAL["dgreen_dk"],
         "hair": PAL["hair_blk"], "brow": PAL["hair_blk"],
         "weapon": "guandao", "skinhead": True, "shirtless": True, "sunglasses": True,
+        "face_scar_x": True,
         "out": ("boss", "nishio.png"),
     },
     # アーキタイプ17体目: スキンヘッドの殺し屋 (上半身裸・入れ墨・サングラス・青龍刀)
     "skinhead": {
-        "H": 1.82, "bulk": 1.08, "sh": 1.08,
+        "H": 1.82, "bulk": 1.18, "sh": 1.15,
         "coat": PAL["coal"], "coat_dk": PAL["black"],
         "pants": PAL["black"], "pants_dk": PAL["coal"],
         "hair": PAL["hair_blk"], "brow": PAL["hair_blk"],
         "weapon": "guandao", "skinhead": True, "shirtless": True, "sunglasses": True,
+        "face_scar_x": True,
         "out": (None, "skinhead.png"),
     },
 }
@@ -829,6 +870,7 @@ def render_one(cid):
     sub, fn = cfg.get("out", ("boss", cid + ".png"))
     fn = fn[:-4] + POSE_SUFFIX[POSE] + ".png"
     out = OUT_OVERRIDE or os.path.join(BOSS_DIR if sub == "boss" else CHAR_DIR, fn)
+    # 向きは右向きで出力 (a111d30 で確定。カメラ既定の向きのまま反転しない)
     bpy.context.scene.render.filepath = out
     bpy.ops.render.render(write_still=True)
     print("WROTE", out)
