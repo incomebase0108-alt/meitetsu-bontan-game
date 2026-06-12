@@ -1299,6 +1299,58 @@ img.char-sprite {
 .belt-f.invuln { animation: inv-blink 0.16s steps(2) infinite; }
 @keyframes inv-blink { 50% { opacity: 0.35; } }
 
+/* たむろ（ヤンキー座り）：しゃがんで低くなる */
+.belt-f.loiter {
+  animation: none;
+  transform: translateY(30px) scaleY(0.78);
+  transform-origin: 50% 100%;
+}
+/* タバコ＋立ちのぼる煙 */
+.belt-f .dq-ciga {
+  position: absolute;
+  top: 37px;
+  left: 61px;
+  width: 13px;
+  height: 3px;
+  background: #f0f0e8;
+  border: 1px solid #888;
+  z-index: 6;
+  pointer-events: none;
+}
+.belt-f .dq-ciga::before {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: -1px;
+  width: 4px;
+  height: 4px;
+  background: #ff5522;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #ff7744;
+}
+.belt-f .dq-ciga::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: -12px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(210,210,210,0.55);
+  animation: smoke-rise 1.7s ease-out infinite;
+}
+@keyframes smoke-rise {
+  0% { transform: translateY(0) scale(0.5); opacity: 0.7; }
+  100% { transform: translateY(-26px) scale(1.6); opacity: 0; }
+}
+/* 立ち上がり（絡みモード突入） */
+.belt-f.stand-up { animation: stand-hop 0.32s ease-out; }
+@keyframes stand-hop {
+  0% { transform: translateY(24px) scaleY(0.82); }
+  55% { transform: translateY(-10px) scaleY(1.04); }
+  100% { transform: translateY(0) scaleY(1); }
+}
+
 /* パンチの拳（attack中だけ前方に突き出る） */
 .belt-f .dq-fist {
   position: absolute;

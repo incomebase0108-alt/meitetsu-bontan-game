@@ -539,6 +539,8 @@ window.Battle = (function() {
     const smash = !mv.radial && mv.anim === 'punch' && S.combo >= 3 && S.combo % 3 === 0;
 
     victims.forEach(e => {
+      // たむろ中の雑魚への先制攻撃でも集団が起動する
+      if (e.state === 'loiter') activateWave(e.wave);
       const isCrit = Math.random() < 0.12;
       let dmg = Math.max(1, Math.floor(p.atk * mv.mult * (isCrit ? 1.8 : 1) * (smash ? 1.4 : 1) * (1 + Math.min(0.4, S.combo * 0.06)) + Math.random() * 3 - 1));
       e.hp -= dmg;
@@ -646,13 +648,13 @@ window.Battle = (function() {
     return waves.map(w => ({ ...w, spawned: false }));
   }
 
-  function spawnMobs(count) {
-    const st = S.station;
-    for (let i = 0; i < count; i++) {
+  // たむろ集団を配置（ヤンキー座り＋タバコ。プレイヤーが近づくと絡んでくる）
+  function spawnLoiterGroup(wave, waveIdx) {
+    const anchorX = wave.at * (S.stageW - S.viewW) + S.viewW * 0.6;
+    for (let i = 0; i < wave.mobs; i++) {
       const type = MOB_TYPES[Math.floor(Math.random() * MOB_TYPES.length)];
-      const fromRight = i !== 1; // 2人目だけ左から
-      const x = fromRight ? S.cam + S.viewW + 60 + i * 50 : S.cam - 60;
-      const y = Math.random() * S.yMax;
+      const x = anchorX + i * 56 + Math.random() * 24;
+      const y = 14 + Math.random() * (S.yMax - 14);
       // 色は駅ボスの色相をずらして個体差、髪は黒/茶/金髪からランダム
       const hue = (Math.random() * 80 - 40) | 0;
       const HAIRS = ['#15110c', '#15110c', '#e8c34a', '#6b3f16', '#e8c34a'];
@@ -668,9 +670,44 @@ window.Battle = (function() {
         spriteHue: hue // PNGスプライト時の色違い（hue-rotate）
       }, x, y);
       mob.type = type;
-      mob.cdLeft = 0.8 + Math.random();
+      mob.wave = waveIdx;
+      mob.state = 'loiter';
+      mob.dir = Math.random() < 0.5 ? -1 : 1; // たむろ中は適当な方向を向く
+      mob.fEl.classList.add('loiter');
+      const ciga = document.createElement('div');
+      ciga.className = 'dq-ciga';
+      mob.fEl.appendChild(ciga);
       S.enemies.push(mob);
     }
+  }
+
+  // たむろ集団が絡んでくる（接近 or 先制攻撃で発動）
+  function activateWave(waveIdx) {
+    const w = S.waves[waveIdx];
+    if (!w || w.activated) return;
+    w.activated = true;
+    const group = S.enemies.filter(e => e.wave === waveIdx);
+    group.forEach((e, i) => {
+      e.fEl.classList.remove('loiter');
+      const c = e.fEl.querySelector('.dq-ciga');
+      if (c) c.remove();
+      e.fEl.classList.add('stand-up');
+      setTimeout(() => e.fEl && e.fEl.classList.remove('stand-up'), 350);
+      if (e.state === 'loiter') e.state = 'idle';
+      e.cdLeft = 0.9 + i * 0.3;
+      e.dir = S.player.x > e.x ? 1 : -1;
+    });
+    const lines = [
+      '今ガン飛ばしただろ、お前！',
+      'なんだぁ？ケンカ売ってんのかぁ？',
+      'おうコラ、メンチ切ったな？',
+      '誰に断ってこの道歩いとんじゃ？',
+      '兄ちゃん、ええ度胸しとるのう…',
+      '見せもんじゃねぇぞコラ！'
+    ];
+    if (group[0]) showTaunt(group[0], lines[Math.floor(Math.random() * lines.length)]);
+    log('<span style="color:#ff9966">不良たちに絡まれた！</span>');
+    window.Audio8 && window.Audio8.SFX.guardBreak && window.Audio8.SFX.guardBreak();
   }
 
   function spawnBoss() {
@@ -709,23 +746,28 @@ window.Battle = (function() {
 
   function updateWaves() {
     const progress = S.cam / (S.stageW - S.viewW);
+    // ボスのみ進行度で出現（雑魚は最初からたむろ配置）
     for (const w of S.waves) {
-      if (!w.spawned && progress >= w.at - 0.001) {
+      if (w.boss && !w.spawned && progress >= w.at - 0.001) {
         w.spawned = true;
-        S.lockCam = true;
-        if (w.boss) spawnBoss();
-        else { spawnMobs(w.mobs); window.Audio8 && window.Audio8.SFX.menu(); }
-        return;
+        spawnBoss();
       }
     }
-    // ウェーブ全滅チェック
-    if (S.lockCam && S.enemies.length === 0) {
+    // 戦闘中（たむろ以外の敵がいる）はカメラロック
+    const fighting = S.enemies.some(e => e.state !== 'loiter');
+    if (fighting) {
+      S.lockCam = true;
+      S.wasFighting = true;
+    } else {
       S.lockCam = false;
-      const more = S.waves.some(w => !w.spawned);
-      if (more) {
-        $('go-arrow').classList.add('show');
-        setTimeout(() => $('go-arrow').classList.remove('show'), 2200);
-        window.Audio8 && window.Audio8.SFX.levelup && window.Audio8.SFX.levelup();
+      if (S.wasFighting) {
+        S.wasFighting = false;
+        const more = S.enemies.length > 0 || S.waves.some(w => w.boss && !w.spawned);
+        if (more) {
+          $('go-arrow').classList.add('show');
+          setTimeout(() => $('go-arrow').classList.remove('show'), 2200);
+          window.Audio8 && window.Audio8.SFX.levelup && window.Audio8.SFX.levelup();
+        }
       }
     }
   }
@@ -736,6 +778,10 @@ window.Battle = (function() {
     e.cdLeft -= dt;
 
     switch (e.state) {
+      case 'loiter':
+        // たむろ中：プレイヤーが近づくと一斉に立ち上がって絡む
+        if (Math.abs(S.player.x - e.x) < 190) activateWave(e.wave);
+        return;
       case 'hurt':
         if (e.stateT > HURT_T) { e.state = 'idle'; e.fEl.classList.remove('hit'); }
         return;
@@ -1020,6 +1066,9 @@ window.Battle = (function() {
     player.maxHp = gp.maxHp;
     player.dir = 1;
     S.player = player;
+
+    // 雑魚はたむろ集団として最初からステージに配置
+    S.waves.forEach((w, wi) => { if (!w.boss) spawnLoiterGroup(w, wi); });
 
     setupInput();
     updateHpUI();
