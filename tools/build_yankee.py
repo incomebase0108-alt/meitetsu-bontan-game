@@ -48,7 +48,7 @@ D = math.radians
 def C(r, g, b): return (r, g, b, 1.0)
 
 PAL = {
-    "skin":      C(0.91, 0.71, 0.55),
+    "skin":      C(0.95, 0.76, 0.59),
     "white":     C(0.94, 0.93, 0.92),
     "offwhite":  C(0.82, 0.81, 0.80),
     "black":     C(0.07, 0.07, 0.09),
@@ -185,8 +185,56 @@ def fist(p, loc, r=0.050):
     sph((loc[0] + r * 0.45, loc[1], loc[2] + r * 0.1), r * 0.72, skin, scale=(0.9, 0.8, 1.0), parent=p)
 
 
+def face_player(p, cz, r, cfg):
+    """主人公専用の顔: 切れ長のはっきりした目+キャッチライト・直線キリ眉・通った鼻筋・不敵な片笑み"""
+    skin = mat("skin", PAL["skin"])
+    skin_dk = mat("skin_dk", C(0.78, 0.56, 0.42), 0, 0.85)
+    # シャープな輪郭 (顎は細めのV字・エラ張りなし)
+    sph((r * 0.16, 0, cz - r * 0.52), r * 0.78, skin, scale=(0.92, 0.80, 0.78), parent=p)
+    sph((r * 0.74, 0, cz - r * 0.90), r * 0.20, skin, scale=(0.85, 0.70, 0.62), parent=p)
+    for sy in (1, -1):
+        sph((r * 0.40, sy * r * 0.54, cz - r * 0.02), r * 0.24, skin, parent=p)
+    # 通った鼻筋 (丸断面の隆起: 角柱だと横から灰色の板に見える)
+    sph((r * 0.93, 0, cz - r * 0.05), r * 0.09, skin, scale=(0.55, 0.52, 1.65), rot=(0, 13, 0), parent=p)
+    sph((r * 1.00, 0, cz - r * 0.23), r * 0.10, skin, scale=(0.78, 0.60, 0.78), parent=p)
+    # 目: 大きめ切れ長・濃茶虹彩+黒瞳+白キャッチライト (虚ろ解消の要)
+    ew = mat("eye_w_p", C(0.98, 0.98, 0.96), 0, 0.3)
+    iris = mat("iris_p", C(0.32, 0.17, 0.08), 0, 0.25)
+    pupil = mat("pupil_p", C(0.05, 0.04, 0.04), 0, 0.25)
+    hl = mat("hl_p", C(1.0, 1.0, 1.0), 0, 0.2)
+    lash = mat("lash_p", C(0.06, 0.06, 0.09), 0, 0.6)
+    for sy in (1, -1):
+        near = (sy == -1)                      # 両目ともカメラへ向ける (3/4顔の描き目)。奥目は小さめ
+        th = D(17 if near else 20)
+        ex, ey = r * math.cos(th) * 0.90, sy * r * math.sin(th) * (1.30 if near else 1.32)
+        ez = cz + r * 0.10
+        rz = sy * 12 - (34 if near else 26)
+        oy = -r * 0.045 if near else -r * 0.030
+        esc = 1.0 if near else 0.82            # 奥目は遠近で少し小さく
+        sph((ex, ey, ez), r * 0.29 * esc, ew, scale=(0.36, 1.05, 0.74), rot=(sy * -8, 0, rz), parent=p)
+        sph((ex + r * 0.065, ey + oy, ez), r * 0.165 * esc, iris, scale=(0.40, 0.85, 1.0), rot=(0, 0, rz), parent=p)
+        sph((ex + r * 0.10, ey + oy * 1.4, ez), r * 0.075 * esc, pupil, scale=(0.40, 0.80, 1.0), rot=(0, 0, rz), parent=p)
+        sph((ex + r * 0.115, ey + oy * 1.5, ez + r * 0.075), r * 0.042 * esc, hl, parent=p)
+        # 上まつげライン (目尻はね上げ)
+        box((ex + r * 0.04, ey + sy * r * 0.01, ez + r * 0.155), (r * 0.075, r * 0.30, r * 0.05),
+            lash, rot=(sy * -14, 2, rz - sy * 2), parent=p, bevel=0.005)
+        # 直線のキリ眉 (太め・わずかに吊り上げ)
+        box((ex + r * 0.035, ey + sy * r * 0.02, ez + r * 0.33), (r * 0.13, r * 0.40, r * 0.105),
+            mat("brow_p", C(0.05, 0.05, 0.08), 0, 0.7), rot=(sy * -14, 4, rz - sy * 3), parent=p, bevel=0.010)
+    # 口: 不敵な片笑み (カメラ側の口角を上げる)
+    mz = cz - r * 0.62
+    box((r * 0.78, -r * 0.06, mz), (r * 0.05, r * 0.40, r * 0.062),
+        mat("mouth_p", C(0.34, 0.14, 0.12), 0, 0.5), rot=(-16, 8, -6), parent=p, bevel=0.006)
+    sph((r * 0.70, -r * 0.305, mz + r * 0.085), r * 0.05, skin_dk, scale=(0.5, 0.6, 0.5), parent=p)
+    # 耳
+    for sy in (1, -1):
+        sph((-r * 0.06, sy * r * 0.94, cz - r * 0.10), r * 0.23, skin, scale=(0.55, 0.35, 0.82), parent=p)
+
+
 def face(p, cz, r, cfg):
     """顔: 三白眼の睨み・極太の八の字眉・眉間の皺・への字大口+食いしばり・エラ顎・青髭・傷"""
+    if cfg.get("face_style") == "player":
+        return face_player(p, cz, r, cfg)
     skin = mat("skin", PAL["skin"])
     skin_dk = mat("skin_dk", C(0.72, 0.52, 0.40), 0, 0.85)
     ew = mat("eye_w", PAL["eye_w"], 0, 0.35)
@@ -278,7 +326,7 @@ def pompadour(p, cz, r, cfg):
     # サイドの刈り上げ・もみあげ
     for sy in (1, -1):
         sph((r * 0.02, sy * r * 0.88, cz + r * 0.34), r * 0.34, h, scale=(0.90, 0.36, 0.80), parent=p)
-        box((r * 0.30, sy * r * 0.87, cz - r * 0.26), (r * 0.10, r * 0.045, r * 0.26), h,
+        box((r * 0.20, sy * r * 0.82, cz - r * 0.24), (r * 0.08, r * 0.04, r * 0.22), h,
             rot=(0, 5, 0), parent=p, bevel=0.008)
     # 額の生え際
     box((r * 0.72, 0, cz + r * 0.64), (r * 0.15, r * 0.56, r * 0.10), h, rot=(0, -34, 0), parent=p, bevel=0.012)
@@ -460,12 +508,14 @@ def tokkofuku(p, cfg, hip_z, sh_z, sh_w, bulk):
         # 胴に沿う白さらし (太い帯を体に食い込ませる) + 巻き線 + 前開きの襟边
         cyl((0, 0, (sh_z + hip_z) / 2 - 0.02), sh_w * 0.70 * bulk, sh_w * 0.84, (sh_z - hip_z) * 0.66,
             sar, scale=(0.86, 0.90, 1), parent=p)
-        for k in range(3):
-            torus((0, 0, hip_z + 0.10 + k * 0.10), sh_w * 0.74 * bulk, 0.007, sar_d,
-                  scale=(0.85, 0.89, 0.8), parent=p)
+        for k in range(2):
+            torus((0, 0, hip_z + 0.12 + k * 0.13), sh_w * 0.715 * bulk, 0.0045, sar_d,
+                  scale=(0.853, 0.892, 0.7), parent=p)
         for sy in (1, -1):  # 学ランの前端 (さらしの両脇の濃い縁)
             box((top_r * 0.90, sy * sh_w * 0.34, (sh_z + hip_z) / 2), (0.030, 0.035, (sh_z - hip_z) * 0.50),
                 cd, rot=(0, -5, sy * 3), parent=p, bevel=0.008)
+        for k in range(4):  # 前端の金ボタン (カメラ側)
+            sph((top_r * 0.93, -sh_w * 0.345, sh_z - 0.10 - k * 0.105), 0.016, gold, parent=p)
     else:
         # 金ボタン5個 (胸の面に沿って)
         for k in range(5):
@@ -495,7 +545,7 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
         elbow = (0.030, y0 * 1.10, sh_z - 0.305)
         f = (0.205, y0 * 0.96, sh_z - 0.045)
         seg(sh_pos, elbow, 0.075 * bulk, 0.060 * bulk, cc, parent=p)
-        sph(elbow, 0.064 * bulk, cc, parent=p)
+        sph(elbow, 0.050 * bulk, cc, parent=p)
         seg(elbow, (f[0] - 0.012, f[1], f[2] - 0.012), 0.058 * bulk, 0.048, cc, parent=p)
         ring((f[0] - 0.062, f[1] + sy * 0.01, f[2] - 0.062), 0.050, 0.008, gold, rot=(0, 42, 0), parent=p)
         fist(p, f)
@@ -505,7 +555,7 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
         elbow = (0.16, y0 * 1.02, sh_z - 0.155)
         f = (0.355, y0 * 0.82, sh_z - 0.065)
         seg(sh_pos, elbow, 0.075 * bulk, 0.060 * bulk, cc, parent=p)
-        sph(elbow, 0.064 * bulk, cc, parent=p)
+        sph(elbow, 0.050 * bulk, cc, parent=p)
         seg(elbow, (f[0] - 0.015, f[1], f[2]), 0.058 * bulk, 0.048, cc, parent=p)
         ring((f[0] - 0.075, f[1], f[2] - 0.035), 0.050, 0.008, gold, rot=(0, 65, 0), parent=p)
         fist(p, f)
@@ -515,7 +565,7 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
         elbow = (-0.085, y0 * 1.16, sh_z - 0.255)
         f = (-0.155, y0 * 1.18, sh_z - 0.510)
         seg(sh_pos, elbow, 0.072 * bulk, 0.058 * bulk, cc, parent=p)
-        sph(elbow, 0.062 * bulk, cc, parent=p)
+        sph(elbow, 0.048 * bulk, cc, parent=p)
         seg(elbow, (f[0], f[1], f[2] + 0.025), 0.054 * bulk, 0.045, cc, parent=p)
         ring((f[0] + 0.01, f[1], f[2] + 0.08), 0.048, 0.008, gold, rot=(0, -14, 0), parent=p)
         fist(p, f)
@@ -525,7 +575,7 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
         elbow = (0.045, y0 * 1.18, sh_z - 0.235)
         f = (0.145, y0 * 1.20, sh_z + 0.020)
         seg(sh_pos, elbow, 0.072 * bulk, 0.058 * bulk, cc, parent=p)
-        sph(elbow, 0.062 * bulk, cc, parent=p)
+        sph(elbow, 0.048 * bulk, cc, parent=p)
         seg(elbow, (f[0] - 0.01, f[1], f[2] - 0.02), 0.054 * bulk, 0.045, cc, parent=p)
         ring((f[0] - 0.03, f[1], f[2] - 0.075), 0.048, 0.008, gold, rot=(0, 20, 0), parent=p)
         fist(p, f)
@@ -535,7 +585,7 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
         elbow = (0.105, y0 * 1.05, sh_z - 0.275)
         f = (0.275, y0 * 0.60, sh_z - 0.185)
         seg(sh_pos, elbow, 0.072 * bulk, 0.058 * bulk, cc, parent=p)
-        sph(elbow, 0.062 * bulk, cc, parent=p)
+        sph(elbow, 0.048 * bulk, cc, parent=p)
         seg(elbow, f, 0.055 * bulk, 0.046, cc, parent=p)
         ring((f[0] - 0.05, f[1] + sy * 0.018, f[2] + 0.012), 0.048, 0.008, gold,
              rot=(0, 75, sy * -16), parent=p)
@@ -545,7 +595,7 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
         elbow = (0.10, y0 * 1.06, sh_z - 0.27)
         f = (0.27, y0 * 0.66, sh_z - 0.30)
         seg(sh_pos, elbow, 0.072 * bulk, 0.058 * bulk, cc, parent=p)
-        sph(elbow, 0.062 * bulk, cc, parent=p)
+        sph(elbow, 0.048 * bulk, cc, parent=p)
         seg(elbow, f, 0.055 * bulk, 0.046, cc, parent=p)
         ring((f[0] - 0.045, f[1] + sy * 0.02, f[2] + 0.012), 0.048, 0.008, gold,
               rot=(0, 78, sy * -18), parent=p)
@@ -555,7 +605,7 @@ def arm(p, cfg, sy, sh_z, sh_w, bulk, pose):
         elbow = (0.015, y0 * 1.22, sh_z - 0.30)
         f = (0.040, y0 * 1.24, sh_z - 0.585)
         seg(sh_pos, elbow, 0.072 * bulk, 0.058 * bulk, cc, parent=p)
-        sph(elbow, 0.062 * bulk, cc, parent=p)
+        sph(elbow, 0.048 * bulk, cc, parent=p)
         seg(elbow, (f[0], f[1], f[2] + 0.03), 0.054 * bulk, 0.045, cc, parent=p)
         ring((f[0] - 0.012, f[1], f[2] + 0.085), 0.048, 0.008, gold, parent=p)
         fist(p, f)
@@ -961,8 +1011,13 @@ def setup_scene(cfg=None):
     # ライティング: キー強め+フィル弱+環境 (アニメ調のフラットさとメリハリ)
     bpy.ops.object.light_add(type="SUN", location=(4, -5, 6))
     key = bpy.context.active_object
-    key.data.energy = 4.0
+    key.data.energy = 4.2
+    key.data.color = (1.0, 0.96, 0.90)
     key.rotation_euler = (D(58), 0, D(18))
+    bpy.ops.object.light_add(type="POINT", location=(-2.5, 2.0, 2.4))
+    rim = bpy.context.active_object
+    rim.data.energy = 600
+    rim.data.color = (0.85, 0.90, 1.0)
     bpy.ops.object.light_add(type="AREA", location=(2.5, 3.5, 2.0))
     fill = bpy.context.active_object
     fill.data.energy = 150
@@ -1027,10 +1082,10 @@ CHARS = {
     # 主人公: 黒髪リーゼント・黒長ラン前開き+白さらし・黒ボンタン・不敵 (一番かっこよく)
     "player": {
         "H": 1.80, "bulk": 1.15, "sh": 1.16, "head_scale": 1.16, "no_flip": True,
-        "coat": PAL["coal"], "coat_dk": PAL["black"],
-        "pants": PAL["black"], "pants_dk": PAL["coal"],
-        "hair": C(0.04, 0.04, 0.06), "brow": C(0.04, 0.04, 0.06), "inner": PAL["black"],
-        "sarashi": True, "pompadour": 1.4,
+        "coat": C(0.10, 0.12, 0.20), "coat_dk": C(0.05, 0.06, 0.11),
+        "pants": C(0.08, 0.09, 0.15), "pants_dk": C(0.04, 0.05, 0.09),
+        "hair": C(0.05, 0.06, 0.10), "brow": C(0.05, 0.05, 0.08), "inner": PAL["black"],
+        "sarashi": True, "pompadour": 1.4, "face_style": "player",
         "hem_z": 0.50,
         "out": (None, "player.png"),
     },
