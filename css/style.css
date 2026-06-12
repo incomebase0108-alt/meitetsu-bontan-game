@@ -1348,6 +1348,16 @@ img.char-sprite {
   animation: none;
   transform: translateY(10px);
 }
+/* 単車込みPNGスプライトがある時はCSS単車・座りオフセットを無効化し、横長表示にする */
+.belt-f.riding:has(img.char-sprite) { transform: none; }
+.belt-f:has(img.char-sprite) .dq-bike,
+.belt-f:has(img.char-sprite) .dq-ciga { display: none; }
+.belt-f.riding img.char-sprite {
+  max-width: none;
+  width: 200px;
+  height: auto;
+  max-height: 150px;
+}
 .dq-bike {
   position: absolute;
   bottom: -18px;

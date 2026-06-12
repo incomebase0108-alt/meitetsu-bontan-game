@@ -694,7 +694,8 @@ window.Battle = (function() {
       color: '#16161c',
       bontanColor: '#101014',
       gakOverride: '#16161c',
-      hairOverride: HAIRS[Math.floor(Math.random() * HAIRS.length)]
+      hairOverride: HAIRS[Math.floor(Math.random() * HAIRS.length)],
+      spritePaths: ['assets/characters/rider.png'] // 単車込みの専用スプライト（無ければCSS単車）
     }, S.cam + S.viewW + 140, 16 + Math.random() * (S.yMax - 16));
     rider.kind = 'rider';
     rider.state = 'ride';
