@@ -1026,7 +1026,7 @@ CHARS = {
     },
     # 主人公: 黒髪リーゼント・黒長ラン前開き+白さらし・黒ボンタン・不敵 (一番かっこよく)
     "player": {
-        "H": 1.80, "bulk": 1.08, "sh": 1.10, "head_scale": 1.10,
+        "H": 1.80, "bulk": 1.15, "sh": 1.16, "head_scale": 1.16, "no_flip": True,
         "coat": PAL["coal"], "coat_dk": PAL["black"],
         "pants": PAL["black"], "pants_dk": PAL["coal"],
         "hair": C(0.04, 0.04, 0.06), "brow": C(0.04, 0.04, 0.06), "inner": PAL["black"],
@@ -1076,7 +1076,8 @@ def render_one(cid):
     out = OUT_OVERRIDE or os.path.join(BOSS_DIR if sub == "boss" else CHAR_DIR, fn)
     bpy.context.scene.render.filepath = out
     bpy.ops.render.render(write_still=True)
-    flip_image_x(out)
+    if not cfg.get("no_flip"):
+        flip_image_x(out)  # 敵パイプライン(scaleX(-1)表示)用の標準向き
     print("WROTE", out)
 
 
