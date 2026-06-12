@@ -52,15 +52,19 @@ window.Game = (function() {
     document.getElementById(id).classList.add('active');
   }
 
-  // 「電車を降りる」 → 電車アニメ → 戦闘
+  // ステージセレクト：路線図の駅タップで出撃先を変更（クリア済み駅の再戦も可）
+  function selectStation(idx) {
+    if (idx < 0 || idx >= window.STATIONS.length) return;
+    currentStationIndex = idx;
+    persist();
+    window.MapUI.render();
+    window.Audio8 && window.Audio8.SFX.menu();
+  }
+
+  // 「電車を降りる」 → 電車アニメ → 戦闘（クリア済み駅でも再戦できる）
   function boardStation() {
     const st = window.STATIONS[currentStationIndex];
     if (!st) return;
-    if (player.defeated.includes(st.id)) {
-      // 既にクリア済みは飛ばして次へ
-      nextStation();
-      return;
-    }
     // 最初の駅（蒲郡）は電車アニメをスキップ
     if (currentStationIndex === 0) {
       startBattle();
@@ -108,24 +112,28 @@ window.Game = (function() {
   function onBattleWin(enemy) {
     window.Battle.stop();
     window.Audio8 && window.Audio8.SFX.victory();
-    player.defeated.push(window.STATIONS[currentStationIndex].id);
-    // レベルアップ：通常HP+10/ATK+2、レアエンカウント勝利は HP+30/ATK+6（豪華）
+    const stId = window.STATIONS[currentStationIndex].id;
+    const firstClear = !player.defeated.includes(stId);
     const isRare = !!enemy.isRare;
-    const hpBoost = isRare ? 30 : 10;
-    const atkBoost = isRare ? 6 : 2;
-    player.maxHp += hpBoost;
-    player.atk += atkBoost;
-    player.hp = player.maxHp;
-    // レアならボンタンも複数獲得
-    if (isRare) {
-      // ボンタン狩り演出側で1本は加わるので、ここで追加で1本
-      player.bontans.push({ from: enemy.name + '(裏)', color: '#666' });
+    let hpBoost = 0, atkBoost = 0;
+    if (firstClear) {
+      player.defeated.push(stId);
+      // レベルアップ：通常HP+10/ATK+2、レアエンカウント勝利は HP+30/ATK+6（豪華）
+      hpBoost = isRare ? 30 : 10;
+      atkBoost = isRare ? 6 : 2;
+      player.maxHp += hpBoost;
+      player.atk += atkBoost;
+      // レアならボンタンも複数獲得（演出側で1本は加わるので追加で1本）
+      if (isRare) {
+        player.bontans.push({ from: enemy.name + '(裏)', color: '#666' });
+      }
     }
+    player.hp = player.maxHp;
     persist();
-    showBontanCutscene(enemy, hpBoost, atkBoost, isRare);
+    showBontanCutscene(enemy, hpBoost, atkBoost, isRare, firstClear);
   }
 
-  function showBontanCutscene(enemy, hpBoost, atkBoost, isRare) {
+  function showBontanCutscene(enemy, hpBoost, atkBoost, isRare, firstClear) {
     showScreen('screen-bontan');
     window.Audio8 && window.Audio8.stopBgm();
     // 主人公をリーゼント不良スプライトに（戦闘と同じ見た目）
@@ -177,6 +185,12 @@ window.Game = (function() {
     }, 1800);
 
     setTimeout(() => {
+      if (firstClear === false) {
+        // 再戦勝利：ボンタン・強化なし
+        document.getElementById('bontan-levelup').innerHTML =
+          '<span style="color:#999">再戦勝利！（クリア済みの駅なので強化ボーナスなし）</span>';
+        return;
+      }
       player.bontans.push({ from: enemy.name, color: enemy.bontanColor });
       const rareTag = isRare ? '<div style="color:#ff3366; font-size:22px; margin-bottom:6px">🎰 レアエンカウント勝利！ボーナス報酬！</div>' : '';
       document.getElementById('bontan-levelup').innerHTML = rareTag +
@@ -232,7 +246,7 @@ window.Game = (function() {
 
   return {
     init, newGame, continueGame, startGame, boardStation, nextStation, retry,
-    backToTitle, getPlayer, getCurrentStationIndex, showScreen
+    backToTitle, getPlayer, getCurrentStationIndex, showScreen, selectStation
   };
 })();
 

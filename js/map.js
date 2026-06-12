@@ -61,6 +61,13 @@ window.MapUI = (function() {
 
     mapEl.innerHTML = html;
 
+    // 駅タップで出撃先を選択（ステージセレクト）
+    mapEl.querySelectorAll('.station-row').forEach(row => {
+      row.addEventListener('click', () => {
+        window.Game.selectStation(parseInt(row.dataset.idx, 10));
+      });
+    });
+
     // HPとボンタン数の更新
     document.getElementById('map-hp').textContent = player.hp;
     const maxHpEl = document.getElementById('map-maxhp');
