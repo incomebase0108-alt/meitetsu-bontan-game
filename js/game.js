@@ -49,14 +49,43 @@ window.Game = (function() {
     if (!player.bestScores) player.bestScores = {};
     if (!player.dexClaims) player.dexClaims = {};
     if (!player.achievements) player.achievements = {};
+    if (typeof player.streak !== 'number') player.streak = 0;
+    if (typeof player.bestStreak !== 'number') player.bestStreak = 0;
+    if (typeof player.lastDaily !== 'string') player.lastDaily = '';
     currentStationIndex = data.currentStationIndex || 0;
     showScreen('screen-map');
     window.MapUI.render();
+    checkDaily();
     window.Audio8 && window.Audio8.startBgm('map');
+  }
+
+  // 画面下に出る汎用トースト（デイリー/連勝などの通知）
+  function toast(html) {
+    const t = document.createElement('div');
+    t.className = 'ach-toast';
+    t.style.bottom = '84px';
+    t.innerHTML = html;
+    document.body.appendChild(t);
+    window.Audio8 && window.Audio8.SFX.levelup && window.Audio8.SFX.levelup();
+    setTimeout(() => t.classList.add('show'), 20);
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 2800);
+  }
+
+  // デイリーボーナス: 日付が変わって初回プレイでカツアゲ金（習慣化フック）
+  function checkDaily() {
+    const today = new Date().toISOString().slice(0, 10);
+    if (player.lastDaily === today) return;
+    player.lastDaily = today;
+    const bonus = 250;
+    player.money = (player.money || 0) + bonus;
+    persist();
+    window.MapUI && window.MapUI.render();
+    setTimeout(() => toast(`📅 デイリーボーナス！<br><small>💴+${bonus}円</small>`), 500);
   }
 
   function startGame() {
     player.hp = player.maxHp;
+    checkDaily();
     showScreen('screen-map');
     window.MapUI.render();
     persist();
@@ -137,6 +166,10 @@ window.Game = (function() {
     const firstClear = !player.defeated.includes(stId);
     const isRare = !!enemy.isRare;
     const tier = isRare ? RARITY[enemy._rarity] || RARITY.bronze : null;   // レア度（銅/銀/金/虹）
+    // 連勝ストリーク（勝つほど報酬倍率↑。負けると0に戻る＝損失回避）
+    player.streak = (player.streak || 0) + 1;
+    if (player.streak > (player.bestStreak || 0)) player.bestStreak = player.streak;
+    const streakMul = 1 + Math.min(0.5, (player.streak - 1) * 0.05);   // 最大+50%
     // スコア/ランク: 自己ベストを記録（再戦リプレイの動機）
     const res = enemy.battleResult;
     if (res) {
@@ -144,9 +177,11 @@ window.Game = (function() {
       const prev = player.bestScores[stId] || 0;
       res.isNewBest = res.score > prev;
       if (res.isNewBest) player.bestScores[stId] = res.score;
-      // カツアゲ金: スコア連動＋クリアボーナス。レアはレア度倍率を乗算（変動報酬）
+      // カツアゲ金: スコア連動＋クリアボーナス。レア度倍率→連勝倍率を乗算（変動報酬）
       res.money = Math.round(res.score / 4) + (firstClear ? 80 : 25);
       if (tier) res.money = Math.round(res.money * tier.moneyMul) + 100;
+      res.money = Math.round(res.money * streakMul);
+      res.streak = player.streak;
       player.money = (player.money || 0) + res.money;
     }
     let hpBoost = 0, atkBoost = 0;
@@ -241,10 +276,11 @@ window.Game = (function() {
       const best = res2.isNewBest ? ' <span style="color:#ff3366">🏆ベスト更新!</span>' : '';
       const noHitTag = res2.noHit ? ' <span style="color:#9f9">ノーダメ!</span>' : '';
       const moneyTag = res2.money ? `　<span style="color:#ffd700">💴+${res2.money}円</span>` : '';
+      const streakTag = (res2.streak >= 2) ? `　<span style="color:#ff7a3c">🔥${res2.streak}連勝</span>` : '';
       rankHtml =
         `<div style="margin-top:8px; font-size:15px">` +
         `<span style="font-size:30px; font-weight:bold; color:${col}">${res2.rank}</span>ランク　` +
-        `SCORE <b>${res2.score}</b>${best}${moneyTag}<br>` +
+        `SCORE <b>${res2.score}</b>${best}${moneyTag}${streakTag}<br>` +
         `<span style="color:#ccc; font-size:13px">最大${res2.maxCombo}コンボ・${res2.timeSec}秒${noHitTag}</span></div>`;
     }
 
@@ -297,6 +333,8 @@ window.Game = (function() {
 
   function onBattleLose() {
     window.Battle.stop();
+    player.streak = 0;   // 連勝ストリーク途切れ（損失回避の演出）
+    persist();
     window.Audio8 && window.Audio8.SFX.defeat();
     window.Audio8 && window.Audio8.stopBgm();
     showScreen('screen-defeat');

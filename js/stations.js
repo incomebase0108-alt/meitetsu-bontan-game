@@ -457,7 +457,10 @@ window.PLAYER_INIT = {
   upgrades: {}, // 購入済み強化のレベル {hp, atk, meter}
   bestScores: {}, // 駅id → 自己ベストスコア
   dexClaims: {}, // ボンタン図鑑の収集マイルストーン受取済み
-  achievements: {} // 解除済み実績 id → true
+  achievements: {}, // 解除済み実績 id → true
+  streak: 0,      // 連勝数（負けでリセット）
+  bestStreak: 0,  // 最高連勝
+  lastDaily: ''   // デイリーボーナス最終受取日(YYYY-MM-DD)
 };
 
 // 駅ID → キャラアーキタイプID
