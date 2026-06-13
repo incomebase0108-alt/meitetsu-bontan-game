@@ -484,16 +484,16 @@ window.STATION_ARCHETYPE = {
   'kodomonokuni':       'kid-boss',         // ガキ大将ケンジ
   'higashi-hazu':       'tomita',           // 富田智明：潮干狩り漁師（ロン毛＋入れ墨・熊手）
   'nishi-hazu':         'hazu',             // 羽豆竜也：若頭格（長ラン肩掛け・細身長身）
-  'mikawa-toba':        'yankee-fire',      // 鳥羽の鬼面
+  'mikawa-toba':        'toba',             // 鳥羽修司：火祭りの暴れ者（般若面）
   // 乗換中ボス
-  'kira-yoshida':       'samurai-yanki',
+  'kira-yoshida':       'kira',             // 吉良雅樹：名家のボンボン（金髪＋白スーツ＋木刀）
   // 西尾線
   'kami-yokosuka':      'ozaki',            // 尾崎清則：こわもて筋肉・鳶（ニッカポッカ＋腹掛け）
   'fukuchi':            'gambler-boss',     // フク兄ィ：博打使い
   'nishio':             'skinhead',         // 西尾はスキンヘッド（入れ墨・青龍刀）固定（2026-06-12 hoshiさん指定）
   'nishio-guchi':       'yankee-basic',
   'sakuramachi-mae':    'thrower-boss',     // マチオ：シャッター叩き
-  'yonezu':             'big-boss',         // 米兄ィ：米俵パワー
+  'yonezu':             'yoneda',           // 米田剛：米屋の巨漢（米俵パワー）
   'minami-sakurai':     'yankee-fire',      // キョータ：桜散らし
   'sakurai':            'girl-yankee',      // 花子姉さん
   'horiuchi-koen':      'big-boss',         // 公園のヌシ
