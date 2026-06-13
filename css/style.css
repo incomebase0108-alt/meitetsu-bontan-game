@@ -2179,7 +2179,10 @@ img.char-sprite {
 /* 小物 */
 .cfx-bat { position:absolute; right:-4px; top:34px; width:9px; height:54px; background:linear-gradient(90deg,#caa23a,#9c7c20); border:2px solid #000; border-radius:5px; transform:rotate(18deg); transform-origin:50% 90%; z-index:7; }
 .cfx-pipe { position:absolute; right:-2px; top:34px; width:8px; height:52px; background:linear-gradient(90deg,#cfd4da,#8a909a); border:2px solid #000; border-radius:4px; transform:rotate(20deg); transform-origin:50% 90%; z-index:7; }
-.cfx-blade { position:absolute; right:-14px; top:10px; width:14px; height:54px; background:linear-gradient(105deg,#e8e8ee 40%,#9aa0aa 60%); clip-path:polygon(28% 0,72% 0,100% 74%,50% 100%,4% 74%); transform:rotate(10deg); z-index:7; filter:drop-shadow(1px 1px 0 #000); }
+/* 青龍刀: 刃を上向き＋柄を下に（振り支点=柄側）。以前は穂先が下＝上下逆だった */
+.cfx-blade { position:absolute; right:-15px; top:2px; width:15px; height:80px; transform:rotate(10deg); transform-origin:50% 92%; z-index:7; filter:drop-shadow(1px 1px 0 #000); }
+.cfx-blade::before { content:""; position:absolute; top:0; left:0; width:15px; height:36px; background:linear-gradient(105deg,#e8e8ee 40%,#9aa0aa 60%); border:2px solid #000; clip-path:polygon(50% 0,92% 26%,66% 100%,34% 100%,8% 26%); }
+.cfx-blade::after { content:""; position:absolute; top:34px; left:50%; transform:translateX(-50%); width:5px; height:46px; background:#5a2c10; border:2px solid #000; border-radius:2px; }
 .cfx-bokuto { position:absolute; right:-4px; top:28px; width:8px; height:60px; background:linear-gradient(90deg,#7a4a22,#5a3214); border:2px solid #000; border-radius:4px; transform:rotate(16deg); transform-origin:50% 90%; z-index:7; }
 .cfx-chain { position:absolute; right:0; top:70px; width:6px; height:38px; background:repeating-linear-gradient(180deg,#cfd4da 0 4px,#7a808a 4px 7px); border:1px solid #000; transform:rotate(8deg); z-index:7; }
 .cfx-cig { position:absolute; left:54px; top:42px; width:13px; height:3px; background:#eee; border:1px solid #000; transform:rotate(8deg); z-index:7; }
