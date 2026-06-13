@@ -1317,6 +1317,32 @@ img.char-sprite {
   animation: rarity-pop 0.5s cubic-bezier(0.2,1.6,0.4,1) both, rainbow-flow 1.2s linear infinite;
 }
 @keyframes rainbow-flow { to { background-position: 300% 0; } }
+
+/* ==== ボンタン図鑑 ==== */
+.dex-panel { max-width: 460px; }
+.dex-bar { height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; margin-bottom: 12px; }
+.dex-bar i { display: block; height: 100%; background: linear-gradient(90deg, #d4a017, #ffe08a); }
+.dex-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.dex-cell { text-align: center; }
+.dex-bontan {
+  width: 100%; aspect-ratio: 3/4; border-radius: 5px; border: 2px solid rgba(255,255,255,0.15);
+}
+.dex-cell.locked .dex-bontan { border-style: dashed; }
+.dex-cell.locked .dex-name { color: #666; }
+.dex-name {
+  font-size: 10px; color: #ddd; margin-top: 3px; line-height: 1.2;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dex-miles { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.dex-mile {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px; color: #eee; background: rgba(255,255,255,0.05);
+  border-radius: 6px; padding: 7px 10px;
+}
+.dex-claim { background: #d4a017; color: #1a1320; border: none; border-radius: 6px; padding: 6px 10px; font-weight: bold; cursor: pointer; }
+.dex-claim:active { transform: scale(0.94); }
+.dex-claimed { color: #6c6; font-weight: bold; }
+.dex-lock { color: #888; }
 .belt-bg {
   position: absolute;
   top: 0;

@@ -47,6 +47,7 @@ window.Game = (function() {
     if (typeof player.money !== 'number') player.money = 0;
     if (!player.upgrades) player.upgrades = {};
     if (!player.bestScores) player.bestScores = {};
+    if (!player.dexClaims) player.dexClaims = {};
     currentStationIndex = data.currentStationIndex || 0;
     showScreen('screen-map');
     window.MapUI.render();

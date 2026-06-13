@@ -84,6 +84,11 @@ window.MapUI = (function() {
       shopBtn._bound = true;
       shopBtn.addEventListener('click', () => window.ShopUI && window.ShopUI.open());
     }
+    const dexBtn = document.getElementById('btn-dex');
+    if (dexBtn && !dexBtn._bound) {
+      dexBtn._bound = true;
+      dexBtn.addEventListener('click', () => window.BontanDex && window.BontanDex.open());
+    }
 
     // 現在駅にスクロール
     const currentRow = mapEl.querySelector('.station-row.current');
