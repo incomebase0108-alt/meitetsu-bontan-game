@@ -918,6 +918,7 @@ def chibi_face(p, cz, r, cfg):
     pupil = mat("cpupil", C(0.04, 0.03, 0.04), 0, 0.25)
     hl = mat("chl", C(1.0, 1.0, 1.0), 0, 0.2)
     brow = mat("cbrow", cfg.get("brow", cfg["hair"]), 0, 0.7)
+    stern = cfg.get("stern_eyes")               # 据わった目 (ボス用・睨み): 左右対称・小さい瞳孔・重い上瞼
     # 大きいアニメ目を顔の中央〜やや下に (チビ比率: 目は顔の下半分寄り・大きく)
     for sy in (1, -1):
         near = (sy == -1)                       # カメラ側(-Y)が手前=大きく
@@ -925,25 +926,45 @@ def chibi_face(p, cz, r, cfg):
         ex = r * math.cos(th) * 0.93
         ey = sy * r * math.sin(th) * 1.16
         ez = cz - r * 0.03
-        esc = 1.0 if near else 0.85
-        jitter = (0, -0.01)[near]               # 手前の瞳をほんの少し下へ (完全シンメトリ回避)
-        sph((ex, ey, ez), r * 0.45 * esc, ew, scale=(0.32, 0.92, 1.12), rot=(0, 0, sy * 6), parent=p)
-        sph((ex + r * 0.06, ey - sy * r * 0.02, ez - r * 0.01 + jitter * r), r * 0.33 * esc, iris,
-            scale=(0.36, 0.94, 0.96), parent=p)
-        sph((ex + r * 0.075, ey - sy * r * 0.02, ez + r * 0.06), r * 0.21 * esc, iris2,
-            scale=(0.36, 0.82, 0.66), parent=p)
-        sph((ex + r * 0.10, ey - sy * r * 0.02, ez + jitter * r), r * 0.145 * esc, pupil,
-            scale=(0.36, 0.88, 0.96), parent=p)
-        sph((ex + r * 0.15, ey - sy * r * 0.05, ez + r * 0.17), r * 0.085 * esc, hl, parent=p)
-        # 上まぶた/まつげライン (目の上を締めて眠そう→不敵に)
-        box((ex + r * 0.05, ey, ez + r * 0.31), (r * 0.085, r * 0.35, r * 0.05),
-            mat("clash", C(0.05, 0.05, 0.08), 0, 0.6), rot=(sy * -3, 0, sy * 9), parent=p, bevel=0.005)
-        # 下まつげ/涙袋の薄い影 (生気を足す)
-        box((ex + r * 0.02, ey + sy * r * 0.01, ez - r * 0.32), (r * 0.07, r * 0.32, r * 0.03),
-            skin_dk, rot=(0, 0, sy * 6), parent=p, bevel=0.004)
-        # 太い角眉 (吊り上げ・不敵)
-        box((ex + r * 0.05, ey + sy * r * 0.02, ez + r * 0.46), (r * 0.10, r * 0.36, r * 0.115),
-            brow, rot=(sy * -8, 6, sy * -10), parent=p, bevel=0.012)
+        esc = 1.0 if near else (0.95 if stern else 0.85)   # 据わった目は左右差を縮め対称的に
+        jitter = 0.0 if stern else (0, -0.01)[near]
+        if stern:
+            # 白目: 細く据わった切れ長 (縦を潰し横長に・境界シャープ)
+            sph((ex, ey, ez), r * 0.42 * esc, ew, scale=(0.32, 1.02, 0.80), rot=(0, 0, sy * 4), parent=p)
+            # 虹彩 (大きめ・濃い) → 据わった睨み
+            sph((ex + r * 0.06, ey, ez - r * 0.02), r * 0.34 * esc, iris, scale=(0.36, 0.96, 0.84), parent=p)
+            sph((ex + r * 0.075, ey, ez + r * 0.03), r * 0.20 * esc, iris2, scale=(0.36, 0.80, 0.58), parent=p)
+            # 瞳孔: くっきり小さめ (但し眠く見えない程度の存在感)
+            sph((ex + r * 0.10, ey, ez), r * 0.135 * esc, pupil, scale=(0.42, 0.94, 0.98), parent=p)
+            # キャッチライト: 左右同位置に1点
+            sph((ex + r * 0.15, ey - sy * r * 0.03, ez + r * 0.13), r * 0.058 * esc, hl, parent=p)
+            # 上瞼ライン (被せ過ぎず=眠そう回避。睨みの陰だけ作る)
+            box((ex + r * 0.06, ey, ez + r * 0.29), (r * 0.10, r * 0.40, r * 0.050),
+                mat("clid", cfg.get("brow", C(0.05, 0.05, 0.08)), 0, 0.7), rot=(sy * -2, 5, sy * 6), parent=p, bevel=0.008)
+            # 下まぶたライン (生気・据わり)
+            box((ex + r * 0.02, ey, ez - r * 0.26), (r * 0.075, r * 0.36, r * 0.030),
+                skin_dk, rot=(0, 0, sy * 3), parent=p, bevel=0.004)
+            # 極太・濃い眉を凶悪なハの字(内側下げ)に (威圧)
+            box((ex + r * 0.05, ey, ez + r * 0.39), (r * 0.12, r * 0.44, r * 0.150),
+                brow, rot=(sy * -7, 7, sy * -13), parent=p, bevel=0.012)
+        else:
+            sph((ex, ey, ez), r * 0.45 * esc, ew, scale=(0.32, 0.92, 1.12), rot=(0, 0, sy * 6), parent=p)
+            sph((ex + r * 0.06, ey - sy * r * 0.02, ez - r * 0.01 + jitter * r), r * 0.33 * esc, iris,
+                scale=(0.36, 0.94, 0.96), parent=p)
+            sph((ex + r * 0.075, ey - sy * r * 0.02, ez + r * 0.06), r * 0.21 * esc, iris2,
+                scale=(0.36, 0.82, 0.66), parent=p)
+            sph((ex + r * 0.10, ey - sy * r * 0.02, ez + jitter * r), r * 0.145 * esc, pupil,
+                scale=(0.36, 0.88, 0.96), parent=p)
+            sph((ex + r * 0.15, ey - sy * r * 0.05, ez + r * 0.17), r * 0.085 * esc, hl, parent=p)
+            # 上まぶた/まつげライン (目の上を締めて眠そう→不敵に)
+            box((ex + r * 0.05, ey, ez + r * 0.31), (r * 0.085, r * 0.35, r * 0.05),
+                mat("clash", C(0.05, 0.05, 0.08), 0, 0.6), rot=(sy * -3, 0, sy * 9), parent=p, bevel=0.005)
+            # 下まつげ/涙袋の薄い影 (生気を足す)
+            box((ex + r * 0.02, ey + sy * r * 0.01, ez - r * 0.32), (r * 0.07, r * 0.32, r * 0.03),
+                skin_dk, rot=(0, 0, sy * 6), parent=p, bevel=0.004)
+            # 太い角眉 (吊り上げ・不敵)
+            box((ex + r * 0.05, ey + sy * r * 0.02, ez + r * 0.46), (r * 0.10, r * 0.36, r * 0.115),
+                brow, rot=(sy * -8, 6, sy * -10), parent=p, bevel=0.012)
     # 小さい鼻 (点で十分)
     sph((r * 0.98, 0, cz - r * 0.18), r * 0.07, skin, scale=(0.6, 0.6, 0.7), parent=p)
     # 不敵な片笑み (カメラ側の口角だけ上げる)
@@ -965,7 +986,12 @@ def chibi_weapon_bat(p, grip, pose):
     """チビ用・金属バット (肩担ぎ idle / 前振り atk)。チビ寸法にスケール"""
     gold = mat("cbat", PAL["gold"], 0.85, 0.25)
     gdk = mat("cbat_dk", PAL["gold_dk"], 0.8, 0.35)
-    dirv = (0.62, -0.05, -0.55) if pose == "atk" else (0.10, -0.48, 0.87)  # 前下振り / 肩から上へ(カメラ側に見せる)
+    if pose == "atk":
+        dirv = (0.62, -0.05, -0.55)        # 前下振り
+    elif pose == "grd":
+        dirv = (0.05, 0.42, 0.91)          # 縦構え(カメラ奥へ)
+    else:
+        dirv = (0.02, -0.06, -1.0)         # idle: 地面に突き立てる(胸前を空け龍を見せる)
     n = math.sqrt(sum(x * x for x in dirv)); dirv = tuple(x / n for x in dirv)
     ry = math.degrees(math.atan2(math.hypot(dirv[0], dirv[1]), dirv[2]))
     rz = math.degrees(math.atan2(dirv[1], dirv[0]))
@@ -977,33 +1003,53 @@ def chibi_weapon_bat(p, grip, pose):
 
 
 def chibi_dragon_emb(p, sh_w, bulk, hem, hip_z):
-    """チビ・金龍刺繍: カメラ側(-Y)の裾〜胸を蛇行して登る太い金ライン+龍頭+雲渦。
-    白特攻服の唯一の華なので大きく鮮やかに (明るい金・太め・髭/牙付きの龍頭)"""
-    g = mat("cemb", PAL["gold"], 0.8, 0.28)               # メタリック高め=艶やかに映える
-    gb = mat("cemb_b", C(0.97, 0.82, 0.32), 0.7, 0.22)    # ハイライト金 (龍頭/牙の輝き)
-    surf = -sh_w * bulk * 0.86          # カメラ側コートの表面付近
+    """チビ・金龍刺繍(hoshi指示③): 「龍」と一目で分かる形に。
+    S字の胴+背鱗+爪付きの脚+はっきりした龍頭(長い鼻先/開いた顎/牙列/角/髭/赤眼)を
+    白特攻服の前面に大きく配置し、赤帯とのコントラストで色の主役にする。"""
+    g = mat("cemb", PAL["gold"], 0.85, 0.26)              # メタリック高め=艶やかに映える
+    gb = mat("cemb_b", C(0.98, 0.84, 0.34), 0.75, 0.20)   # ハイライト金 (鱗/牙/角の輝き)
+    surf = -sh_w * bulk * 0.90          # カメラ側コートの表面付近 (前へ出す)
+    # ---- 胴: 下腹〜胸へ大きくS字 ----
     pts = []
-    n = 14
+    n = 16
+    ztop = hip_z + 0.30
     for k in range(n):
         t = k / (n - 1)
-        z = hem + 0.02 + t * (hip_z + 0.26 - hem)     # 裾から胸上まで登る (より長く)
-        x = 0.03 + 0.13 * math.sin(t * math.pi * 2.2)  # うねりを大きく
-        y = surf * (1.05 - 0.16 * t)
+        z = hem + 0.04 + t * (ztop - hem)
+        x = 0.02 + 0.17 * math.sin(t * math.pi * 2.0)      # 大きなうねり
+        y = surf * (1.06 - 0.18 * t)
         pts.append((x, y, z))
-    tube(pts, 0.026, g, parent=p)                     # 太い胴 (0.017→0.026)
-    # 龍頭 (胸上・大きく) + 角 + 牙 + 髭
+    tube(pts, 0.032, g, parent=p)                          # 太い胴
+    # 背鱗 (胴に沿って小さな金の山を並べる=龍らしさ)
+    for k in range(2, n - 2):
+        bx, by, bz = pts[k]
+        sph((bx + 0.022, by - 0.02, bz), 0.020, gb, scale=(0.7, 0.6, 1.1), rot=(0, -20, 0), parent=p)
+    # 脚 (爪付き・2本。龍と分かる決め手) -- 胴の下側と中ほどから
+    for (lt, ldir) in ((0.30, 1), (0.55, -1)):
+        li = int(lt * (n - 1)); lx, ly, lz = pts[li]
+        kx, ky, kz = lx + ldir * 0.10, ly - 0.03, lz - 0.06     # 肘/膝
+        cyl(((lx + kx) / 2, (ly + ky) / 2, (lz + kz) / 2), 0.014, 0.010, 0.12, g,
+            rot=(0, 60, ldir * 40), parent=p)
+        for c in (-1, 0, 1):                                    # 3本の爪
+            cyl((kx + ldir * 0.03, ky - 0.015, kz - 0.05 + c * 0.018), 0.006, 0.0015, 0.05, gb,
+                rot=(c * 16, 70, ldir * 30), parent=p)
+    # ---- 龍頭 (胸上・大きく明確に) ----
     hx, hy, hz = pts[-1]
-    sph((hx + 0.04, hy, hz + 0.03), 0.066, g, scale=(1.6, 0.6, 0.95), rot=(0, -24, 0), parent=p)
-    sph((hx + 0.10, hy - 0.01, hz + 0.02), 0.030, gb, scale=(1.3, 0.6, 0.8), rot=(0, -30, 0), parent=p)  # 鼻先
-    for sy in (1, -1):
-        cyl((hx, hy + sy * 0.025, hz + 0.10), 0.009, 0.0020, 0.085, g, rot=(sy * 20, -24, 0), parent=p)   # 角
-        cyl((hx + 0.10, hy + sy * 0.018, hz - 0.02), 0.0035, 0.0008, 0.05, gb, rot=(sy * 24, -50, 0), parent=p)  # 牙
-        cyl((hx + 0.06, hy + sy * 0.02, hz - 0.03), 0.004, 0.0010, 0.10, g, rot=(sy * 34, 8, sy * 20), parent=p)  # 髭
-    sph((hx + 0.02, hy - 0.02, hz + 0.05), 0.012, mat("cemb_eye", C(0.85, 0.12, 0.10), 0, 0.4), parent=p)  # 赤い眼
-    # 雲の渦 (3つ・裾/脇腹/胸で龍を取り巻く)
-    torus((0.05, surf * 0.96, hem + 0.14), 0.044, 0.011, g, rot=(80, -14, 18), parent=p)
-    torus((0.11, surf * 0.90, hip_z + 0.04), 0.036, 0.010, g, rot=(80, -14, -12), parent=p)
-    torus((0.02, surf * 0.92, hip_z + 0.20), 0.030, 0.009, gb, rot=(80, -10, 30), parent=p)
+    sph((hx + 0.03, hy - 0.01, hz + 0.02), 0.070, g, scale=(1.5, 0.65, 1.05), rot=(0, -20, 0), parent=p)  # 頭部
+    sph((hx + 0.13, hy - 0.02, hz - 0.01), 0.040, g, scale=(1.7, 0.6, 0.7), rot=(0, -34, 0), parent=p)    # 長い鼻先
+    box((hx + 0.12, hy - 0.02, hz - 0.07), (0.060, 0.030, 0.018), gb, rot=(0, -28, 0), parent=p, bevel=0.006)  # 開いた下顎
+    for c in (-1, 0, 1, 2):                                     # 牙列
+        cyl((hx + 0.08 + c * 0.028, hy - 0.035, hz - 0.05), 0.005, 0.0012, 0.035, gb,
+            rot=(0, -150, 0), parent=p)
+    for sy in (1, -1):                                         # 角(後方へ) + 髭(前へ)
+        cyl((hx - 0.01, hy + sy * 0.03, hz + 0.10), 0.010, 0.0022, 0.11, g, rot=(sy * 22, -18, 0), parent=p)
+        cyl((hx + 0.10, hy + sy * 0.03, hz - 0.04), 0.004, 0.0010, 0.13, g, rot=(sy * 30, 20, sy * 24), parent=p)
+        sph((hx - 0.05, hy + sy * 0.035, hz + 0.04), 0.018, gb, scale=(0.7, 0.6, 1.0), parent=p)  # たてがみ房
+    sph((hx + 0.04, hy - 0.035, hz + 0.05), 0.014, mat("cemb_eye", C(0.88, 0.12, 0.10), 0, 0.35), parent=p)  # 赤眼
+    # 火の玉/雲の渦 (龍を取り巻く・2つに抑えて龍を主役に)
+    torus((0.04, surf * 0.98, hem + 0.12), 0.046, 0.011, g, rot=(80, -14, 18), parent=p)
+    sph((hx + 0.20, hy - 0.02, hz + 0.06), 0.026, mat("cemb_fire", C(0.92, 0.30, 0.10), 0, 0.4),
+        scale=(1.0, 0.7, 1.1), parent=p)                       # 口先の火の玉(赤橙=差し色)
 
 
 def chibi_pompadour(p, cz, r, cfg):
@@ -1100,8 +1146,11 @@ def build_chibi(cfg):
     for sy in (1, -1):
         y0 = sy * sh_w * 1.05
         sh_pos = (0.0, y0, sh_z - 0.02)
-        if wp and sy == -1 and POSE in ("idle", "idle2", "idle3", "grd"):
-            mid = (0.06, y0 * 1.00, sh_z - 0.10); f = (0.18, y0 * 0.60, sh_z + 0.05)  # 前腕を立て肩担ぎ
+        if wp and sy == -1 and POSE in ("idle", "idle2", "idle3"):
+            # 杖立て: 腕を下げ脇でバットを握る (胸前を空けて龍を主役に・総長の風格)
+            mid = (-0.01, y0 * 1.18, (sh_z + hip_z) / 2 + 0.02); f = (0.11, y0 * 1.26, hip_z + 0.05)
+        elif wp and sy == -1 and POSE == "grd":
+            mid = (0.06, y0 * 1.00, sh_z - 0.10); f = (0.18, y0 * 0.60, sh_z + 0.05)  # 前腕を立て縦構え
         elif POSE == "atk" and sy == -1:
             mid = (0.16, y0 * 0.95, sh_z - 0.06); f = (0.34, y0 * 0.82, sh_z - 0.10)
         elif POSE == "grd":
@@ -1400,16 +1449,18 @@ def setup_scene(cfg=None):
 CHARS = {
     # ラスボス 総長アンジョー: 2頭身チビ・白ロング特攻服・金龍刺繍・金バット・銀白リーゼント・傷 (最も豪華)
     "shin-anjo": {
-        "chibi": True, "bulk": 1.35,
-        "chead_r": 0.32, "csh_z": 0.66, "chip_z": 0.34, "csh_w": 0.225,
+        # 威圧感UP(hoshi指示②): 頭を相対的に小さく・肩幅と胴を増量し頭身を一段上げる。リーゼントも下げマスコット感解消
+        "chibi": True, "bulk": 1.48,
+        "chead_r": 0.285, "csh_z": 0.74, "chip_z": 0.37, "csh_w": 0.27,
         # 白特攻服は維持しつつ、白飛び回避でアイボリーに落とし陰影をクール鋼青で立体化(灰単一回避)
         "coat": C(0.82, 0.81, 0.75), "coat_dk": C(0.34, 0.37, 0.50),
         "pants": C(0.80, 0.79, 0.73), "pants_dk": C(0.34, 0.37, 0.50),
-        "hair": C(0.66, 0.69, 0.80), "brow": C(0.20, 0.19, 0.25),  # 銀髪は冷たく/眉は濃く(虚ろ回避)
+        "hair": C(0.66, 0.69, 0.80), "brow": C(0.18, 0.17, 0.22),  # 銀髪は冷たく/眉は濃く(虚ろ回避)
         "long_coat": True, "chem_z": 0.16, "weapon": "bat_gold", "embroidery": "dragon",
-        "scar": True, "pompadour": 1.4, "gold_trim": True, "belt": True,  # 赤帯=白への決定的アクセント
+        "scar": True, "pompadour": 1.2, "gold_trim": True, "belt": True,  # 赤帯=白への決定的アクセント
+        "stern_eyes": True,                                          # 据わった目=総長の睨み(hoshi指示①)
         "world_str": 0.08, "key_e": 6.0, "rim_e": 200, "fill_e": 22,  # 白特攻服=フィル絞り影側を残し立体化
-        "res": (640, 920), "ortho": 1.88,
+        "res": (640, 940), "ortho": 2.02,
         "out": ("boss", "shin-anjo.png"),
     },
     # 中ボス 吉良の若殿マサキ: 紫・金刺繍・ヤセ長身・豪華木刀・頬傷
