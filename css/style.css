@@ -1537,6 +1537,10 @@ img.char-sprite {
   0%   { transform: translateX(-130px); }
   100% { transform: translateX(640px); }
 }
+/* 写真がある駅は薄く重ねて「奥に動く建物＋電車」だけ足す（写真を潰さない） */
+.belt-far.over-photo { opacity: 0.26; }
+.belt-mid.over-photo { opacity: 0.30; }
+.belt-far.over-photo .belt-train { opacity: 0.75; }
 .lowfx .belt-train { display: none; }            /* 低スペック時は電車を止める */
 .lowfx2 .belt-far, .lowfx2 .belt-mid { display: none; }
 

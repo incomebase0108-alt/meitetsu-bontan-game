@@ -453,17 +453,19 @@ window.Battle = (function() {
       img.src = bgImage;
     }
 
-    // パララックス街並み（写真が無い駅の殺風景を解消）。空と地面の間に遠景/中景＋名鉄電車。
+    // パララックス街並み（殺風景解消）。空と地面の間に遠景/中景＋名鉄電車。
+    // 写真駅でも「奥に動く建物」が欲しいので薄く重ねる(over-photo)。写真無し駅はしっかり表示。
     // background-position-x を render で動かすので端が出ず無限スクロールになる。
     S.farEl = null; S.midEl = null;
-    if (!bgImage) {
+    {
+      const op = bgImage ? ' over-photo' : '';
       const far = document.createElement('div');
-      far.className = 'belt-far';
+      far.className = 'belt-far' + op;
       const train = document.createElement('div');
       train.className = 'belt-train';   // 奥を横切る赤い名鉄電車
       far.appendChild(train);
       const mid = document.createElement('div');
-      mid.className = 'belt-mid';
+      mid.className = 'belt-mid' + op;
       bg.appendChild(far);
       bg.appendChild(mid);
       S.farEl = far; S.midEl = mid;
