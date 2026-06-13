@@ -1500,50 +1500,6 @@ img.char-sprite {
   background: linear-gradient(180deg, rgba(10,10,25,0.15) 0%, rgba(10,10,25,0.3) 100%);
 }
 .belt-ground { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; }
-
-/* (B) パララックス街並み（遠景/中景のビル群＋奥を横切る名鉄電車）。空が背後で透ける＝駅別色 */
-.belt-far, .belt-mid {
-  position: absolute; left: 0; right: 0; z-index: 1;
-  pointer-events: none; background-repeat: repeat-x;
-}
-.belt-far {
-  bottom: 28%; height: 22%;
-  background-image: repeating-linear-gradient(90deg,
-    #2c3e60 0 16px, transparent 16px 22px,
-    #34496f 22px 42px, transparent 42px 50px,
-    #2a3a5e 50px 62px, transparent 62px 72px);
-  opacity: 0.5;
-}
-.belt-mid {
-  bottom: 28%; height: 34%;
-  background-image: repeating-linear-gradient(90deg,
-    #1c2742 0 26px, transparent 26px 34px,
-    #243056 34px 66px, transparent 66px 74px,
-    #1e2a48 74px 96px, transparent 96px 108px);
-  opacity: 0.62;
-}
-.belt-train {
-  position: absolute; bottom: 78%; left: 0;
-  width: 84px; height: 11px;
-  background: #c62828; border-radius: 3px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.45);
-  animation: train-pass 16s linear infinite;
-}
-.belt-train::before {
-  content: ''; position: absolute; top: 3px; left: 7px; right: 7px; height: 4px;
-  background: repeating-linear-gradient(90deg, #ffd54f 0 5px, transparent 5px 11px);
-}
-@keyframes train-pass {
-  0%   { transform: translateX(-130px); }
-  100% { transform: translateX(640px); }
-}
-/* 写真がある駅は薄く重ねて「奥に動く建物＋電車」だけ足す（写真を潰さない） */
-.belt-far.over-photo { opacity: 0.26; }
-.belt-mid.over-photo { opacity: 0.30; }
-.belt-far.over-photo .belt-train { opacity: 0.75; }
-.lowfx .belt-train { display: none; }            /* 低スペック時は電車を止める */
-.lowfx2 .belt-far, .lowfx2 .belt-mid { display: none; }
-
 .belt-world { position: absolute; inset: 0; z-index: 3; }
 
 .entity {

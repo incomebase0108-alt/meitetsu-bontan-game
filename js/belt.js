@@ -453,24 +453,6 @@ window.Battle = (function() {
       img.src = bgImage;
     }
 
-    // パララックス街並み（殺風景解消）。空と地面の間に遠景/中景＋名鉄電車。
-    // 写真駅でも「奥に動く建物」が欲しいので薄く重ねる(over-photo)。写真無し駅はしっかり表示。
-    // background-position-x を render で動かすので端が出ず無限スクロールになる。
-    S.farEl = null; S.midEl = null;
-    {
-      const op = bgImage ? ' over-photo' : '';
-      const far = document.createElement('div');
-      far.className = 'belt-far' + op;
-      const train = document.createElement('div');
-      train.className = 'belt-train';   // 奥を横切る赤い名鉄電車
-      far.appendChild(train);
-      const mid = document.createElement('div');
-      mid.className = 'belt-mid' + op;
-      bg.appendChild(far);
-      bg.appendChild(mid);
-      S.farEl = far; S.midEl = mid;
-    }
-
     // 地面
     const ground = document.createElement('div');
     ground.className = 'belt-ground';
@@ -1194,15 +1176,6 @@ window.Battle = (function() {
     // 背景パララックス
     const bgT = `translate3d(${-S.cam * 0.9}px,0,0)`;
     if (S.lastBgT !== bgT) { $('belt-bg').style.transform = bgT; S.lastBgT = bgT; }
-    // 遠景/中景を belt-bg(0.9)に対し background-position で戻し、奥ほど遅いパララックスに。
-    if (S.farEl) {
-      const fp = (S.cam * 0.65) + 'px';   // 実効 0.9-0.65=0.25倍速（最奥）
-      if (S.lastFarBp !== fp) { S.farEl.style.backgroundPositionX = fp; S.lastFarBp = fp; }
-    }
-    if (S.midEl) {
-      const mp = (S.cam * 0.35) + 'px';   // 実効 0.55倍速（中景）
-      if (S.lastMidBp !== mp) { S.midEl.style.backgroundPositionX = mp; S.lastMidBp = mp; }
-    }
 
     // ※画面外カリング(display:none)は「キャラがランダムに消える」不具合の原因になったため撤去。
     //   軽量化は lowfx(FPS適応) と下の transform/zIndex 差分更新で担保する。
