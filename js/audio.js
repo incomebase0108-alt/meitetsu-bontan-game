@@ -339,19 +339,22 @@ window.Audio8 = (function() {
     lp.type = 'lowpass'; lp.frequency.value = 3600;                     // バリバリした倍音を通す
     bp.connect(dist); dist.connect(lp); lp.connect(out);
 
-    const base = [124, 125.6, 62, 186];                  // ノコギリ2本+サブ+5度上(厚み)
+    const base = [82, 82.8, 55, 123];                    // 直管らしい低めの基音 (ノコギリ2本+サブ+5度上)
     const types = ['sawtooth', 'sawtooth', 'square', 'sawtooth'];
     const oscs = base.map((f, i) => {
       const o = ctx.createOscillator();
       o.type = types[i]; o.frequency.value = f;
+      // 空ぶかし: 登場時に一度吹かす (直管の「ブォーン」)
+      o.frequency.setValueAtTime(f * 1.7, t0);
+      o.frequency.exponentialRampToValueAtTime(f, t0 + 0.55);
       o.connect(bp); o.start(t0);
       return o;
     });
 
-    // チャグ（パラパラ）: 速いトレモロでエンジンの脈動 (深め)
+    // 排気パルス（ドッドッドッ）: 鋭いノコギリ波で脈動を深く＝直管の歯切れ
     const lfo = ctx.createOscillator();
-    lfo.type = 'sawtooth'; lfo.frequency.value = 16;
-    const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.12;
+    lfo.type = 'sawtooth'; lfo.frequency.value = 13;
+    const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.20;
     lfo.connect(lfoGain); lfoGain.connect(out.gain); lfo.start(t0);
 
     // 排気のエア感（ループノイズ・大きめ）
@@ -364,16 +367,36 @@ window.Audio8 = (function() {
     nSrc.connect(nf); nf.connect(ng); ng.connect(out); nSrc.start(t0);
 
     let stopped = false;
+    // バックファイア（パン!）: 直管が時々弾ける破裂音
+    function backfire() {
+      if (stopped || muted || !ctx) return;
+      const tt = ctx.currentTime;
+      const g = ctx.createGain(); g.gain.value = 0; g.connect(masterGain);
+      g.gain.linearRampToValueAtTime(0.55, tt + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.13);
+      const o = ctx.createOscillator(); o.type = 'square';
+      o.frequency.setValueAtTime(150, tt); o.frequency.exponentialRampToValueAtTime(55, tt + 0.1);
+      o.connect(g); o.start(tt); o.stop(tt + 0.15);
+      const pb = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.09), ctx.sampleRate);
+      const pd = pb.getChannelData(0);
+      for (let i = 0; i < pd.length; i++) pd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / pd.length, 2);
+      const ps = ctx.createBufferSource(); ps.buffer = pb;
+      const pf = ctx.createBiquadFilter(); pf.type = 'lowpass'; pf.frequency.value = 950;
+      ps.connect(pf); pf.connect(g); ps.start(tt);
+    }
+    const popTimer = setInterval(backfire, 720);
+
     return {
       setPitch(m) {
         if (stopped || !ctx) return;
         const tt = ctx.currentTime;
         oscs.forEach((o, i) => o.frequency.setTargetAtTime(base[i] * m, tt, 0.08));
-        lfo.frequency.setTargetAtTime(16 * m, tt, 0.08);
+        lfo.frequency.setTargetAtTime(13 * m, tt, 0.08);
       },
       stop() {
         if (stopped || !ctx) return;
         stopped = true;
+        clearInterval(popTimer);
         const tt = ctx.currentTime;
         out.gain.cancelScheduledValues(tt);
         out.gain.setValueAtTime(Math.max(0.0001, out.gain.value), tt);
@@ -393,31 +416,38 @@ window.Audio8 = (function() {
     resumeIfSuspended();
 
     const track = TRACKS[mode] || TRACKS.map;
-    const stepMs = (60 / track.bpm / 4) * 1000; // 16分音符長
-    const stepSec = stepMs / 1000;
+    const stepSec = 60 / track.bpm / 4;   // 16分音符長(秒)
     const totalSteps = track.bars * 16;
+    const LOOKAHEAD = 0.20;               // 秒: この先まで予約しておく(描画カクつきで音が途切れない)
 
     let step = 0;
+    let nextTime = ctx.currentTime + 0.06;
     let stopped = false;
-    bgmController = { stop: () => { stopped = true; } };
+    bgmController = { stop: () => { stopped = true; if (bgmController._t) clearTimeout(bgmController._t); }, _t: null };
 
-    function scheduleStep() {
-      if (stopped || muted) return;
-      const s = step % totalSteps;
-
-      // 各ノートをスケジュール
-      track.lead.filter(n => n[0] === s).forEach(n => beep(n[1], n[2], n[3], n[4]));
-      track.bass.filter(n => n[0] === s).forEach(n => beep(n[1], n[2], n[3], n[4]));
+    // s番目のステップを when(秒・currentTime基準の絶対時刻) で発音予約
+    function playStepAt(s, when) {
+      const at = Math.max(0, when - ctx.currentTime);   // beep/kick等の when は currentTime からの相対秒
+      track.lead.filter(n => n[0] === s).forEach(n => beep(n[1], n[2], n[3], n[4], at));
+      track.bass.filter(n => n[0] === s).forEach(n => beep(n[1], n[2], n[3], n[4], at));
       track.drums.filter(n => n[0] === s).forEach(n => {
-        if (n[1] === 'k') kick();
-        else if (n[1] === 's') snare();
-        else if (n[1] === 'h') hat();
+        if (n[1] === 'k') kick(at);
+        else if (n[1] === 's') snare(at);
+        else if (n[1] === 'h') hat(at);
       });
-
-      step++;
-      setTimeout(scheduleStep, stepMs);
     }
-    scheduleStep();
+
+    // 先読みスケジューラ: タイマーが遅れても LOOKAHEAD 分の余裕で途切れない
+    function scheduler() {
+      if (stopped || muted) { stopBgm(); return; }
+      while (nextTime < ctx.currentTime + LOOKAHEAD) {
+        playStepAt(step % totalSteps, nextTime);
+        nextTime += stepSec;
+        step++;
+      }
+      bgmController._t = setTimeout(scheduler, 50);
+    }
+    scheduler();
   }
 
   function stopBgm() {

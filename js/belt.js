@@ -1093,10 +1093,10 @@ window.Battle = (function() {
     S.lastT = t;
     // FPS適応: 直近40フレームの平均が重ければエフェクトを段階的に削る
     if (dtRaw > 0 && dtRaw < 0.5) { S.perfAcc += dtRaw; S.perfN++; }
-    if (S.perfN >= 40) {
+    if (S.perfN >= 24) {
       const avgMs = (S.perfAcc / S.perfN) * 1000;
       S.perfAcc = 0; S.perfN = 0;
-      if (avgMs > 26 && S.fxLevel < 2) setFxLevel(S.fxLevel + 1);   // 約38fps未満が続いたら降格
+      if (avgMs > 22 && S.fxLevel < 2) setFxLevel(S.fxLevel + 1);   // 約45fps未満が続いたら素早く降格
     }
     updatePlayer(dt);
     S.enemies.forEach(e => updateEnemy(e, dt));
