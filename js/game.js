@@ -115,6 +115,14 @@ window.Game = (function() {
     const stId = window.STATIONS[currentStationIndex].id;
     const firstClear = !player.defeated.includes(stId);
     const isRare = !!enemy.isRare;
+    // スコア/ランク: 自己ベストを記録（再戦リプレイの動機）
+    const res = enemy.battleResult;
+    if (res) {
+      if (!player.bestScores) player.bestScores = {};
+      const prev = player.bestScores[stId] || 0;
+      res.isNewBest = res.score > prev;
+      if (res.isNewBest) player.bestScores[stId] = res.score;
+    }
     let hpBoost = 0, atkBoost = 0;
     if (firstClear) {
       player.defeated.push(stId);
@@ -184,17 +192,34 @@ window.Game = (function() {
         `${enemy.name}はトランクス一丁で逃げ去った！💨`;
     }, 1800);
 
+    // スコア/ランクのHTML（評価＋自己ベスト）
+    const res2 = enemy.battleResult;
+    let rankHtml = '';
+    if (res2) {
+      const col = { S: '#ffcc00', A: '#ff6699', B: '#66ccff', C: '#bbbbbb' }[res2.rank] || '#fff';
+      const best = res2.isNewBest ? ' <span style="color:#ff3366">🏆ベスト更新!</span>' : '';
+      const noHitTag = res2.noHit ? ' <span style="color:#9f9">ノーダメ!</span>' : '';
+      rankHtml =
+        `<div style="margin-top:8px; font-size:15px">` +
+        `<span style="font-size:30px; font-weight:bold; color:${col}">${res2.rank}</span>ランク　` +
+        `SCORE <b>${res2.score}</b>${best}<br>` +
+        `<span style="color:#ccc; font-size:13px">最大${res2.maxCombo}コンボ・${res2.timeSec}秒${noHitTag}</span></div>`;
+    }
+
     setTimeout(() => {
+      const lv = document.getElementById('bontan-levelup');
       if (firstClear === false) {
-        // 再戦勝利：ボンタン・強化なし
-        document.getElementById('bontan-levelup').innerHTML =
-          '<span style="color:#999">再戦勝利！（クリア済みの駅なので強化ボーナスなし）</span>';
+        // 再戦勝利：ボンタン・強化なし（ただしスコア/ランクは出してリプレイ動機に）
+        lv.innerHTML =
+          '<span style="color:#999">再戦勝利！（クリア済みの駅なので強化ボーナスなし）</span>' + rankHtml;
+        if (res2 && res2.isNewBest) window.Audio8 && window.Audio8.SFX.levelup && window.Audio8.SFX.levelup();
         return;
       }
       player.bontans.push({ from: enemy.name, color: enemy.bontanColor });
       const rareTag = isRare ? '<div style="color:#ff3366; font-size:22px; margin-bottom:6px">🎰 レアエンカウント勝利！ボーナス報酬！</div>' : '';
-      document.getElementById('bontan-levelup').innerHTML = rareTag +
-        `<span style="color:#0f0">⬆ HP最大値 +${hpBoost} (${player.maxHp})</span>　<span style="color:#ff0">⬆ ATK +${atkBoost} (${player.atk})</span>`;
+      lv.innerHTML = rareTag +
+        `<span style="color:#0f0">⬆ HP最大値 +${hpBoost} (${player.maxHp})</span>　<span style="color:#ff0">⬆ ATK +${atkBoost} (${player.atk})</span>` +
+        rankHtml;
       window.Audio8 && window.Audio8.SFX.levelup && window.Audio8.SFX.levelup();
       persist();
     }, 2400);

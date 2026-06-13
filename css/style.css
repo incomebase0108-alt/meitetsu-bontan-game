@@ -1250,6 +1250,16 @@ img.char-sprite {
 
 /* ==== ベルトスクロールアクション ==== */
 .battle-stage.belt { touch-action: none; background: #000; }
+
+/* 軽量モード: モバイル/低FPS時に重い合成コストを削る (belt.js の FPS governor が body に付与) */
+/* lv1: 移動レイヤー上の filter(drop-shadow輪郭) とオーラ、全画面オーバーレイを除去 */
+.lowfx .entity, .lowfx .entity * { filter: none !important; }
+.lowfx .char-aura { display: none !important; }
+.lowfx .belt-photo::after { display: none !important; }
+/* lv2: 接地影・背景フィルター・各種スパーク/グロー演出も止める */
+.lowfx2 .char-shadow { display: none !important; }
+.lowfx2 .belt-photo { filter: none !important; }
+.lowfx2 [class*="spark"], .lowfx2 [class*="glow"], .lowfx2 [class*="aura"] { display: none !important; }
 .belt-bg {
   position: absolute;
   top: 0;

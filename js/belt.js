@@ -532,6 +532,7 @@ window.Battle = (function() {
     const now = performance.now();
     if (now - S.lastHitAt < 1400) S.combo++;
     else S.combo = 1;
+    if (S.combo > S.maxCombo) S.maxCombo = S.combo;   // スコア用: 最大コンボ
     S.lastHitAt = now;
     showCombo(S.combo);
     window.Audio8 && window.Audio8.SFX.combo(S.combo);
@@ -594,6 +595,7 @@ window.Battle = (function() {
     const dmg = Math.max(1, Math.floor(att.atk * (att.enraged ? 1.25 : 1) * mult * (0.9 + Math.random() * 0.3)));
     p.hp -= dmg;
     gainMeter(10);
+    S.noHit = false;          // スコア用: 被弾したらノーダメ評価を外す
     S.combo = 0;
     showCombo(0);
     showDamageNumber(p, dmg, mult >= 2 ? 'critical' : 'normal');
@@ -1047,11 +1049,24 @@ window.Battle = (function() {
   }
 
   // ==== 勝敗 ====
+  function computeBattleResult() {
+    const timeSec = Math.max(1, (performance.now() - S.startT) / 1000);
+    const hits = S.stats.hits, maxCombo = S.maxCombo, noHit = S.noHit;
+    const timeBonus = Math.max(0, Math.round(60 - timeSec) * 10);   // 60秒以内で時間ボーナス
+    const score = hits * 10 + maxCombo * 25 + (noHit ? 800 : 0) + timeBonus;
+    let rank = 'C';
+    if (score >= 2000 || (noHit && maxCombo >= 10)) rank = 'S';
+    else if (score >= 1200) rank = 'A';
+    else if (score >= 600) rank = 'B';
+    return { score, rank, maxCombo, hits, noHit, timeSec: Math.round(timeSec) };
+  }
+
   function victory() {
     if (S.finished) return;
     S.finished = true;
     log(`${S.boss.data.name}を倒した！`);
     const bossData = S.boss.data;
+    bossData.battleResult = computeBattleResult();   // スコア/ランクを勝利画面へ渡す
     setTimeout(() => { if (S) S.onWin(bossData); }, 1300);
   }
 
@@ -1062,11 +1077,27 @@ window.Battle = (function() {
     setTimeout(() => { if (S) S.onLose(); }, 1300);
   }
 
+  // 軽量化レベル: 1=オーラ/移動レイヤーのfilter除去, 2=さらに影/全画面フィルター除去
+  function setFxLevel(n) {
+    if (!S) return;
+    S.fxLevel = n;
+    document.body.classList.toggle('lowfx', n >= 1);
+    document.body.classList.toggle('lowfx2', n >= 2);
+  }
+
   // ==== メインループ ====
   function loop(t) {
     if (!S) return;
-    const dt = Math.min(0.05, (t - S.lastT) / 1000) || 0.016;
+    const dtRaw = (t - S.lastT) / 1000;
+    const dt = Math.min(0.05, dtRaw) || 0.016;
     S.lastT = t;
+    // FPS適応: 直近40フレームの平均が重ければエフェクトを段階的に削る
+    if (dtRaw > 0 && dtRaw < 0.5) { S.perfAcc += dtRaw; S.perfN++; }
+    if (S.perfN >= 40) {
+      const avgMs = (S.perfAcc / S.perfN) * 1000;
+      S.perfAcc = 0; S.perfN = 0;
+      if (avgMs > 26 && S.fxLevel < 2) setFxLevel(S.fxLevel + 1);   // 約38fps未満が続いたら降格
+    }
     updatePlayer(dt);
     S.enemies.forEach(e => updateEnemy(e, dt));
     S.enemies = S.enemies.filter(e => e.state !== 'dead'); // DOM除去はupdateEnemy内のsetTimeoutで実施
@@ -1105,9 +1136,15 @@ window.Battle = (function() {
       riderEvents: [{ at: 0.3, done: false }, { at: 0.6, done: false }],
       log: [],
       lastT: performance.now(),
+      startT: performance.now(), maxCombo: 0, noHit: true,   // スコア/ランク評価用
+      perfAcc: 0, perfN: 0, fxLevel: 0,    // FPS適応の軽量化governor
       pad: { mx: 0, my: 0 },
       readKeyboard: () => ({ mx: 0, my: 0 })
     };
+    // モバイル/タッチ端末は最初から軽量モード1で開始（重いエフェクトを抑制）
+    const isMobile = viewW < 600 ||
+      (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    setFxLevel(isMobile ? 1 : 0);
 
     // ステージ構築
     $('belt-world').innerHTML = '';
@@ -1149,6 +1186,7 @@ window.Battle = (function() {
     if (S.abort) S.abort.abort();
     const world = $('belt-world');
     if (world) world.innerHTML = '';
+    document.body.classList.remove('lowfx', 'lowfx2');   // 軽量モードを戦闘外へ持ち越さない
     S = null;
   }
 
