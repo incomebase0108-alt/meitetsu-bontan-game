@@ -977,26 +977,33 @@ def chibi_weapon_bat(p, grip, pose):
 
 
 def chibi_dragon_emb(p, sh_w, bulk, hem, hip_z):
-    """チビ・金龍刺繍: カメラ側(-Y)の裾〜胸を蛇行して登る太い金ライン+龍頭+雲渦"""
-    g = mat("cemb", PAL["gold"], 0.55, 0.4)
+    """チビ・金龍刺繍: カメラ側(-Y)の裾〜胸を蛇行して登る太い金ライン+龍頭+雲渦。
+    白特攻服の唯一の華なので大きく鮮やかに (明るい金・太め・髭/牙付きの龍頭)"""
+    g = mat("cemb", PAL["gold"], 0.8, 0.28)               # メタリック高め=艶やかに映える
+    gb = mat("cemb_b", C(0.97, 0.82, 0.32), 0.7, 0.22)    # ハイライト金 (龍頭/牙の輝き)
     surf = -sh_w * bulk * 0.86          # カメラ側コートの表面付近
     pts = []
-    n = 12
+    n = 14
     for k in range(n):
         t = k / (n - 1)
-        z = hem + 0.03 + t * (hip_z + 0.20 - hem)     # 裾から胸まで登る
-        x = 0.04 + 0.10 * math.sin(t * math.pi * 2.1)
-        y = surf * (1.04 - 0.16 * t)
+        z = hem + 0.02 + t * (hip_z + 0.26 - hem)     # 裾から胸上まで登る (より長く)
+        x = 0.03 + 0.13 * math.sin(t * math.pi * 2.2)  # うねりを大きく
+        y = surf * (1.05 - 0.16 * t)
         pts.append((x, y, z))
-    tube(pts, 0.017, g, parent=p)
-    # 龍頭 (胸上・大きめ) + 角
+    tube(pts, 0.026, g, parent=p)                     # 太い胴 (0.017→0.026)
+    # 龍頭 (胸上・大きく) + 角 + 牙 + 髭
     hx, hy, hz = pts[-1]
-    sph((hx + 0.03, hy, hz + 0.02), 0.045, g, scale=(1.5, 0.6, 0.9), rot=(0, -24, 0), parent=p)
+    sph((hx + 0.04, hy, hz + 0.03), 0.066, g, scale=(1.6, 0.6, 0.95), rot=(0, -24, 0), parent=p)
+    sph((hx + 0.10, hy - 0.01, hz + 0.02), 0.030, gb, scale=(1.3, 0.6, 0.8), rot=(0, -30, 0), parent=p)  # 鼻先
     for sy in (1, -1):
-        cyl((hx, hy + sy * 0.02, hz + 0.07), 0.007, 0.0018, 0.06, g, rot=(sy * 18, -24, 0), parent=p)
-    # 雲の渦 (2つ・脇腹と胸)
-    torus((0.06, surf * 0.95, hem + 0.16), 0.035, 0.009, g, rot=(80, -14, 18), parent=p)
-    torus((0.10, surf * 0.88, hip_z + 0.06), 0.028, 0.008, g, rot=(80, -14, -12), parent=p)
+        cyl((hx, hy + sy * 0.025, hz + 0.10), 0.009, 0.0020, 0.085, g, rot=(sy * 20, -24, 0), parent=p)   # 角
+        cyl((hx + 0.10, hy + sy * 0.018, hz - 0.02), 0.0035, 0.0008, 0.05, gb, rot=(sy * 24, -50, 0), parent=p)  # 牙
+        cyl((hx + 0.06, hy + sy * 0.02, hz - 0.03), 0.004, 0.0010, 0.10, g, rot=(sy * 34, 8, sy * 20), parent=p)  # 髭
+    sph((hx + 0.02, hy - 0.02, hz + 0.05), 0.012, mat("cemb_eye", C(0.85, 0.12, 0.10), 0, 0.4), parent=p)  # 赤い眼
+    # 雲の渦 (3つ・裾/脇腹/胸で龍を取り巻く)
+    torus((0.05, surf * 0.96, hem + 0.14), 0.044, 0.011, g, rot=(80, -14, 18), parent=p)
+    torus((0.11, surf * 0.90, hip_z + 0.04), 0.036, 0.010, g, rot=(80, -14, -12), parent=p)
+    torus((0.02, surf * 0.92, hip_z + 0.20), 0.030, 0.009, gb, rot=(80, -10, 30), parent=p)
 
 
 def chibi_pompadour(p, cz, r, cfg):
@@ -1052,6 +1059,20 @@ def build_chibi(cfg):
         cyl((0, 0, (hip_z + hem_z) / 2 + 0.01), sh_w * 1.18 * bulk, sh_w * 0.98 * bulk, hip_z - hem_z + 0.05,
             cc, scale=(0.84, 1, 1), parent=p)
         torus((0, 0, hem_z + 0.01), sh_w * 1.16 * bulk, 0.016, cd, scale=(0.84, 1, 0.7), parent=p)
+    # 赤帯 (白特攻服への色アクセント・総長の格。腰に巻き垂れを左に流す)
+    if cfg.get("belt"):
+        red = mat("cbelt", C(0.66, 0.09, 0.11), 0, 0.78)
+        red_d = mat("cbelt_d", C(0.42, 0.05, 0.07), 0, 0.78)
+        bz = hip_z + 0.04
+        cyl((0, 0, bz), sh_w * 1.12 * bulk, sh_w * 1.06 * bulk, 0.13, red, scale=(0.84, 1, 1), parent=p)
+        torus((0, 0, bz - 0.055), sh_w * 1.12 * bulk, 0.010, red_d, scale=(0.85, 1, 0.6), parent=p)
+        torus((0, 0, bz + 0.055), sh_w * 1.12 * bulk, 0.010, red_d, scale=(0.85, 1, 0.6), parent=p)
+        # 結び目 + 垂れ (カメラ側・左腰へ寄せて斜めに流す。中央に垂らさない)
+        ky = -sh_w * 1.02 * bulk
+        sph((sh_w * 0.70 * bulk, ky, bz), 0.040, red, scale=(1.1, 1.0, 1.0), parent=p)
+        cyl((sh_w * 0.66 * bulk, ky - 0.02, bz - 0.09), 0.022, 0.016, 0.15, red,
+            rot=(10, 0, -14), parent=p)
+        torus((sh_w * 0.60 * bulk, ky - 0.04, bz - 0.16), 0.020, 0.006, red_d, rot=(0, 0, -14), parent=p)
     # 白さらし (腹に巻く)
     if cfg.get("sarashi"):
         sar = mat("csar", C(0.93, 0.92, 0.89), 0, 0.85)
@@ -1351,16 +1372,16 @@ def setup_scene(cfg=None):
     # ライティング: キー強め+フィル弱+環境 (アニメ調のフラットさとメリハリ)
     bpy.ops.object.light_add(type="SUN", location=(4, -5, 6))
     key = bpy.context.active_object
-    key.data.energy = 4.2
+    key.data.energy = (cfg or {}).get("key_e", 4.2)   # 白衣装は強めにして陰影を出す
     key.data.color = (1.0, 0.96, 0.90)
     key.rotation_euler = (D(58), 0, D(18))
     bpy.ops.object.light_add(type="POINT", location=(-2.5, 2.0, 2.4))
     rim = bpy.context.active_object
-    rim.data.energy = 600
+    rim.data.energy = (cfg or {}).get("rim_e", 600)   # 白衣装はリムを絞りエッジの白飛びを防ぐ
     rim.data.color = (0.85, 0.90, 1.0)
     bpy.ops.object.light_add(type="AREA", location=(2.5, 3.5, 2.0))
     fill = bpy.context.active_object
-    fill.data.energy = 150
+    fill.data.energy = (cfg or {}).get("fill_e", 150)   # 白衣装はフィルを絞り影側を残す
     fill.data.size = 5
     fill.rotation_euler = (D(72), 0, D(145))
     world = bpy.data.worlds.new("w") if scene.world is None else scene.world
@@ -1368,7 +1389,7 @@ def setup_scene(cfg=None):
     world.use_nodes = True
     bg = world.node_tree.nodes.get("Background")
     bg.inputs["Color"].default_value = (1, 1, 1, 1)
-    bg.inputs["Strength"].default_value = 0.42
+    bg.inputs["Strength"].default_value = (cfg or {}).get("world_str", 0.42)  # 白衣装は環境光を絞り白飛び防止
     # (左右反転はレンダ後に flip_image_x() で行う。Blender5 は scene.node_tree 廃止のため)
 
 
@@ -1381,11 +1402,13 @@ CHARS = {
     "shin-anjo": {
         "chibi": True, "bulk": 1.35,
         "chead_r": 0.32, "csh_z": 0.66, "chip_z": 0.34, "csh_w": 0.225,
-        "coat": C(0.91, 0.91, 0.89), "coat_dk": C(0.52, 0.52, 0.56),
-        "pants": C(0.88, 0.88, 0.86), "pants_dk": C(0.52, 0.52, 0.56),
-        "hair": C(0.80, 0.82, 0.88), "brow": C(0.45, 0.46, 0.52),
+        # 白特攻服は維持しつつ、白飛び回避でアイボリーに落とし陰影をクール鋼青で立体化(灰単一回避)
+        "coat": C(0.82, 0.81, 0.75), "coat_dk": C(0.34, 0.37, 0.50),
+        "pants": C(0.80, 0.79, 0.73), "pants_dk": C(0.34, 0.37, 0.50),
+        "hair": C(0.66, 0.69, 0.80), "brow": C(0.20, 0.19, 0.25),  # 銀髪は冷たく/眉は濃く(虚ろ回避)
         "long_coat": True, "chem_z": 0.16, "weapon": "bat_gold", "embroidery": "dragon",
-        "scar": True, "pompadour": 1.4, "gold_trim": True,
+        "scar": True, "pompadour": 1.4, "gold_trim": True, "belt": True,  # 赤帯=白への決定的アクセント
+        "world_str": 0.08, "key_e": 6.0, "rim_e": 200, "fill_e": 22,  # 白特攻服=フィル絞り影側を残し立体化
         "res": (640, 920), "ortho": 1.88,
         "out": ("boss", "shin-anjo.png"),
     },
