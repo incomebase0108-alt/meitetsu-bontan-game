@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>統合テスト — 本番 css/style.css + js/sprites.js</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  body{margin:0;background:#2a2f3a;color:#eee;font-family:system-ui}
+  h1{font-size:16px;margin:12px}
+  .lbl{font-size:11px;color:#9fb0c0;margin:8px 12px 0}
+  .grid{display:flex;flex-wrap:wrap;gap:2px;padding:6px 10px;
+    background:linear-gradient(180deg,#bcd3e6 0 44%,#8a7f68 44%)}
+  .cell{position:relative;width:96px;height:176px;vertical-align:bottom}
+  .cell .entity{position:absolute;left:3px;bottom:6px;top:auto}
+  .cap{position:absolute;bottom:-2px;left:0;right:0;text-align:center;font-size:9px;color:#2a2218}
+</style>
+</head>
+<body>
+  <h1>統合テスト（本番 css/js を直接ロード）</h1>
+  <div class="lbl">▶ 全アーキタイプ idle（applyCharSprite の出力確認）</div>
+  <div class="grid" id="g-idle"></div>
+  <div class="lbl">▶ 歩き .walking（手足が踏む）／敵は scaleX(-1)</div>
+  <div class="grid" id="g-walk"></div>
+  <div class="lbl">▶ 攻撃 .act-punch / .act-kick / .act-slash ・被弾 .hit ・cower(.dq-face.scared)</div>
+  <div class="grid" id="g-act"></div>
+
+<script src="../js/sprites.js"></script>
+<script>
+  const ARCHES = Object.keys(window.Sprites.CFX);
+  function makeFighter(arch, data, enemy){
+    const cell=document.createElement('div'); cell.className='cell';
+    const ent=document.createElement('div'); ent.className='entity';
+    ent.innerHTML=`<div class="fighter belt-f">
+      <div class="char-aura"></div><div class="char-accessory"></div>
+      <div class="char-head"></div><div class="char-body"></div><div class="char-pants"></div>
+      <div class="char-shadow"></div><div class="dq-fist"></div><div class="dq-foot"></div>
+      <div class="mini-hp"><i></i></div></div>`;
+    if(enemy) ent.style.transform='scaleX(-1)';
+    const f=ent.querySelector('.fighter');
+    window.Sprites.applyCharSprite(f, arch, data||{});
+    const cap=document.createElement('div'); cap.className='cap'; cap.textContent=arch;
+    cell.appendChild(ent); cell.appendChild(cap);
+    return {cell,f};
+  }
+  const gIdle=document.getElementById('g-idle'), gWalk=document.getElementById('g-walk'), gAct=document.getElementById('g-act');
+  // idle
+  ARCHES.forEach(a=>{ gIdle.appendChild(makeFighter(a).cell); });
+  // walk (敵向き)
+  ARCHES.forEach((a,i)=>{ const {cell,f}=makeFighter(a,{},i%2===1); f.classList.add('walking'); gWalk.appendChild(cell); });
+  // actions
+  const acts=[['player','act-punch'],['yankee-basic','act-kick'],['skinhead','act-slash'],['yankee-fire','hit'],['girl-yankee','cower']];
+  acts.forEach(([a,st])=>{
+    const {cell,f}=makeFighter(a);
+    if(st==='cower'){ f.classList.add('cower'); const fc=f.querySelector('.dq-face'); if(fc) fc.classList.add('scared'); }
+    else f.classList.add(st);
+    cell.querySelector('.cap').textContent=a+' / '+st;
+    gAct.appendChild(cell);
+  });
+  // 攻撃アニメ(一発)を繰り返してスクショで捉えやすく
+  setInterval(()=>{ document.querySelectorAll('#g-act .fighter').forEach(f=>{
+    ['act-punch','act-kick','act-slash'].forEach(c=>{ if(f.classList.contains(c)){ f.classList.remove(c); void f.offsetWidth; f.classList.add(c);} });
+  }); }, 700);
+</script>
+</body>
+</html>

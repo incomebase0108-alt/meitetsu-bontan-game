@@ -1,9 +1,10 @@
-// CSS不良スプライト（リーゼント＋改造学ラン）描画モジュール
-// battle.js(旧) から切り出し。belt.js と game.js（ボンタン演出）で共有
+// CSS手足キャラ（くにおくん風 2頭身・config駆動）描画モジュール
+// 2026-06-14 大転換: Blender/PNG経路を撤去し、全キャラを手足div＋CSSアニメで描画。
+//   向きは belt.js が親 .entity に scaleX(e.dir) を付ける。歩き=.walking、攻撃=.act-*、被弾=.hit/.down-pose、cower=.dq-face.scared。
+// delinquentHeadHTML / VISUALS_BY_ARCHETYPE は game.js のボンタン狩り演出が参照するため温存（旧CSS頭）。
 window.Sprites = (function() {
 
-  // アーキタイプ別の見た目（全員リーゼント＋改造学ラン仕様）
-  // hair=リーゼント色 / gak=学ラン色(省略時は敵固有色) / acc=肩のアクセサリー
+  // ---- 旧CSS頭（game.jsのボンタン狩り犠牲者演出用に温存） ----
   const VISUALS_BY_ARCHETYPE = {
     'player':        { hair: '#15151c', gak: '#191921', skin: '#f2c899', sarashi: true },
     'yankee-basic':  { hair: '#1a140e' },
@@ -23,8 +24,6 @@ window.Sprites = (function() {
     'karate-boss':   { hair: '#1a1a1a', acc: '🥋', scar: true },
     'skinhead':      { bald: true, tattoo: true, blade: true, skin: '#e8b486', gak: '#26262e', scar: true }
   };
-
-  // リーゼント頭（またはスキンヘッド）のHTML（CSSで描画）
   function delinquentHeadHTML(v) {
     const hair = v.bald
       ? `<div class="dq-dome"></div>${v.tattoo ? '<div class="dq-tattoo">龍</div>' : ''}`
@@ -39,141 +38,91 @@ window.Sprites = (function() {
       ${hair}`;
   }
 
-  // PNG差し替えの存在キャッシュ（archetypeId → 'ok' | 'none'）
-  const SPRITE_CACHE = {};
-  // デコード済み Image の参照保持（GCを防ぎ、ブラウザのデコード結果をキャッシュに残す）
-  const SPRITE_DECODED = {};
+  // ---- 新CSS手足キャラ config ----
+  // body: slim|normal|big|tall / hair: pomp|pompXL|mohawk|skinhead / outfit色=gak
+  // face: normal|smirk|shout / flags: scar shades mask sarashi belt white tattoo
+  // weapon: bat|pipe|blade|bokuto / extras: cig chain
+  const CFX = {
+    'player':        { hair:'pomp',     hairColor:'#14141c', gak:'#1b2740', bontan:'#10141f', sarashi:true },
+    'yankee-basic':  { hair:'pomp',     hairColor:'#1a140e', gak:'#3a2a1c', bontan:'#241a10', cig:true },
+    'yankee-fisher': { body:'slim', hair:'pomp', hairColor:'#10202a', gak:'#234a52', bontan:'#16323a', face:'smirk' },
+    'yankee-fire':   { hair:'pomp',     hairColor:'#3a0d05', gak:'#5a1810', bontan:'#3a1008', face:'shout', scar:true },
+    'kid-boss':      { body:'slim', hair:'pomp', hairColor:'#4a2c10', gak:'#5a3a52', bontan:'#3a2438', weapon:'bat' },
+    'samurai-yanki': { hair:'pompXL',   hairColor:'#0d0d18', gak:'#2a2030', bontan:'#1a141f', scar:true },
+    'matcha-boss':   { hair:'pomp',     hairColor:'#1c2e10', gak:'#1c3a1c', bontan:'#12240f', scar:true },
+    'girl-yankee':   { body:'slim', hair:'pomp', hairColor:'#d4a017', gak:'#7a2a52', bontan:'#3a1a30' },
+    'big-boss':      { body:'big', hair:'pomp', hairColor:'#241505', gak:'#4a2a1a', bontan:'#2a1810', scar:true, chain:true },
+    'final-boss':    { body:'big', hair:'pompXL', white:true, hairColor:'#cfd2da', gak:'#e8e6dc', bontan:'#e2e0d6', scar:true, belt:true, weapon:'bat' },
+    'yakuza':        { body:'slim', hair:'pomp', hairColor:'#23201c', gak:'#0c0c12', bontan:'#0a0a10', shades:true, scar:true },
+    'gambler-boss':  { hair:'pomp',     hairColor:'#2c1a3a', gak:'#3a2a4a', bontan:'#241830' },
+    'thrower-boss':  { hair:'pomp',     hairColor:'#33200c', gak:'#4a3a1a', bontan:'#2a2410' },
+    'onsen-boss':    { body:'big', hair:'pomp', hairColor:'#5a4a42', gak:'#6a4a3a', bontan:'#3a281f' },
+    'riezent-boss':  { hair:'pompXL',   hairColor:'#050505', gak:'#3a2a1c', bontan:'#241810', scar:true, weapon:'bat' },
+    'karate-boss':   { hair:'pomp',     hairColor:'#1a1a1a', gak:'#2a2a30', bontan:'#1a1a20', scar:true },
+    'skinhead':      { hair:'skinhead', tattoo:true, shades:true, scar:true, weapon:'blade', skin:'#e8b486', gak:'#26262e', bontan:'#15151b' }
+  };
 
-  // スプライト画像のキャッシュバスター（画像を差し替えたらここを更新）
-  const SPRITE_VER = '?v=20260613-3';
-
-  // ポーズ画像があるか調べる (キャッシュ付き)。
-  // probe 段階で decoding='async' ＋ .decode() まで済ませ、描画時の同期デコード長タスクを防ぐ。
-  function probeSprite(path, cb) {
-    if (SPRITE_CACHE[path] === 'ok') return cb(true);
-    if (SPRITE_CACHE[path] === 'none') return cb(false);
-    const probe = new Image();
-    probe.decoding = 'async';
-    probe.onerror = () => { SPRITE_CACHE[path] = 'none'; cb(false); };
-    probe.onload = () => {
-      SPRITE_CACHE[path] = 'ok';
-      SPRITE_DECODED[path] = probe; // 参照保持＝デコード結果をキャッシュに残す
-      // デコードまで済ませてから cb（後段の img.src 差し替え時に同期デコードが走らない）
-      if (probe.decode) probe.decode().then(() => cb(true), () => cb(true));
-      else cb(true);
-    };
-    probe.src = path + SPRITE_VER;
-  }
-
-  // フレームドライバ:
-  //  - <id>_2 / <id>_3 があれば 1→2→3→2 の呼吸ループ (280ms)
-  //  - .fighter のクラスを監視して <id>_atk / <id>_hit / <id>_grd に差し替え
-  //  - 無いポーズは idle のまま (従来挙動)
-  function startFrameDriver(img, charEl, path) {
-    const base = path.replace(/\.png$/i, '');
-    const pose = { atk: null, hit: null, grd: null };
-    const cycle = [path];
-    probeSprite(base + '_2.png', ok2 => {
-      if (ok2) cycle.push(base + '_2.png');
-      probeSprite(base + '_3.png', ok3 => {
-        if (ok3 && ok2) { cycle.push(base + '_3.png'); cycle.push(base + '_2.png'); } // 1,2,3,2
-      });
-    });
-    ['atk', 'hit', 'grd'].forEach(k => probeSprite(`${base}_${k}.png`, ok => { if (ok) pose[k] = `${base}_${k}.png`; }));
-
-    let state = 'idle';
-    let idx = 0;
-    // 冗長な src 書込みを抑止（同一URLの再代入はデコードthrashの原因）。
-    // getAttribute('src') は設定した相対URLのまま返るので、これで一致判定する。
-    function swapSrc(url) {
-      if (img.getAttribute('src') === url) return;
-      img.src = url;
+  function buildCfxHTML(c) {
+    const bald = c.hair === 'skinhead';
+    let head = '';
+    if (!bald) {
+      head += `<div class="cfx-hair"><div class="cfx-pomp"></div></div><div class="cfx-mohawk"></div>`;
     }
-    // 保険: ポーズPNGが万一404でも img を空にせず、読込済みの idle(cycle[0]) へ戻す
-    // （probeSprite事前チェックの二重防御。URL一致判定で onerror 無限ループも防止）。
-    img.onerror = () => { swapSrc(cycle[0] + SPRITE_VER); };
-    const timer = setInterval(() => {
-      if (!img.isConnected) { clearInterval(timer); mo.disconnect(); return; }
-      // 低スペック時(body.lowfx)は呼吸アニメを停止（280ms毎の大PNG差し替えが持続負荷源のため）。
-      if (document.body.classList.contains('lowfx')) return;
-      if (state !== 'idle' || cycle.length < 2) return;
-      idx = (idx + 1) % cycle.length;
-      swapSrc(cycle[idx] + SPRITE_VER);
-    }, 280);
-
-    const ACT = ['act-punch', 'act-kick', 'act-special', 'act-dash', 'act-throw', 'act-slash'];
-    const mo = new MutationObserver(() => {
-      if (!img.isConnected) { mo.disconnect(); return; }
-      const cl = charEl.classList;
-      let want = 'idle';
-      if (ACT.some(c => cl.contains(c))) want = 'atk';
-      else if (cl.contains('hit') || cl.contains('down-pose')) want = 'hit';
-      else if (cl.contains('guarding')) want = 'grd';
-      if (want === state) return;
-      state = want;
-      swapSrc(((want !== 'idle' && pose[want]) ? pose[want] : cycle[idx % cycle.length]) + SPRITE_VER);
-    });
-    mo.observe(charEl, { attributes: true, attributeFilter: ['class'] });
+    if (c.tattoo) head += `<div class="cfx-tattoo">龍</div>`;
+    const eyes = c.shades ? `<div class="cfx-shades"></div>`
+                          : `<div class="dq-eye l"></div><div class="dq-eye r"></div>`;
+    const faceCls = c.face ? (' ' + c.face) : '';
+    const weapon = c.weapon ? `<div class="cfx-${c.weapon}"></div>` : '';
+    return `
+      <div class="cfx-arm back"><div class="up"></div><div class="ft"></div></div>
+      <div class="cfx-leg l"><div class="th"></div><div class="sh"></div></div>
+      <div class="cfx-leg r"><div class="th"></div><div class="sh"></div></div>
+      ${c.chain ? '<div class="cfx-chain"></div>' : ''}
+      <div class="cfx-torso${c.white ? ' white' : ''}">${c.sarashi ? '<div class="cfx-sarashi"></div>' : ''}${c.belt ? '<div class="cfx-belt"></div>' : ''}</div>
+      <div class="cfx-head${faceCls}">
+        ${head}
+        <div class="dq-face">
+          <div class="dq-brow l"></div><div class="dq-brow r"></div>
+          ${eyes}
+          <div class="dq-mouth"></div>
+          ${c.mask ? '<div class="cfx-mask"></div>' : ''}${c.scar ? '<div class="cfx-scar"></div>' : ''}
+        </div>
+      </div>
+      ${c.cig ? '<div class="cfx-cig"></div>' : ''}
+      <div class="cfx-arm front"><div class="up"></div><div class="ft"></div></div>
+      ${weapon}`;
   }
 
-  // charEl（.fighter 構造を持つ要素）に不良スプライトを適用する。
-  // assets/characters/<archetypeId>.png があれば画像を優先（Blender製スプライト差し替え用）、
-  // 無ければCSS描画。戻り値: 推奨スケール（ボス大型化等。位置側で transform scale に乗せる）
+  // charEl（.fighter）に手足キャラを適用。aura/shadow/mini-hp は温存。戻り値=推奨スケール。
   function applyCharSprite(charEl, archetypeId, data) {
-    const body = charEl.querySelector('.char-body');
-    const head = charEl.querySelector('.char-head');
-    const pants = charEl.querySelector('.char-pants');
-    const accessory = charEl.querySelector('.char-accessory');
+    data = data || {};
+    const base = CFX[archetypeId] || CFX['yankee-basic'];
+    const c = Object.assign({}, base);
 
-    const v = VISUALS_BY_ARCHETYPE[archetypeId] || VISUALS_BY_ARCHETYPE['yankee-basic'];
+    charEl.classList.add('dq', 'cssx');
+    // 体型・髪型・表情のクラス
+    ['slim', 'big', 'tall'].forEach(b => charEl.classList.toggle(b, c.body === b));
+    charEl.classList.toggle('xl', c.hair === 'pompXL');
+    charEl.classList.toggle('bald', c.hair === 'skinhead');
+    charEl.classList.toggle('mohawk', c.hair === 'mohawk');
 
-    // アクセサリー絵文字は廃止（頭にサイコロ等が乗って見えるため）
-    if (accessory) accessory.textContent = '';
+    // 配色（data上書き対応：旧API互換 hairOverride/gakOverride/color/bontanColor）
+    charEl.style.setProperty('--hair', data.hairOverride || c.hairColor || '#15110c');
+    charEl.style.setProperty('--gak',  data.gakOverride  || c.gak || data.color || '#23232b');
+    charEl.style.setProperty('--skin', c.skin || '#f0c08a');
+    charEl.style.setProperty('--bontan', data.bontanColor || c.bontan || '#1a1a1a');
 
-    // CSS描画（画像が無い場合・読み込み完了までのフォールバック）
-    charEl.classList.add('dq');
-    head.style.display = '';
-    body.style.display = '';
-    pants.style.display = '';
-    charEl.style.setProperty('--hair', data.hairOverride || v.hair || '#15110c');
-    charEl.style.setProperty('--gak', data.gakOverride || v.gak || data.color || '#23232b');
-    charEl.style.setProperty('--skin', v.skin || '#f0c08a');
-    charEl.style.setProperty('--bontan', data.bontanColor || '#1a1a1a');
-    head.innerHTML = delinquentHeadHTML(v);
-    body.innerHTML = (v.sarashi ? '<div class="dq-sarashi"></div>' : '') +
-                     (v.blade ? '<div class="dq-blade"></div>' : ''); // 青龍刀
-    body.classList.toggle('white-gak', !!v.white);
+    // 既存の .cfx を作り直し（再適用に備える）。aura/shadow/accessory/mini-hp/dq-fist/dq-foot は残す。
+    const old = charEl.querySelector('.cfx');
+    if (old) old.remove();
+    const cfx = document.createElement('div');
+    cfx.className = 'cfx';
+    if (data.spriteHue) cfx.style.filter = `hue-rotate(${data.spriteHue}deg)`; // 雑魚の色違い
+    cfx.innerHTML = buildCfxHTML(c);
+    charEl.appendChild(cfx);
 
-    // PNG差し替え（候補を順に試す：駅専用ボス画像 → アーキタイプ画像 → CSS描画のまま）
-    const oldImg = charEl.querySelector('img.char-sprite');
-    if (oldImg) oldImg.remove();
-    const candidates = (data.spritePaths || [`assets/characters/${archetypeId}.png`])
-      .filter(p => SPRITE_CACHE[p] !== 'none');
-    (function tryLoad(i) {
-      if (i >= candidates.length) return;
-      const path = candidates[i];
-      const img = new Image();
-      img.decoding = 'async'; // 同期デコードによるメインスレッド長タスク（透明化・音楽鈍化）を防ぐ
-      img.onload = () => {
-        SPRITE_CACHE[path] = 'ok';
-        if (!charEl.isConnected) return;
-        img.className = 'char-sprite';
-        if (data.spriteHue) img.style.filter = `hue-rotate(${data.spriteHue}deg)`; // 雑魚の色違い用
-        charEl.appendChild(img);
-        head.style.display = 'none';
-        body.style.display = 'none';
-        pants.style.display = 'none';
-        startFrameDriver(img, charEl, path);
-      };
-      img.onerror = () => {
-        SPRITE_CACHE[path] = 'none';
-        tryLoad(i + 1);
-      };
-      img.src = path + SPRITE_VER;
-    })(0);
-
-    return v.scale || (data.isBig ? 1.22 : 1);
+    return data.isBig ? 1.22 : (c.body === 'big' ? 1.12 : 1);
   }
 
-  return { applyCharSprite, delinquentHeadHTML, VISUALS_BY_ARCHETYPE };
+  return { applyCharSprite, delinquentHeadHTML, VISUALS_BY_ARCHETYPE, CFX };
 })();

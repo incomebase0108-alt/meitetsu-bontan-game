@@ -1185,6 +1185,12 @@ window.Battle = (function() {
       const sy = S.groundTop + e.y - SPR_H;
       const t = `translate3d(${sx.toFixed(1)}px,${sy.toFixed(1)}px,0) scaleX(${e.dir}) scale(${(S.gScale * e.scale).toFixed(3)})`;
       if (e.lastTrans !== t) { e.el.style.transform = t; e.lastTrans = t; }
+      // 歩きアニメ: x が動いた かつ 特殊状態でない時だけ .walking を付ける(手足が交互に踏む)
+      const moved = e.lastX !== undefined && Math.abs(e.x - e.lastX) > 0.15;
+      e.lastX = e.x;
+      const fc = e.fEl.classList;
+      const wantWalk = moved && !(fc.contains('down-pose') || fc.contains('cower') || fc.contains('loiter') || fc.contains('riding') || fc.contains('hit'));
+      if (wantWalk !== fc.contains('walking')) fc.toggle('walking', wantWalk);
       // zIndex は y順が変わった時だけ更新(毎フレームの再スタックを避ける)
       const z = 10 + Math.round(e.y);
       if (e.lastZ !== z) { e.el.style.zIndex = z; e.lastZ = z; }

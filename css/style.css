@@ -2034,3 +2034,98 @@ img.char-sprite {
 }
 .edit-actions { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
 .edit-actions .big-btn { padding: 10px 16px; font-size: 15px; min-height: 44px; margin: 6px 2px; }
+
+/* =======================================================================
+   CSS手足キャラ v2（くにおくん風・config駆動）— belt戦闘用
+   applyCharSprite が .belt-f に .cssx を付け、.cfx ツリーを構築する。
+   旧 .char-head/body/pants・.dq-fist/.dq-foot は無効化。
+   .dq-face(scared)・.char-aura・.char-shadow・.mini-hp フックは温存。
+   向きは親 .entity の scaleX(e.dir) が付けるので -e 変種は不要。
+   ======================================================================= */
+.belt-f.cssx { --hair:#15151c; --gak:#20202a; --skin:#f1c79b; --bontan:#181820; --acc:#ffd24a;
+  --torsow:50px; --torsoh:48px; --armw:14px; --armtop:56px; --legw:20px; --legsp:16px; --shoe:#0c0c10; }
+.belt-f.cssx .char-head, .belt-f.cssx .char-body, .belt-f.cssx .char-pants,
+.belt-f.cssx .dq-fist, .belt-f.cssx .dq-foot { display:none !important; }
+
+.cfx { position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:96px; height:152px; pointer-events:none; }
+/* 脚 */
+.cfx-leg { position:absolute; bottom:8px; left:50%; width:var(--legw); height:46px; transform-origin:50% 4px; margin-left:calc(var(--legw)/-2); }
+.cfx-leg .th { position:absolute; top:0; left:0; width:var(--legw); height:30px; background:var(--bontan); border:3px solid #000; border-radius:9px 9px 3px 3px; }
+.cfx-leg .sh { position:absolute; bottom:0; left:-3px; width:calc(var(--legw) + 6px); height:14px; background:var(--shoe); border:3px solid #000; border-radius:4px 9px 6px 6px; }
+.cfx-leg.l { transform:translateX(calc(-1 * var(--legsp))); z-index:1; }
+.cfx-leg.r { transform:translateX(var(--legsp)); z-index:3; }
+/* 胴 */
+.cfx-torso { position:absolute; top:52px; left:50%; transform:translateX(-50%); width:var(--torsow); height:var(--torsoh); background:var(--gak); border:3px solid #000; border-radius:10px 10px 7px 7px; z-index:4; }
+.cfx-torso::before { content:""; position:absolute; top:2px; left:50%; transform:translateX(-50%); width:60%; height:7px; background:var(--gak); border-bottom:3px solid #fff; }
+.cfx-torso.white::before { border-bottom-color:#c01818; }
+.cfx-torso::after { content:""; position:absolute; top:13px; left:50%; transform:translateX(-50%); width:5px; height:5px; border-radius:50%; background:var(--acc); box-shadow:0 9px 0 var(--acc),0 18px 0 var(--acc); }
+.cfx-sarashi { position:absolute; bottom:3px; left:3px; right:3px; height:10px; background:repeating-linear-gradient(180deg,#efefe6 0 4px,#d6d6c8 4px 6px); border:2px solid #000; }
+.cfx-belt { position:absolute; bottom:5px; left:2px; right:2px; height:9px; background:#b81a1a; border:2px solid #000; }
+/* 腕 */
+.cfx-arm { position:absolute; top:var(--armtop); left:50%; width:var(--armw); height:33px; transform-origin:50% 6px; margin-left:calc(var(--armw)/-2); }
+.cfx-arm .up { position:absolute; top:0; left:0; width:var(--armw); height:25px; background:var(--gak); border:3px solid #000; border-radius:7px; }
+.cfx-arm .ft { position:absolute; bottom:0; left:-1px; width:calc(var(--armw) + 2px); height:13px; background:var(--skin); border:3px solid #000; border-radius:50%; }
+.cfx-arm.back { transform:translateX(calc(-1 * var(--torsow)/2 - 1px)); z-index:1; filter:brightness(.8); }
+.cfx-arm.front { transform:translateX(calc(var(--torsow)/2 + 1px)); z-index:6; }
+/* 頭 */
+.cfx-head { position:absolute; top:0; left:50%; transform:translateX(-50%); width:58px; height:60px; z-index:5; }
+.belt-f.cssx .dq-face { position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:42px; height:40px; background:var(--skin); border:3px solid #000; border-radius:9px 11px 12px 12px; }
+.belt-f.cssx .dq-brow { position:absolute; top:9px; width:17px; height:7px; background:#000; }
+.belt-f.cssx .dq-brow.l { left:2px; transform:rotate(26deg); clip-path:polygon(0 0,100% 42%,100% 58%,0 100%); }
+.belt-f.cssx .dq-brow.r { right:2px; transform:rotate(-26deg); clip-path:polygon(100% 0,0 42%,0 58%,100% 100%); }
+.belt-f.cssx .dq-eye { position:absolute; top:15px; width:9px; height:8px; background:#fff; border:2px solid #000; border-radius:2px 2px 1px 1px; }
+.belt-f.cssx .dq-eye::after { content:""; position:absolute; right:0; bottom:0; width:5px; height:5px; background:#15151c; border-radius:1px; }
+.belt-f.cssx .dq-eye.l { left:4px; transform:rotate(18deg); } .belt-f.cssx .dq-eye.r { right:4px; transform:rotate(-18deg); }
+.belt-f.cssx .dq-eye.l::after { right:auto; left:0; }
+.belt-f.cssx .dq-mouth { position:absolute; bottom:5px; left:50%; transform:translateX(-50%); width:16px; height:6px; background:#5a1414; border:2px solid #000; border-radius:2px; overflow:hidden; }
+.belt-f.cssx .dq-mouth::before { content:""; position:absolute; top:2px; left:0; right:0; height:2px; background:#fff; }
+.belt-f.cssx .smirk .dq-mouth { height:5px; width:18px; transform:translateX(-50%) rotate(-7deg); border-radius:2px 6px 6px 2px; }
+.belt-f.cssx .smirk .dq-mouth::before { display:none; }
+.belt-f.cssx .shout .dq-mouth { width:14px; height:11px; border-radius:50%; background:#3a0c0c; }
+.belt-f.cssx .cfx-scar { position:absolute; top:17px; right:-2px; width:10px; height:2px; background:#c0392b; box-shadow:0 4px 0 #c0392b; transform:rotate(-30deg); }
+.belt-f.cssx .cfx-shades { position:absolute; top:13px; left:3px; right:3px; height:10px; background:#101014; border-radius:2px; box-shadow:0 1px 0 #555; }
+.belt-f.cssx .cfx-mask { position:absolute; bottom:2px; left:3px; right:3px; height:13px; background:#e9e9ee; border:2px solid #000; border-radius:3px; }
+/* scared(cower)時: 既存フック .dq-face.scared を流用 */
+.belt-f.cssx .dq-face.scared .dq-brow.l { transform:rotate(-26deg); top:0; }
+.belt-f.cssx .dq-face.scared .dq-brow.r { transform:rotate(26deg); top:0; }
+.belt-f.cssx .dq-face.scared .dq-eye { transform:none; height:10px; }
+/* リーゼント */
+.cfx-hair { position:absolute; top:0; left:50%; transform:translateX(-50%); width:58px; height:30px; }
+.cfx-hair::before { content:""; position:absolute; top:7px; left:8px; width:42px; height:17px; background:var(--hair); border:3px solid #000; border-radius:13px 5px 3px 3px; }
+.cfx-pomp { position:absolute; top:-3px; right:-10px; width:46px; height:29px; background:var(--hair); border:3px solid #000; border-radius:55% 95% 75% 25% / 60% 100% 45% 30%; transform:rotate(-10deg); box-shadow:inset -5px -5px 0 rgba(255,255,255,.14); }
+.belt-f.cssx.xl .cfx-pomp { width:54px; height:34px; top:-9px; right:-15px; }
+.belt-f.cssx.bald .cfx-hair { display:none; }
+.belt-f.cssx.bald .dq-face { border-radius:18px 18px 12px 12px; height:44px; }
+.cfx-tattoo { position:absolute; top:17px; left:50%; font-size:12px; font-weight:900; color:#2a6fb0; transform:translateX(-50%) rotate(8deg); z-index:6; }
+.belt-f.cssx.mohawk .cfx-pomp { display:none; }
+.belt-f.cssx.mohawk .cfx-hair::before { border-radius:6px 6px 2px 2px; }
+.cfx-mohawk { position:absolute; top:-13px; left:50%; transform:translateX(-50%); width:15px; height:26px; background:var(--hair); border:3px solid #000; border-radius:6px 6px 0 0; clip-path:polygon(0 100%,28% 8%,50% 32%,72% 0,100% 100%); }
+.belt-f.cssx:not(.mohawk) .cfx-mohawk { display:none; }
+/* 体型 */
+.belt-f.cssx.slim { --torsow:42px; --armw:12px; --legw:17px; --legsp:14px; }
+.belt-f.cssx.big { --torsow:62px; --torsoh:52px; --armw:18px; --armtop:58px; --legw:24px; --legsp:18px; }
+.belt-f.cssx.big .cfx-head { top:4px; }
+.belt-f.cssx.tall .cfx-leg { height:56px; } .belt-f.cssx.tall .cfx-torso { top:60px; } .belt-f.cssx.tall .cfx-arm { top:64px; } .belt-f.cssx.tall .cfx-head { top:6px; }
+/* 小物 */
+.cfx-bat { position:absolute; right:-4px; top:34px; width:9px; height:54px; background:linear-gradient(90deg,#caa23a,#9c7c20); border:2px solid #000; border-radius:5px; transform:rotate(18deg); transform-origin:50% 90%; z-index:7; }
+.cfx-pipe { position:absolute; right:-2px; top:34px; width:8px; height:52px; background:linear-gradient(90deg,#cfd4da,#8a909a); border:2px solid #000; border-radius:4px; transform:rotate(20deg); transform-origin:50% 90%; z-index:7; }
+.cfx-blade { position:absolute; right:-14px; top:10px; width:14px; height:54px; background:linear-gradient(105deg,#e8e8ee 40%,#9aa0aa 60%); clip-path:polygon(28% 0,72% 0,100% 74%,50% 100%,4% 74%); transform:rotate(10deg); z-index:7; filter:drop-shadow(1px 1px 0 #000); }
+.cfx-bokuto { position:absolute; right:-4px; top:28px; width:8px; height:60px; background:linear-gradient(90deg,#7a4a22,#5a3214); border:2px solid #000; border-radius:4px; transform:rotate(16deg); transform-origin:50% 90%; z-index:7; }
+.cfx-chain { position:absolute; right:0; top:70px; width:6px; height:38px; background:repeating-linear-gradient(180deg,#cfd4da 0 4px,#7a808a 4px 7px); border:1px solid #000; transform:rotate(8deg); z-index:7; }
+.cfx-cig { position:absolute; left:54px; top:42px; width:13px; height:3px; background:#eee; border:1px solid #000; transform:rotate(8deg); z-index:7; }
+.cfx-cig::after { content:""; position:absolute; right:-2px; top:-1px; width:3px; height:3px; border-radius:50%; background:#ff6a2a; }
+/* === アニメ（belt状態クラス駆動） === */
+.belt-f.cssx.walking .cfx-leg.l { animation:cfx-stepA .46s ease-in-out infinite; }
+.belt-f.cssx.walking .cfx-leg.r { animation:cfx-stepB .46s ease-in-out infinite; }
+.belt-f.cssx.walking .cfx-arm.front { animation:cfx-swB .46s ease-in-out infinite; }
+.belt-f.cssx.walking .cfx-arm.back { animation:cfx-swA .46s ease-in-out infinite; }
+@keyframes cfx-stepA { 0%,100%{transform:translateX(calc(-1*var(--legsp))) rotate(26deg)} 50%{transform:translateX(calc(-1*var(--legsp))) rotate(-26deg)} }
+@keyframes cfx-stepB { 0%,100%{transform:translateX(var(--legsp)) rotate(-26deg)} 50%{transform:translateX(var(--legsp)) rotate(26deg)} }
+@keyframes cfx-swA { 0%,100%{transform:translateX(calc(-1*var(--torsow)/2 - 1px)) rotate(-28deg)} 50%{transform:translateX(calc(-1*var(--torsow)/2 - 1px)) rotate(28deg)} }
+@keyframes cfx-swB { 0%,100%{transform:translateX(calc(var(--torsow)/2 + 1px)) rotate(28deg)} 50%{transform:translateX(calc(var(--torsow)/2 + 1px)) rotate(-28deg)} }
+.belt-f.cssx.act-punch .cfx-arm.front, .belt-f.cssx.act-special .cfx-arm.front { animation:cfx-jab .3s ease-out; }
+@keyframes cfx-jab { 0%{transform:translateX(calc(var(--torsow)/2 + 1px)) rotate(18deg)} 45%{transform:translateX(calc(var(--torsow)/2 + 1px)) rotate(99deg) scaleY(1.34)} 100%{transform:translateX(calc(var(--torsow)/2 + 1px)) rotate(18deg)} }
+.belt-f.cssx.act-kick .cfx-leg.r { animation:cfx-kick .42s ease-out; transform-origin:50% 4px; }
+@keyframes cfx-kick { 0%,100%{transform:translateX(var(--legsp)) rotate(-14deg)} 45%{transform:translateX(calc(var(--legsp)+6px)) rotate(94deg)} }
+.belt-f.cssx.act-slash .cfx-bat, .belt-f.cssx.act-slash .cfx-pipe, .belt-f.cssx.act-slash .cfx-blade, .belt-f.cssx.act-slash .cfx-bokuto { animation:cfx-slash .5s ease-in-out; }
+@keyframes cfx-slash { 0%{transform:rotate(-46deg)} 50%{transform:rotate(56deg)} 100%{transform:rotate(18deg)} }
