@@ -716,7 +716,36 @@ window.Battle = (function() {
     if (e.attackToken) { e.attackToken = false; S.tokens++; }
   }
 
-  // ==== D: 敵が日和る（cower） ====
+  // ==== 名声(fame) ====
+  const FAME = { mob: 2, boss: 30 };           // 加算: 雑魚撃破=小／駅制圧=大
+  const FAME_COWER_MIN = 40;                   // これ未満は雑魚が日和らない（蒲郡序盤＝ナメられる）
+  const FAME_TITLES = [
+    { min: 0,   name: '無名' },
+    { min: 25,  name: '三河の暴れん坊' },
+    { min: 70,  name: '蒲郡線の番長' },
+    { min: 140, name: '西尾の支配者' },
+    { min: 240, name: '名鉄の鬼' }
+  ];
+  function fameTitle(f) {
+    let t = FAME_TITLES[0].name;
+    for (const x of FAME_TITLES) { if ((f || 0) >= x.min) t = x.name; }
+    return t;
+  }
+  function gainFame(n) {
+    if (!S || !n) return;
+    S.fame = (S.fame || 0) + n;
+    const gp = window.Game && window.Game.getPlayer && window.Game.getPlayer();
+    if (gp) gp.fame = (gp.fame || 0) + n;       // 永続側にも反映（persistは勝敗確定時）
+  }
+  // 名声で日和り確率をスケール。閾値未満は0（序盤はナメられる＝日和らない）。
+  function fameCowerChance() {
+    const f = (S && S.fame) || 0;
+    if (f < FAME_COWER_MIN) return 0;
+    return Math.min(0.85, 0.25 + (f - FAME_COWER_MIN) / 250);
+  }
+  window.Fame = { title: fameTitle, TITLES: FAME_TITLES };
+
+  // ==== D: 敵が日和る（cower。名声fameで確率スケール） ====
   // 雑魚を日和らせる。ボス・ライダーは対象外（格を保つ）。originX 周辺のみ／確率で。
   function tryCower(originX, force) {
     if (!S) return;
@@ -733,7 +762,7 @@ window.Battle = (function() {
       if (e.state === 'down' || e.state === 'dead' || e.state === 'getup'
         || e.state === 'cower' || e.state === 'loiter') return;
       if (!force && Math.abs(ox - e.x) > 150) return;
-      if (Math.random() > 0.55) return;
+      if (Math.random() > fameCowerChance()) return;   // 名声が低い序盤は日和らない
       enterCower(e, PANIC);
     });
   }
@@ -985,6 +1014,7 @@ window.Battle = (function() {
             if (e === S.boss) victory();
             else {
               gainMeter(8);
+              gainFame(FAME.mob);   // 名声: ボンタン狩り(雑魚撃破)=小
               log(`${e.data.name}を倒した！`);
               tryCower(e.x);   // D: 目の前で仲間がKO→周囲の雑魚が日和る
             }
@@ -1214,6 +1244,11 @@ window.Battle = (function() {
     if (S.finished) return;
     S.finished = true;
     log(`${S.boss.data.name}を倒した！`);
+    // 名声: 駅制圧=大 ＋ ノーダメ/高コンボ ボーナス
+    let fameGain = FAME.boss;
+    if (S.noHit) fameGain += 10;
+    if (S.maxCombo >= 10) fameGain += 8;
+    gainFame(fameGain);
     const bossData = S.boss.data;
     bossData.battleResult = computeBattleResult();   // スコア/ランクを勝利画面へ渡す
     setTimeout(() => { if (S) S.onWin(bossData); }, 1300);
@@ -1290,6 +1325,7 @@ window.Battle = (function() {
       upg: (gp.upgrades || {}),   // 戦闘強化ツリー(連撃/一撃必殺/特攻魂)を doPlayerAttack で参照
       hitstop: 0,                 // ヒットストップ(強打の瞬間フリーズ=手応え)
       combo: 0, lastHitAt: 0,
+      fame: gp.fame || 0,         // 名声（日和り確率・台詞のfame帯判定に使用）
       tokens: 2,
       stats: { hits: 0, misses: 0 },
       riderEvents: [{ at: 0.3, done: false }, { at: 0.6, done: false }],

@@ -77,6 +77,11 @@ window.MapUI = (function() {
     document.getElementById('map-bontans').textContent = player.bontans.length;
     const moneyEl = document.getElementById('map-money');
     if (moneyEl) moneyEl.textContent = (player.money || 0);
+    // 名声＋称号
+    const fameEl = document.getElementById('map-fame');
+    if (fameEl) fameEl.textContent = (player.fame || 0);
+    const fameTitleEl = document.getElementById('map-fame-title');
+    if (fameTitleEl && window.Fame) fameTitleEl.textContent = window.Fame.title(player.fame || 0);
     // NG+ 周回バッジ（タイトル横に表示）
     const h2 = mapEl.parentElement && mapEl.parentElement.querySelector('.map-header h2');
     if (h2) {

@@ -454,6 +454,7 @@ window.PLAYER_INIT = {
   bontans: [], // 集めたボンタンのenemy.name配列
   defeated: [], // 倒した駅のid配列
   money: 0,     // カツアゲ金（強化ショップの通貨）
+  fame: 0,      // 名声（駅制圧/ボンタン狩り/連勝で上昇。日和り確率・台詞のfame帯を駆動）
   upgrades: {}, // 購入済み強化のレベル {hp, atk, meter}
   bestScores: {}, // 駅id → 自己ベストスコア
   dexClaims: {}, // ボンタン図鑑の収集マイルストーン受取済み
