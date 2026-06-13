@@ -1369,8 +1369,8 @@ img.char-sprite {
 .ach-rw { font-size: 12px; color: #ffd24a; white-space: nowrap; }
 
 /* ==== オープニング・ストーリー ==== */
-#screen-intro { display: flex; align-items: center; justify-content: center; }
-#screen-intro.active { display: flex; }
+/* ※非アクティブ時は .screen の display:none を活かす。active の時だけ flex で中央寄せ */
+#screen-intro.active { display: flex; align-items: center; justify-content: center; }
 .intro-box {
   width: 100%; max-width: 460px; margin: 0 16px;
   background: linear-gradient(180deg, #14141c, #1f1a26);
