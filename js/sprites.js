@@ -46,33 +46,42 @@ window.Sprites = (function() {
     // 主人公の初期＝真面目少年（普通短髪・穏やか顔・きれいな学ラン・傷/さらし/小物なし）。
     //   アイテム取得で cosmetics により不良化していく（applyCharSprite の data.cosmetics で差し替え）。
     'player':        { hair:'plain', face:'plain', hairColor:'#241a12', gak:'#222633', bontan:'#1b1f2a', skin:'#f2c79b' },
+    // 髪型を散らして単調回避（リーゼントは一部だけ）
     'yankee-basic':  { hair:'pomp',     hairColor:'#1a140e', gak:'#3a2a1c', bontan:'#241a10', cig:true },
-    'yankee-fisher': { body:'slim', hair:'pomp', hairColor:'#10202a', gak:'#234a52', bontan:'#16323a', face:'smirk' },
-    'yankee-fire':   { hair:'pomp',     hairColor:'#3a0d05', gak:'#5a1810', bontan:'#3a1008', face:'shout', scar:true },
-    'kid-boss':      { body:'slim', hair:'pomp', hairColor:'#4a2c10', gak:'#5a3a52', bontan:'#3a2438', weapon:'bat' },
-    'samurai-yanki': { hair:'pompXL',   hairColor:'#0d0d18', gak:'#2a2030', bontan:'#1a141f', scar:true },
-    'matcha-boss':   { hair:'pomp',     hairColor:'#1c2e10', gak:'#1c3a1c', bontan:'#12240f', scar:true },
-    'girl-yankee':   { body:'slim', hair:'pomp', hairColor:'#d4a017', gak:'#7a2a52', bontan:'#3a1a30' },
-    'big-boss':      { body:'big', hair:'pomp', hairColor:'#241505', gak:'#4a2a1a', bontan:'#2a1810', scar:true, chain:true },
-    'final-boss':    { body:'big', hair:'pompXL', white:true, hairColor:'#cfd2da', gak:'#e8e6dc', bontan:'#e2e0d6', scar:true, belt:true, weapon:'bat' },
-    'yakuza':        { body:'slim', hair:'pomp', hairColor:'#23201c', gak:'#0c0c12', bontan:'#0a0a10', shades:true, scar:true },
-    'gambler-boss':  { hair:'pomp',     hairColor:'#2c1a3a', gak:'#3a2a4a', bontan:'#241830' },
-    'thrower-boss':  { hair:'pomp',     hairColor:'#33200c', gak:'#4a3a1a', bontan:'#2a2410' },
-    'onsen-boss':    { body:'big', hair:'pomp', hairColor:'#5a4a42', gak:'#6a4a3a', bontan:'#3a281f' },
-    'riezent-boss':  { hair:'pompXL',   hairColor:'#050505', gak:'#3a2a1c', bontan:'#241810', scar:true, weapon:'bat' },
-    'karate-boss':   { hair:'pomp',     hairColor:'#1a1a1a', gak:'#2a2a30', bontan:'#1a1a20', scar:true },
+    'yankee-fisher': { body:'slim', hair:'flat', hairColor:'#10202a', gak:'#234a52', bontan:'#16323a', face:'smirk' },
+    'yankee-fire':   { hair:'punch',   hairColor:'#3a0d05', gak:'#5a1810', bontan:'#3a1008', face:'shout', scar:true },
+    'kid-boss':      { body:'slim', hair:'buzz', hairColor:'#4a2c10', gak:'#5a3a52', bontan:'#3a2438', weapon:'bat' },
+    'samurai-yanki': { hair:'long',    hairColor:'#0d0d18', gak:'#2a2030', bontan:'#1a141f', scar:true },
+    'matcha-boss':   { hair:'allback', hairColor:'#1c2e10', gak:'#1c3a1c', bontan:'#12240f', scar:true },
+    'girl-yankee':   { body:'slim', hair:'long', hairColor:'#d4a017', gak:'#7a2a52', bontan:'#3a1a30' },
+    'big-boss':      { body:'big', hair:'punch', hairColor:'#241505', gak:'#4a2a1a', bontan:'#2a1810', scar:true, chain:true },
+    'final-boss':    { body:'big', hair:'allback', white:true, hairColor:'#cfd2da', gak:'#e8e6dc', bontan:'#e2e0d6', scar:true, belt:true, weapon:'bat' },
+    'yakuza':        { body:'slim', hair:'allback', hairColor:'#23201c', gak:'#0c0c12', bontan:'#0a0a10', shades:true, scar:true },
+    'gambler-boss':  { hair:'allback', hairColor:'#2c1a3a', gak:'#3a2a4a', bontan:'#241830' },
+    'thrower-boss':  { hair:'buzz',    hairColor:'#33200c', gak:'#4a3a1a', bontan:'#2a2410' },
+    'onsen-boss':    { body:'big', hair:'buzz', hairColor:'#5a4a42', gak:'#6a4a3a', bontan:'#3a281f' },
+    'riezent-boss':  { hair:'pompXL',  hairColor:'#050505', gak:'#3a2a1c', bontan:'#241810', scar:true, weapon:'bat' },
+    'karate-boss':   { hair:'buzz',    hairColor:'#1a1a1a', gak:'#2a2a30', bontan:'#1a1a20', scar:true },
     'skinhead':      { hair:'skinhead', tattoo:true, shades:true, scar:true, weapon:'blade', skin:'#e8b486', gak:'#26262e', bontan:'#15151b' }
   };
 
   function buildCfxHTML(c) {
+    // 髪型カタログ: plain(七三短髪)/pomp(リーゼント)/pompXL(超ロング)/mohawk/skinhead/
+    //   long(ロン毛)/buzz(坊主)/flat(角刈り)/punch(パンチパーマ)/allback(オールバック)/afro(パーマ)
     let head = '';
-    if (c.hair === 'skinhead') {
-      head = '';                                   // 坊主（髪なし）
-    } else if (c.hair === 'plain') {
-      head += `<div class="cfx-crop"></div>`;       // 真面目少年の普通短髪
-    } else {
-      head += `<div class="cfx-hair"><div class="cfx-pomp"></div></div><div class="cfx-mohawk"></div>`;  // リーゼント/モヒカン
+    switch (c.hair) {
+      case 'skinhead': head = ''; break;                                  // 髪なし（坊主頭）
+      case 'plain':    head = `<div class="cfx-crop"></div>`; break;       // 真面目少年
+      case 'mohawk':   head = `<div class="cfx-hair"><div class="cfx-pomp"></div></div><div class="cfx-mohawk"></div>`; break;
+      case 'long':     head = `<div class="cfx-long"></div>`; break;
+      case 'buzz':     head = `<div class="cfx-buzz"></div>`; break;
+      case 'flat':     head = `<div class="cfx-flat"></div>`; break;
+      case 'punch':    head = `<div class="cfx-punch"></div>`; break;
+      case 'allback':  head = `<div class="cfx-allback"></div>`; break;
+      case 'afro':     head = `<div class="cfx-afro"></div>`; break;
+      default:         head = `<div class="cfx-hair"><div class="cfx-pomp"></div></div>`; break;  // pomp/pompXL
     }
+    if (c.streak) head += `<div class="cfx-streak"></div>`;                // 白髪交じりの筋
     if (c.tattoo) head += `<div class="cfx-tattoo">龍</div>`;
     const eyes = c.shades ? `<div class="cfx-shades"></div>`
                           : `<div class="dq-eye l"></div><div class="dq-eye r"></div>`;
@@ -136,6 +145,7 @@ window.Sprites = (function() {
     charEl.classList.toggle('xl', c.hair === 'pompXL');
     charEl.classList.toggle('bald', c.hair === 'skinhead');
     charEl.classList.toggle('mohawk', c.hair === 'mohawk');
+    charEl.classList.toggle('has-streak', !!c.streak);
 
     // 配色（data上書き対応：旧API互換 hairOverride/gakOverride/color/bontanColor）
     charEl.style.setProperty('--hair', data.hairOverride || c.hairColor || '#15110c');

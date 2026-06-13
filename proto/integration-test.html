@@ -5,7 +5,7 @@
 <title>統合テスト — 本番 css/style.css + js/sprites.js</title>
 <link rel="stylesheet" href="../css/style.css">
 <style>
-  body{margin:0;background:#2a2f3a;color:#eee;font-family:system-ui}
+  body{margin:0;background:#2a2f3a;color:#eee;font-family:system-ui;display:block!important;height:auto!important;overflow:auto!important}
   h1{font-size:16px;margin:12px}
   .lbl{font-size:11px;color:#9fb0c0;margin:8px 12px 0}
   .trow{display:flex;flex-wrap:wrap;gap:2px;padding:6px 10px;
@@ -19,6 +19,8 @@
   <h1>統合テスト（本番 css/js を直接ロード）</h1>
   <div class="lbl">▶ 主人公の差別化＆カスタム（真面目少年 → アイテムで不良化 → 雑魚と別物か）</div>
   <div class="trow" id="g-player"></div>
+  <div class="lbl">▶ 髪型カタログ（リーゼント以外も・主人公カスタム＆23キャストで共用）</div>
+  <div class="trow" id="g-hair"></div>
   <div class="lbl">▶ 全アーキタイプ idle（applyCharSprite の出力確認）</div>
   <div class="trow" id="g-idle"></div>
   <div class="lbl">▶ 歩き .walking（手足が踏む）／敵は scaleX(-1)</div>
@@ -54,6 +56,12 @@
     ['player', {cosmetics:{hair:'skinhead', tattoo:true, face:'shades', scar:true, props:['blade']}}, '+スキンヘッド+青龍刀'],
     ['yankee-basic', {}, '雑魚(比較)'],
   ].forEach(([a,d,cap])=>{ const {cell}=makeFighter(a,d); cell.querySelector('.cap').textContent=cap; gPlayer.appendChild(cell); });
+  // 髪型カタログ（playerに各hairをcosmeticsで適用）
+  const gHair=document.getElementById('g-hair');
+  [['plain','七三/短髪'],['pomp','リーゼント'],['pompXL','超ロング'],['long','ロン毛'],['buzz','坊主'],['flat','角刈り'],['punch','パンチパーマ'],['allback','オールバック'],['afro','パーマ'],['mohawk','モヒカン'],['skinhead','スキンヘッド']]
+    .forEach(([h,cap])=>{ const {cell}=makeFighter('player',{cosmetics:{hair:h,hairColor:'#1a1a22'}}); cell.querySelector('.cap').textContent=cap; gHair.appendChild(cell); });
+  // 白髪交じりリーゼント例
+  { const {cell}=makeFighter('player',{cosmetics:{hair:'pomp',hairColor:'#9a9690'}}); cell.querySelector('.cap').textContent='白髪リーゼント'; gHair.appendChild(cell); }
   // idle
   ARCHES.forEach(a=>{ gIdle.appendChild(makeFighter(a).cell); });
   // walk (敵向き)
