@@ -219,8 +219,16 @@ body {
   margin: 4px 0;
 }
 
-.map-controls { padding: 12px; width: 100%; display: flex; justify-content: center; }
-.map-controls .big-btn { width: 100%; max-width: 480px; }
+.map-controls { padding: 8px; width: 100%; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+/* 路線図のスペースを確保するため、ショップ/図鑑/実績は1行の小ボタンに */
+.map-controls .mini-btn {
+  flex: 1 1 0; min-width: 0; width: auto; max-width: none;
+  margin: 0; padding: 9px 4px; font-size: 13px; border-width: 2px; min-height: 42px;
+}
+.map-controls #btn-board {
+  flex: 1 1 100%; width: 100%; max-width: 480px; margin: 2px auto 0;
+  padding: 12px; font-size: 18px;
+}
 
 /* ==== 戦闘画面 ==== */
 #screen-battle { padding: 0; }
