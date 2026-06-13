@@ -411,15 +411,15 @@ window.STATIONS = [
     line: '名鉄西尾線',
     distanceFromPrev: 1.1,
     enemy: {
-      name: '安城 信行',
-      title: '北安城の参謀格',
+      name: '柴田 高志',
+      title: '北安城の成金',
       hp: 160,
       atk: 25,
       speed: 11,
-      color: '#311b92',
-      emoji: '🥋',
-      voice: '無駄な争いはしたくない。だが退く気もない',
-      bontanColor: '#1a0d52'
+      color: '#b8860b',
+      emoji: '💰',
+      voice: '金なら腐るほどある。痛い目みたくなけりゃ消えな',
+      bontanColor: '#7a5a0a'
     }
   },
   // ==== ラスボス ====
@@ -491,18 +491,18 @@ window.STATION_ARCHETYPE = {
   // 西尾線
   'kami-yokosuka':      'ozaki',            // 尾崎清則：こわもて筋肉・鳶（ニッカポッカ＋腹掛け）
   'fukuchi':            'fukuchi',          // 福地浩二：賭場の中年（開襟＋金ネックレス＋サングラス）
-  'nishio':             'skinhead',         // 西尾はスキンヘッド（入れ墨・青龍刀）固定（2026-06-12 hoshiさん指定）
+  'nishio':             'nishino',          // 西野怜司：上半身裸＋全身和彫り＋ロン毛＋抹茶緑（user指定 2026-06-14）
   'nishio-guchi':       'eguchi',           // 江口元太：口の悪い一匹狼（パーマ＋赤ジャージ）
   'sakuramachi-mae':    'machida',          // 町田修平：商店街の用心棒（前掛け＋バール）
   'yonezu':             'yoneda',           // 米田剛：米屋の巨漢（米俵パワー）
   'minami-sakurai':     'ksakurai',         // 桜井恭太：喧嘩屋（モヒカン＋傷）
   'sakurai':            'sakuraba',         // 桜庭蓮：兄貴分（超ロングリーゼント＋咥えタバコ）
   'horiuchi-koen':      'big-boss',         // 公園のヌシ
-  'hekikai-furui':      'yankee-basic',
-  'minami-anjo':        'riezent-boss',     // タカシ：リーゼント
-  'kita-anjo':          'karate-boss',      // ノブ兄：空手
+  'hekikai-furui':      'furuya',           // 古谷文夫：古株（白髪交じりリーゼント）
+  'minami-anjo':        'andou',            // 安藤隆：超ロングリーゼントの伊達男
+  'kita-anjo':          'shibata',          // 柴田高志：成金スタイル（白スーツ＋金ネックレス＋サングラス）user指定
   // ラスボス
-  'shin-anjo':          'final-boss'
+  'shin-anjo':          'anjo'              // 安生譲二：総長（スキンヘッド＋全身和彫り＋白特攻服肩掛け＋青龍刀＋巨躯）
 };
 
 // 各駅の enemy にアーキタイプIDを自動付与

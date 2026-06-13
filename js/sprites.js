@@ -114,7 +114,23 @@ window.Sprites = (function() {
                        scar:true, face:'shout' },
     // 桜井／桜庭蓮: 桜井の兄貴分。超ロングリーゼント＋咥えタバコ・余裕
     'sakuraba':      { body:'tall', hair:'pompXL', hairColor:'#101014', gak:'#2a1a3a', bontan:'#1a1024',
-                       cig:true, face:'smirk' }
+                       cig:true, face:'smirk' },
+    // 西尾／西野怜司: 西尾を束ねる中ボス。上半身裸＋全身和彫り＋ロン毛＋抹茶緑(user指定:上半身裸・入れ墨)
+    'nishino':       { body:'tall', hair:'long', hairColor:'#0d0d12', shirtless:true, bontan:'#1c3010',
+                       skin:'#d8a874', muffler:'#7ab04a', scar:true },
+    // 碧海古井／古谷文夫: 古株。白髪交じりリーゼント・渋い痩躯
+    'furuya':        { body:'normal', hair:'pomp', hairColor:'#9a9690', streak:true, gak:'#2a2a30', bontan:'#1a1a20',
+                       scar:true, face:'smirk' },
+    // 南安城／安藤隆: 超ロングリーゼントの伊達男
+    'andou':         { body:'big', hair:'pompXL', hairColor:'#080808', gak:'#2a1a3a', bontan:'#1a1024',
+                       scar:true, face:'smirk' },
+    // 北安城／柴田高志: 成金スタイル。派手な白スーツ＋金ネックレス＋サングラス＋オールバック(user指定)
+    'shibata':       { body:'big', hair:'allback', hairColor:'#15120c', gak:'#ece2c4', bontan:'#b8a878',
+                       outfit:'suit', necklace:true, shades:true, face:'smirk', accColor:'#e8c24a' },
+    // 新安城／安生譲二: ラスボス総長。スキンヘッド＋全身和彫り＋白特攻服肩掛け＋青龍刀＋巨躯
+    'anjo':          { body:'big', scale:1.32, hair:'skinhead', tattoo:true, shirtless:true,
+                       drape:true, white:true, belt:true, weapon:'blade', shades:true, scar:true,
+                       skin:'#d8a874', gak:'#e8e6dc', bontan:'#cfcabb' }
   };
 
   function buildCfxHTML(c) {
@@ -152,6 +168,7 @@ window.Sprites = (function() {
       ${c.haragake ? '<div class="cfx-haragake"></div>' : ''}
       ${c.hannya ? '<div class="cfx-hannya"></div>' : ''}
       ${c.necklace ? '<div class="cfx-necklace"></div>' : ''}
+      ${c.muffler ? '<div class="cfx-muffler"></div>' : ''}
       ${c.apron ? '<div class="cfx-apron"></div>' : ''}
       ${c.bucket ? '<div class="cfx-bucket"></div>' : ''}
       ${c.bale ? '<div class="cfx-bale"></div>' : ''}
@@ -214,6 +231,8 @@ window.Sprites = (function() {
     charEl.classList.toggle('o-robe', c.outfit === 'robe');
     charEl.classList.toggle('o-suit', c.outfit === 'suit');
     charEl.classList.toggle('nikka', !!c.nikka);
+    charEl.classList.toggle('shirtless', !!c.shirtless);
+    if (c.muffler) charEl.style.setProperty('--muf', c.muffler);
 
     // 配色（data上書き対応：旧API互換 hairOverride/gakOverride/color/bontanColor）
     charEl.style.setProperty('--hair', data.hairOverride || c.hairColor || '#15110c');
@@ -230,7 +249,7 @@ window.Sprites = (function() {
     cfx.innerHTML = buildCfxHTML(c);
     charEl.appendChild(cfx);
 
-    return data.isBig ? 1.22 : (c.body === 'big' ? 1.12 : 1);
+    return c.scale || (data.isBig ? 1.22 : (c.body === 'big' ? 1.12 : 1));
   }
 
   return { applyCharSprite, delinquentHeadHTML, VISUALS_BY_ARCHETYPE, CFX };
