@@ -167,6 +167,19 @@ window.Game = (function() {
     victim.style.right = '80px';
     victim.style.transition = '';
     victim.querySelector('.char-body').style.background = enemy.color; // 上着（学ラン）は着たまま
+    // 倒したボスの顔を表示（スマホでも誰を倒したか分かるよう、その駅のボスの見た目に）
+    if (window.Sprites && window.Sprites.delinquentHeadHTML && window.STATION_ARCHETYPE) {
+      const stId2 = window.STATIONS[currentStationIndex].id;
+      const arche = window.STATION_ARCHETYPE[stId2] || 'yankee-basic';
+      const bv = window.Sprites.VISUALS_BY_ARCHETYPE[arche] || window.Sprites.VISUALS_BY_ARCHETYPE['yankee-basic'];
+      const vHead = victim.querySelector('.char-head');
+      if (vHead && bv) {
+        vHead.style.cssText = 'position:relative; width:52px; height:56px; zoom:1.5;';
+        vHead.innerHTML = window.Sprites.delinquentHeadHTML(bv);
+        victim.style.setProperty('--hair', bv.hair || '#1a140e');
+        victim.style.setProperty('--skin', bv.skin || '#f2c899');
+      }
+    }
     const vBontan = victim.querySelector('.victim-bontan');
     const vTrunks = victim.querySelector('.victim-trunks');
     const vLegs = victim.querySelector('.victim-legs');
