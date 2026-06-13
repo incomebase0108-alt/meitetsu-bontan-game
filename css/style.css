@@ -2339,3 +2339,12 @@ img.char-sprite {
 @keyframes cssx-kickbody { 0%,100%{transform:translateX(0)} 45%{transform:translateX(18px)} }
 .belt-f.cssx.act-throw { animation:cssx-throwbody .6s ease-out; }
 @keyframes cssx-throwbody { 0%,100%{transform:translateX(0)} 40%{transform:translateX(22px)} }
+/* 番長立ち（エンディング/キメ）: 腕組み＋仁王立ち。.cssx.banchou で発火(belt外でも可) */
+.cssx.banchou .cfx-arm, .cssx.banchou .cfx-leg { animation:none !important; }
+.cssx.banchou .cfx-arm.front { transform:translateX(calc(var(--torsow)/2 - 5px)) rotate(112deg); z-index:7; }
+.cssx.banchou .cfx-arm.back  { transform:translateX(calc(-1 * var(--torsow)/2 + 5px)) rotate(-112deg); z-index:7; filter:none; }
+.cssx.banchou .cfx-leg.l { transform:translateX(calc(-1 * var(--legsp) - 3px)) rotate(9deg); }
+.cssx.banchou .cfx-leg.r { transform:translateX(calc(var(--legsp) + 3px)) rotate(-9deg); }
+/* 代紋（やくざの着物/スーツ胸の家紋） */
+.cfx-kamon { position:absolute; top:58px; left:50%; transform:translateX(-50%); width:14px; height:14px; border:2px solid #e8c24a; border-radius:50%; z-index:6; }
+.cfx-kamon::after { content:""; position:absolute; inset:3px; border:2px solid #e8c24a; border-radius:50%; }

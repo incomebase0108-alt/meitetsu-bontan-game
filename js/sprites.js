@@ -186,6 +186,7 @@ window.Sprites = (function() {
       ${c.hannya ? '<div class="cfx-hannya"></div>' : ''}
       ${c.necklace ? '<div class="cfx-necklace"></div>' : ''}
       ${c.muffler ? '<div class="cfx-muffler"></div>' : ''}
+      ${c.kamon ? '<div class="cfx-kamon"></div>' : ''}
       ${c.apron ? '<div class="cfx-apron"></div>' : ''}
       ${c.bucket ? '<div class="cfx-bucket"></div>' : ''}
       ${c.bale ? '<div class="cfx-bale"></div>' : ''}
@@ -205,25 +206,27 @@ window.Sprites = (function() {
       ${weapon}`;
   }
 
-  // 主人公カスタム: アイテムで取得した cosmetics を config に反映（不良化）。
-  // schema: { body, hair, hairColor, outfit, outfitColor, face, sarashi, scar, props:[], accColor }
+  // 主人公カスタム: アイテムで取得した cosmetics を config に反映（不良化→やくざ化）。
+  // schema: { body,hair,hairColor,outfit,outfitColor,bontanColor,face,sarashi,scar,tattoo,
+  //           shades,mask,necklace,cigar,kamon,muffler,streak,shirtless,weapon,props:[],accColor }
   // shop/save/通貨の配線は1号機。ここは描画キーへのマッピングのみ。
   function applyCosmetics(c, cm) {
-    if (cm.body) c.body = cm.body;
-    if (cm.hair) c.hair = cm.hair;                 // plain|pomp|pompXL|mohawk|skinhead
-    if (cm.hairColor) c.hairColor = cm.hairColor;
+    ['body', 'hair', 'hairColor', 'face', 'sarashi', 'scar', 'tattoo', 'shades', 'mask',
+     'necklace', 'cigar', 'kamon', 'muffler', 'streak', 'shirtless', 'weapon', 'skin', 'scale']
+      .forEach(k => { if (cm[k] !== undefined) c[k] = cm[k]; });
     if (cm.outfitColor) c.gak = cm.outfitColor;
     if (cm.bontanColor) c.bontan = cm.bontanColor;
-    if (cm.outfit === 'white-tokko') { c.white = true; c.belt = true; }
-    if (cm.outfit === 'tokkofuku') { c.sarashi = true; }
-    if (cm.face === 'shades') c.shades = true;
-    else if (cm.face === 'mask') c.mask = true;
-    else if (cm.face && cm.face !== 'plain') c.face = cm.face;  // smirk/shout等
-    if (cm.sarashi !== undefined) c.sarashi = cm.sarashi;
-    if (cm.scar) c.scar = true;
-    if (cm.tattoo) c.tattoo = true;
+    if (cm.outfit) {
+      c.outfit = cm.outfit;
+      if (cm.outfit === 'white-tokko') {
+        c.white = true; c.belt = true;
+        c.gak = cm.outfitColor || '#e8e4d8';        // 白特攻服: 胴も白く
+        c.bontan = cm.bontanColor || '#d6d2c6';
+      }
+      if (cm.outfit === 'shirtless') c.shirtless = true;
+    }
     (cm.props || []).forEach(p => {
-      if (['bat', 'pipe', 'blade', 'bokuto'].indexOf(p) >= 0) c.weapon = p;
+      if (['bat', 'pipe', 'blade', 'bokuto', 'harpoon', 'rake'].indexOf(p) >= 0) c.weapon = p;
       else if (p === 'cigarette') c.cig = true;
       else if (p === 'chain') c.chain = true;
     });

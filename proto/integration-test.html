@@ -19,7 +19,7 @@
   <h1>統合テスト（本番 css/js を直接ロード）</h1>
   <div class="lbl">▶ 主人公の差別化＆カスタム（真面目少年 → アイテムで不良化 → 雑魚と別物か）</div>
   <div class="trow" id="g-player"></div>
-  <div class="lbl">▶ 23駅 固有config（蒲生健司=蒲郡・漁師上がり：日焼け/刈上げ/腹巻/ゴム長/銛）idle・歩き・銛振り</div>
+  <div class="lbl">▶ エンディング ビフォーアフター（真面目少年 → 番長[特攻服] → やくざ転身・番長立ち）</div>
   <div class="trow" id="g-station"></div>
   <div class="lbl">▶ 髪型カタログ（リーゼント以外も・主人公カスタム＆23キャストで共用）</div>
   <div class="trow" id="g-hair"></div>
@@ -60,8 +60,13 @@
   ].forEach(([a,d,cap])=>{ const {cell}=makeFighter(a,d); cell.querySelector('.cap').textContent=cap; gPlayer.appendChild(cell); });
   // 23駅 固有config: 蒲生健司
   const gStation=document.getElementById('g-station');
-  [['mob-cig','チンピラ'],['mob-afro','チャラ男'],['mob-moha','尖り'],['mob-pipe','鉄パイプ'],['mob-big','ガタイ'],['mob-mask','コソ泥'],['mob-flat','突っ張り'],['mob-long','与太者'],['mob-allb','半グレ']].forEach(([a,cap])=>{
-    const {cell}=makeFighter(a); cell.querySelector('.cap').textContent=cap; gStation.appendChild(cell);
+  // エンディング ビフォーアフター: 真面目少年 → 番長 → やくざ（番長立ち=腕組み）
+  [
+    ['player', {}, '初期(真面目)', false],
+    ['player', {cosmetics:{hair:'pompXL',hairColor:'#101010',outfit:'white-tokko',face:'smirk'}}, '番長(特攻服)', true],
+    ['player', {cosmetics:{hair:'allback',hairColor:'#14140f',outfit:'suit',outfitColor:'#2a2e3a',bontanColor:'#1c2028',shades:true,cigar:true,necklace:true,kamon:true,face:'smirk'}}, 'やくざ転身', true],
+  ].forEach(([a,d,cap,ban])=>{
+    const {cell,f}=makeFighter(a,d); if(ban) f.classList.add('banchou'); cell.querySelector('.cap').textContent=cap; gStation.appendChild(cell);
   });
   setInterval(()=>{ document.querySelectorAll('#g-station .fighter.act-slash').forEach(f=>{ f.classList.remove('act-slash'); void f.offsetWidth; f.classList.add('act-slash'); }); }, 800);
   // 髪型カタログ（playerに各hairをcosmeticsで適用）
