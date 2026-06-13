@@ -864,7 +864,8 @@ window.Battle = (function() {
             e.state = 'dead';
             e.fEl.classList.remove('down-pose');
             e.fEl.classList.add('defeated');
-            e.el.style.opacity = '0';
+            // ※以前は e.el.style.opacity='0' で即時に消していたが、ボスが「戦闘中に
+            //   いきなり透明になった」ように見えるため廃止。.defeated の倒れ込み演出を見せる。
             if (e === S.boss) victory();
             else {
               gainMeter(8);
