@@ -478,17 +478,17 @@ window.STATION_ARCHETYPE = {
   // 蒲郡線
   'gamagori':           'gamo',             // 蒲生健司：漁師上がり（日焼け・刈上げ・腹巻・ゴム長・銛）
   'gamagori-kyoutei':   'sanada',           // 真田雅彦：博徒チンピラ（アロハ＋サングラス）
-  'mikawa-kashima':     'yankee-basic',     // シカジマ
+  'mikawa-kashima':     'kashima',          // 鹿島修：漁港の大男（ウェットスーツ・銛）
   'katahara':           'katahara',         // 片原大輔：みかん農家（麦わら帽＋前掛け）
   'nishiura':           'yuasa',            // 湯浅治：温泉番頭くずれ（丹前＋鉢巻＋桶）
   'kodomonokuni':       'kid-boss',         // ガキ大将ケンジ
-  'higashi-hazu':       'yankee-fisher',    // アサリのトミ
-  'nishi-hazu':         'yankee-fisher',    // ハズの竜
+  'higashi-hazu':       'tomita',           // 富田智明：潮干狩り漁師（ロン毛＋入れ墨・熊手）
+  'nishi-hazu':         'hazu',             // 羽豆竜也：若頭格（長ラン肩掛け・細身長身）
   'mikawa-toba':        'yankee-fire',      // 鳥羽の鬼面
   // 乗換中ボス
   'kira-yoshida':       'samurai-yanki',
   // 西尾線
-  'kami-yokosuka':      'yankee-basic',
+  'kami-yokosuka':      'ozaki',            // 尾崎清則：こわもて筋肉・鳶（ニッカポッカ＋腹掛け）
   'fukuchi':            'gambler-boss',     // フク兄ィ：博打使い
   'nishio':             'skinhead',         // 西尾はスキンヘッド（入れ墨・青龍刀）固定（2026-06-12 hoshiさん指定）
   'nishio-guchi':       'yankee-basic',

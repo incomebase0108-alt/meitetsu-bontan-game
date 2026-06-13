@@ -75,7 +75,19 @@ window.Sprites = (function() {
                        skin:'#d6a064', straw:true, apron:true, face:'plain' },
     // 西浦／湯浅治: 温泉旅館の番頭くずれ。丹前＋鉢巻＋桶、ずんぐり
     'yuasa':         { body:'big', hair:'buzz', hairColor:'#2a2620', gak:'#3a5a6a', bontan:'#24323a',
-                       outfit:'robe', hachimaki:true, bucket:true, face:'shout' }
+                       outfit:'robe', hachimaki:true, bucket:true, face:'shout' },
+    // 三河鹿島／鹿島修: 寡黙な漁港の大男。短髪・ウェットスーツ・銛、大型
+    'kashima':       { body:'big', hair:'buzz', hairColor:'#15140f', gak:'#2b333e', bontan:'#1b2027',
+                       skin:'#c89058', outfit:'work', weapon:'harpoon', scar:true, face:'shout' },
+    // 東幡豆／富田智明: 潮干狩りの漁師。ロン毛＋入れ墨・熊手・バケツ・痩躯ニヒル
+    'tomita':        { body:'slim', hair:'long', hairColor:'#161410', gak:'#3a3a30', bontan:'#24241c',
+                       skin:'#cf9a63', irezumi:true, boots:true, weapon:'rake', bucket:true, face:'smirk' },
+    // 西幡豆／羽豆竜也: 背中に龍刺青の若頭格。長ラン肩掛け・鋭い目・細身長身
+    'hazu':          { body:'tall', hair:'allback', hairColor:'#0d0d12', gak:'#15151c', bontan:'#0c0c12',
+                       drape:true, scar:true },
+    // 上横須賀／尾崎清則: こわもての筋肉・鳶の格好（ニッカポッカ＋腹掛け＋手ぬぐい＋地下足袋）
+    'ozaki':         { body:'big', hair:'buzz', hairColor:'#14130f', gak:'#1c2a4a', bontan:'#16223a',
+                       skin:'#c08a52', outfit:'work', nikka:true, haragake:true, hachimaki:true, scar:true, face:'shout' }
   };
 
   function buildCfxHTML(c) {
@@ -107,7 +119,10 @@ window.Sprites = (function() {
       <div class="cfx-leg l"><div class="th"></div><div class="sh"></div></div>
       <div class="cfx-leg r"><div class="th"></div><div class="sh"></div></div>
       ${c.chain ? '<div class="cfx-chain"></div>' : ''}
+      ${c.drape ? '<div class="cfx-drape"></div>' : ''}
       <div class="cfx-torso${c.white ? ' white' : ''}">${c.sarashi ? '<div class="cfx-sarashi"></div>' : ''}${c.belt ? '<div class="cfx-belt"></div>' : ''}${c.outfit === 'robe' ? '<div class="cfx-obi"></div>' : ''}</div>
+      ${c.irezumi ? '<div class="cfx-irezumi"></div>' : ''}
+      ${c.haragake ? '<div class="cfx-haragake"></div>' : ''}
       ${c.apron ? '<div class="cfx-apron"></div>' : ''}
       ${c.bucket ? '<div class="cfx-bucket"></div>' : ''}
       <div class="cfx-head${faceCls}">
@@ -167,6 +182,7 @@ window.Sprites = (function() {
     charEl.classList.toggle('o-work', c.outfit === 'work');
     charEl.classList.toggle('o-aloha', c.outfit === 'aloha');
     charEl.classList.toggle('o-robe', c.outfit === 'robe');
+    charEl.classList.toggle('nikka', !!c.nikka);
 
     // 配色（data上書き対応：旧API互換 hairOverride/gakOverride/color/bontanColor）
     charEl.style.setProperty('--hair', data.hairOverride || c.hairColor || '#15110c');

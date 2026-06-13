@@ -60,7 +60,7 @@
   ].forEach(([a,d,cap])=>{ const {cell}=makeFighter(a,d); cell.querySelector('.cap').textContent=cap; gPlayer.appendChild(cell); });
   // 23駅 固有config: 蒲生健司
   const gStation=document.getElementById('g-station');
-  [['gamo','蒲生健司(蒲郡)'],['sanada','真田雅彦(競艇場前)'],['katahara','片原大輔(形原)'],['yuasa','湯浅治(西浦)']].forEach(([a,cap])=>{
+  [['kashima','鹿島修(三河鹿島)'],['tomita','富田智明(東幡豆)'],['hazu','羽豆竜也(西幡豆)'],['ozaki','尾崎清則(上横須賀)']].forEach(([a,cap])=>{
     const {cell}=makeFighter(a); cell.querySelector('.cap').textContent=cap; gStation.appendChild(cell);
   });
   setInterval(()=>{ document.querySelectorAll('#g-station .fighter.act-slash').forEach(f=>{ f.classList.remove('act-slash'); void f.offsetWidth; f.classList.add('act-slash'); }); }, 800);
