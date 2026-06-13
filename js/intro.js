@@ -2,11 +2,11 @@
 window.StoryIntro = (function() {
 
   const PANELS = [
-    { who: '三谷水産 組長', face: '🦑', cls: 'boss',
+    { who: '三谷水産 番長', face: '🦑', cls: 'boss',
       text: 'おう、新入り。三谷水産にゃ威勢のいいのが揃っとるが……テメェみてぇな弱(よえ)ぇ鉄砲玉が、一番下っ端よ。' },
-    { who: '三谷水産 組長', face: '🦑', cls: 'boss',
+    { who: '三谷水産 番長', face: '🦑', cls: 'boss',
       text: '蒲郡線から西尾線……<b style="color:#ff9a3c">名鉄全線、端から端までシメてこいや。</b>' },
-    { who: '三谷水産 組長', face: '🦑', cls: 'boss',
+    { who: '三谷水産 番長', face: '🦑', cls: 'boss',
       text: '各駅の番長どものボンタン、全部引っ剥がして持って帰れ。手ぶらで戻ったら……三河湾に沈めるぞ。' },
     { who: 'お前（鉄砲玉）', face: '😨', cls: 'hero',
       text: 'お、押忍ッ……！三谷水産の名にかけて……い、いってきますッ！' },
