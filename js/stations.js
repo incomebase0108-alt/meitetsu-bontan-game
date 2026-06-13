@@ -461,7 +461,15 @@ window.PLAYER_INIT = {
   streak: 0,      // 連勝数（負けでリセット）
   bestStreak: 0,  // 最高連勝
   lastDaily: '',  // デイリーボーナス最終受取日(YYYY-MM-DD)
-  ngPlus: 0       // 強くてニューゲーム+ の周回数
+  ngPlus: 0,      // 強くてニューゲーム+ の周回数
+  // 主人公の見た目カスタム（真面目少年が初期）。描画は applyCharSprite が cosmetics を解釈。
+  cosmetics: {
+    body: 'normal', hair: 'plain', hairColor: '#15110c',
+    outfit: 'gakuran', outfitColor: '#191921', bontanColor: '#23232c',
+    face: 'plain', sarashi: false, scar: false, tattoo: false,
+    props: [], accColor: '#cccccc'
+  },
+  cosmeticsOwned: { hair: ['plain'], outfit: ['gakuran'], face: ['plain'] }
 };
 
 // 駅ID → キャラアーキタイプID

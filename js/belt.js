@@ -1320,7 +1320,8 @@ window.Battle = (function() {
     // プレイヤー生成
     const player = makeEntity('player', 'player', {
       name: gp.name, hp: gp.hp, atk: gp.atk, speed: PLAYER_SPEED,
-      color: '#191921', bontanColor: '#23232c'
+      color: '#191921', bontanColor: '#23232c',
+      cosmetics: gp.cosmetics   // 主人公の着せ替えを戦闘に反映（applyCharSprite が解釈）
     }, 100, S.yMax * 0.5);
     player.maxHp = gp.maxHp;
     player.dir = 1;

@@ -1361,6 +1361,42 @@ img.char-sprite {
 .shop-head h2 { margin: 0; font-size: 20px; color: #ffe08a; }
 .shop-money { font-size: 14px; color: #fff; }
 .shop-money b { color: #ffd700; font-size: 18px; }
+
+/* ショップ タブ（強化／見た目） */
+.shop-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.shop-tab {
+  flex: 1; padding: 8px; border: 1px solid rgba(212,160,23,0.5);
+  background: rgba(255,255,255,0.04); color: #cbb3c0; border-radius: 8px;
+  font-weight: bold; cursor: pointer;
+}
+.shop-tab.on { background: #d4a017; color: #1a1320; }
+
+/* 見た目カスタム */
+.look-wrap { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+.look-preview {
+  align-self: center; width: 120px; height: 150px;
+  background: radial-gradient(ellipse at 50% 80%, #2a2438 0%, #161018 70%);
+  border: 1px solid rgba(212,160,23,0.4); border-radius: 10px;
+  position: relative; overflow: hidden;
+}
+.look-preview .fighter {
+  position: absolute; left: 50%; bottom: 8px;
+  transform: translateX(-50%) scale(1.15); transform-origin: bottom center;
+}
+.look-cats { display: flex; flex-direction: column; gap: 10px; }
+.look-cat-label { font-size: 12px; color: #ffcf7a; font-weight: bold; margin-bottom: 4px; }
+.look-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.look-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-width: 84px; padding: 7px 9px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(212,160,23,0.4);
+  border-radius: 8px; color: #eee; cursor: pointer; font-size: 12px;
+}
+.look-item .look-tag { font-size: 10px; color: #ffd700; }
+.look-item.owned .look-tag { color: #9fddc0; }
+.look-item.on { border-color: #ffd700; background: rgba(212,160,23,0.22); }
+.look-item.on .look-tag { color: #fff; }
+.look-item.disabled { opacity: 0.45; cursor: not-allowed; }
 .shop-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
 .shop-row {
   display: flex; align-items: center; gap: 10px;
