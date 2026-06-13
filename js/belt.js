@@ -119,24 +119,24 @@ window.Battle = (function() {
   function mobTaunt() {
     const name = (S.station && S.station.name) || 'ここ';
     const lines = [
-      `${name}なめんじゃねぇー！`,
-      'ぶっ殺すぞコラ！',
-      `${name}の番張っとんじゃ！`,
-      'シメたるわ！',
-      `${name}から出てけや！`,
-      'おうコラ、待たんかい！'
+      `${name}は俺たちの場所だ`,
+      'これ以上は通さない',
+      `${name}で揉め事はやめときな`,
+      '相手になるぞ',
+      `悪いが${name}から先へは行かせない`,
+      '待ちな、どこへ行く'
     ];
     return lines[Math.floor(Math.random() * lines.length)];
   }
 
   const TAUNTS = [
-    'おうおう、ビビっとんのか？',
-    'その程度かよ三河の喧嘩は！',
-    'ボンタンは渡さねぇぞコラ！',
-    '歯ァ食いしばれや！',
-    '上等じゃねぇか…！',
-    'テメェのリーゼント、へし折ったる！',
-    '夜露死苦ぅ！！'
+    'どうした、もう終わりか?',
+    'その程度か',
+    'ボンタンは渡さない',
+    '歯を食いしばれ',
+    '上等だ',
+    '本気でやる',
+    '容赦しない'
   ];
 
   // ==== DOMヘルパ ====
@@ -761,7 +761,7 @@ window.Battle = (function() {
       b.speed *= 1.3;
       b.fEl.classList.add('aura-active');
       log(`<span style="color:#ff3366; font-weight:bold">${b.data.name}の目の色が変わった！！</span>`);
-      showTaunt(b, 'キレちまったぜ…ここからが本番じゃ！');
+      showTaunt(b, '……ここからは本気でいく');
       window.Audio8 && window.Audio8.SFX.guardBreak && window.Audio8.SFX.guardBreak();
     }
   }
@@ -831,7 +831,7 @@ window.Battle = (function() {
     bike.innerHTML = '<u class="muf"></u><b></b><u class="cowl"></u><i class="bw f"></i><i class="bw b"></i>';
     rider.fEl.appendChild(bike);
     S.enemies.push(rider);
-    setTimeout(() => { if (S && rider.state === 'ride') showTaunt(rider, 'どけどけぇーー！！'); }, 350);
+    setTimeout(() => { if (S && rider.state === 'ride') showTaunt(rider, 'そこをどけ！'); }, 350);
     window.Audio8 && window.Audio8.SFX.dash && window.Audio8.SFX.dash();
     // 単車のエンジン音（持続）。走行中ループ → 退場/落馬で停止
     if (window.Audio8 && window.Audio8.startEngine) rider.engineSfx = window.Audio8.startEngine();
@@ -862,12 +862,12 @@ window.Battle = (function() {
       e.dir = S.player.x > e.x ? 1 : -1;
     });
     const lines = [
-      '今ガン飛ばしただろ、お前！',
-      'なんだぁ？ケンカ売ってんのかぁ？',
-      'おうコラ、メンチ切ったな？',
-      '誰に断ってこの道歩いとんじゃ？',
-      '兄ちゃん、ええ度胸しとるのう…',
-      '見せもんじゃねぇぞコラ！'
+      '今、こっちを見たな?',
+      'やる気か?',
+      'こっちを睨んだな?',
+      'ここはお前の来る場所じゃない',
+      'いい度胸してるじゃないか',
+      'じろじろ見るな'
     ];
     if (group[0]) showTaunt(group[0], lines[Math.floor(Math.random() * lines.length)]);
     log('<span style="color:#ff9966">不良たちに絡まれた！</span>');
