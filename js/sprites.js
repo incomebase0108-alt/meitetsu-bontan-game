@@ -96,7 +96,25 @@ window.Sprites = (function() {
                        outfit:'suit', weapon:'bokuto', face:'smirk', scar:true },
     // 米津／米田剛: 米屋の巨漢。米俵パワー・超大型
     'yoneda':        { body:'big', hair:'buzz', hairColor:'#1c160e', gak:'#4a3a22', bontan:'#2e2414',
-                       skin:'#d0a064', bale:true, face:'shout', scar:true }
+                       skin:'#d0a064', bale:true, face:'shout', scar:true },
+    // こどもの国／鈴木健児: 悪ガキ上がり。小柄・ヤンチャ・バット
+    'suzuki':        { body:'slim', hair:'pomp', hairColor:'#3a2410', gak:'#c89a20', bontan:'#7a5a14',
+                       weapon:'bat', face:'smirk' },
+    // 福地／福地浩二: 賭場の中年。開襟＋金ネックレス＋サングラス、にやけ中肉
+    'fukuchi':       { body:'big', hair:'allback', hairColor:'#1a1712', gak:'#332a1a', bontan:'#221c10',
+                       skin:'#e0b080', shades:true, necklace:true, face:'smirk' },
+    // 西尾口／江口元太: 口の悪い一匹狼。パーマ＋赤ジャージ＋咥え物、軽薄痩せ
+    'eguchi':        { body:'slim', hair:'afro', hairColor:'#2a1a0e', gak:'#a83232', bontan:'#3a1414',
+                       cig:true, face:'smirk' },
+    // 桜町前／町田修平: 商店街の用心棒。前掛け＋バール
+    'machida':       { body:'normal', hair:'buzz', hairColor:'#1a140e', gak:'#3a4a3a', bontan:'#1c241c',
+                       apron:true, weapon:'pipe', face:'shout' },
+    // 南桜井／桜井恭太: 喧嘩屋。モヒカン＋傷
+    'ksakurai':      { body:'normal', hair:'mohawk', hairColor:'#7a1530', gak:'#2a2a32', bontan:'#1a1a20',
+                       scar:true, face:'shout' },
+    // 桜井／桜庭蓮: 桜井の兄貴分。超ロングリーゼント＋咥えタバコ・余裕
+    'sakuraba':      { body:'tall', hair:'pompXL', hairColor:'#101014', gak:'#2a1a3a', bontan:'#1a1024',
+                       cig:true, face:'smirk' }
   };
 
   function buildCfxHTML(c) {

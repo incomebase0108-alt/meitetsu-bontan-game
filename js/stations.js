@@ -481,7 +481,7 @@ window.STATION_ARCHETYPE = {
   'mikawa-kashima':     'kashima',          // 鹿島修：漁港の大男（ウェットスーツ・銛）
   'katahara':           'katahara',         // 片原大輔：みかん農家（麦わら帽＋前掛け）
   'nishiura':           'yuasa',            // 湯浅治：温泉番頭くずれ（丹前＋鉢巻＋桶）
-  'kodomonokuni':       'kid-boss',         // ガキ大将ケンジ
+  'kodomonokuni':       'suzuki',           // 鈴木健児：悪ガキ上がり（小柄・バット）
   'higashi-hazu':       'tomita',           // 富田智明：潮干狩り漁師（ロン毛＋入れ墨・熊手）
   'nishi-hazu':         'hazu',             // 羽豆竜也：若頭格（長ラン肩掛け・細身長身）
   'mikawa-toba':        'toba',             // 鳥羽修司：火祭りの暴れ者（般若面）
@@ -489,13 +489,13 @@ window.STATION_ARCHETYPE = {
   'kira-yoshida':       'kira',             // 吉良雅樹：名家のボンボン（金髪＋白スーツ＋木刀）
   // 西尾線
   'kami-yokosuka':      'ozaki',            // 尾崎清則：こわもて筋肉・鳶（ニッカポッカ＋腹掛け）
-  'fukuchi':            'gambler-boss',     // フク兄ィ：博打使い
+  'fukuchi':            'fukuchi',          // 福地浩二：賭場の中年（開襟＋金ネックレス＋サングラス）
   'nishio':             'skinhead',         // 西尾はスキンヘッド（入れ墨・青龍刀）固定（2026-06-12 hoshiさん指定）
-  'nishio-guchi':       'yankee-basic',
-  'sakuramachi-mae':    'thrower-boss',     // マチオ：シャッター叩き
+  'nishio-guchi':       'eguchi',           // 江口元太：口の悪い一匹狼（パーマ＋赤ジャージ）
+  'sakuramachi-mae':    'machida',          // 町田修平：商店街の用心棒（前掛け＋バール）
   'yonezu':             'yoneda',           // 米田剛：米屋の巨漢（米俵パワー）
-  'minami-sakurai':     'yankee-fire',      // キョータ：桜散らし
-  'sakurai':            'girl-yankee',      // 花子姉さん
+  'minami-sakurai':     'ksakurai',         // 桜井恭太：喧嘩屋（モヒカン＋傷）
+  'sakurai':            'sakuraba',         // 桜庭蓮：兄貴分（超ロングリーゼント＋咥えタバコ）
   'horiuchi-koen':      'big-boss',         // 公園のヌシ
   'hekikai-furui':      'yankee-basic',
   'minami-anjo':        'riezent-boss',     // タカシ：リーゼント
