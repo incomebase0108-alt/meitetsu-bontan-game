@@ -277,6 +277,50 @@ window.Battle = (function() {
     }
   }
 
+  // 血しぶきの量設定（off / stylish / heavy、デフォ stylish）。外部UIからも切替可能。
+  function getBloodLevel() {
+    try { return localStorage.getItem('mbg_bloodLevel') || 'stylish'; } catch (e) { return 'stylish'; }
+  }
+  window.BloodFX = {
+    get: getBloodLevel,
+    set(v) { try { localStorage.setItem('mbg_bloodLevel', v); } catch (e) {} }
+  };
+
+  // スタイリッシュ血しぶき（CSSのみ・PNG不要。トーン＝漫画的な赤バースト）。
+  // big=強打ほど大量、mult=crit等の倍率、アドレナリンMAX中はさらに2倍。
+  function showBlood(e, big, mult) {
+    const lv = getBloodLevel();
+    if (lv === 'off') return;
+    const stage = $('battle-stage');
+    const p = screenPos(e);
+    const maxAdr = !!(S && S.meter >= 100);
+    let n = (big ? 5 : 3) + Math.floor(Math.random() * 2);            // 基本3〜6個
+    n = Math.round(n * (mult || 1) * (lv === 'heavy' ? 1.6 : 1) * (maxAdr ? 2 : 1));
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement('div');
+      d.className = 'blood-drop' + (big ? ' big' : '');
+      const ang = Math.random() * Math.PI * 2;
+      const dist = 20 + Math.random() * (big ? 60 : 40);
+      d.style.left = (p.x - 4) + 'px';
+      d.style.top = (p.y - SPR_H * 0.55) + 'px';
+      d.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+      d.style.setProperty('--dy', (Math.sin(ang) * dist - 10) + 'px');
+      d.style.setProperty('--sz', (3 + Math.random() * (big ? 6 : 4)) + 'px');
+      stage.appendChild(d);
+      setTimeout(() => d.remove(), 420);
+    }
+    // 小さな汗滴（1〜2個）
+    const sweat = Math.random() < 0.6 ? 1 : 2;
+    for (let i = 0; i < sweat; i++) {
+      const s = document.createElement('div');
+      s.className = 'sweat-drop';
+      s.style.left = (p.x + (Math.random() * 20 - 10)) + 'px';
+      s.style.top = (p.y - SPR_H * 0.8) + 'px';
+      stage.appendChild(s);
+      setTimeout(() => s.remove(), 500);
+    }
+  }
+
   function flashScreen() {
     const flash = $('screen-flash');
     flash.classList.remove('show');
@@ -578,9 +622,11 @@ window.Battle = (function() {
       const powMul = mv.useMeter ? (1 + (S.upg.power || 0) * 0.15) : 1;           // 強化「特攻魂」(必殺威力)
       let dmg = Math.max(1, Math.floor(p.atk * mv.mult * powMul * (isCrit ? 1.8 : 1) * (smash ? 1.4 : 1) * comboMul + Math.random() * 3 - 1));
       e.hp -= dmg;
-      gainMeter(mv.useMeter ? 0 : (mv.mult >= 1.5 ? 9 : 6));
+      // C連動: 命中（=血が舞う）でアドレナリン微増。crit/smashほど多め。
+      gainMeter(mv.useMeter ? 0 : ((mv.mult >= 1.5 ? 9 : 6) + (isCrit ? 4 : 0) + (smash ? 3 : 0)));
       showDamageNumber(e, dmg, isCrit ? 'critical' : 'normal');
       showSpark(e, isCrit || smash || mv.radial);
+      showBlood(e, isCrit || smash || mv.radial, isCrit ? 1.5 : 1);
       if (isCrit || mv.radial || smash) { flashScreen(); shakeStage(); }
       // ヒットストップ: 強打ほど長く止める（通常打は軽く）
       S.hitstop = Math.max(S.hitstop, (isCrit || smash || mv.radial) ? 0.085 : 0.03);

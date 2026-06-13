@@ -1771,6 +1771,32 @@ img.char-sprite {
 .hit-spark.big { width: 52px; height: 52px; }
 /* アドレナリンMAX中の火花（赤金・発光） */
 .hit-spark.max { background: radial-gradient(circle, #fff 0 26%, #ffd24a 26% 50%, #ff3366 50% 100%); filter: drop-shadow(0 0 4px #ff3366); }
+
+/* スタイリッシュ血しぶき（CSSのみ・漫画的赤バースト） */
+.blood-drop {
+  position: absolute; z-index: 14; pointer-events: none;
+  width: var(--sz, 5px); height: var(--sz, 5px);
+  background: radial-gradient(circle at 35% 30%, #ff5a5a, #c40016 70%, #7a000d);
+  border-radius: 60% 60% 65% 65% / 70% 70% 60% 60%;
+  animation: blood-fly 0.42s ease-out forwards;
+}
+.blood-drop.big { filter: drop-shadow(0 0 2px #ff0033); }
+@keyframes blood-fly {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(var(--dx, 0), calc(var(--dy, 0) + 26px)) scale(1); opacity: 0; }
+}
+.sweat-drop {
+  position: absolute; z-index: 14; pointer-events: none;
+  width: 5px; height: 7px;
+  background: linear-gradient(#bfe8ff, #6fb7e6);
+  border-radius: 60% 60% 65% 65% / 80% 80% 55% 55%;
+  animation: sweat-fly 0.5s ease-in forwards;
+}
+@keyframes sweat-fly {
+  0% { transform: translate(0, 0); opacity: 0.9; }
+  100% { transform: translate(8px, 34px); opacity: 0; }
+}
 @keyframes spark-pop {
   0% { transform: scale(0.3) rotate(0deg); opacity: 1; }
   100% { transform: scale(1.7) rotate(45deg); opacity: 0; }
