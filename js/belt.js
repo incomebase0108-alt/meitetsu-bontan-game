@@ -1042,17 +1042,11 @@ window.Battle = (function() {
     const bgT = `translate3d(${-S.cam * 0.9}px,0,0)`;
     if (S.lastBgT !== bgT) { $('belt-bg').style.transform = bgT; S.lastBgT = bgT; }
 
+    // ※画面外カリング(display:none)は「キャラがランダムに消える」不具合の原因になったため撤去。
+    //   軽量化は lowfx(FPS適応) と下の transform/zIndex 差分更新で担保する。
     const all = [S.player, ...S.enemies];
-    const cullL = -SPR_W * 1.5, cullR = S.viewW + SPR_W * 1.5;
     for (const e of all) {
       const sx = e.x - S.cam - SPR_W / 2;
-      // 画面外カリング: オフスクリーンのキャラは描画ツリーから外す(合成コスト削減)。AIは update 側で継続
-      // ボスは戦闘中に消えると致命的なので常に描画(プレイヤーと同様にカリング対象外)
-      if (e !== S.player && e.kind !== 'boss' && (sx < cullL || sx > cullR)) {
-        if (!e.culled) { e.el.style.display = 'none'; e.culled = true; }
-        continue;
-      }
-      if (e.culled) { e.el.style.display = ''; e.culled = false; e.lastTrans = null; e.lastZ = null; }
       const sy = S.groundTop + e.y - SPR_H;
       const t = `translate3d(${sx.toFixed(1)}px,${sy.toFixed(1)}px,0) scaleX(${e.dir}) scale(${(S.gScale * e.scale).toFixed(3)})`;
       if (e.lastTrans !== t) { e.el.style.transform = t; e.lastTrans = t; }
