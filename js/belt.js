@@ -663,6 +663,8 @@ window.Battle = (function() {
       }
     });
     showHitText(victims[0], mv.radial ? 'WHAM!!' : (smash ? 'SMASH!!' : (S.combo >= 3 ? 'BOOM!' : 'BAM!')));
+    // D: 高コンボ／アドレナリンMAX中は、周囲の雑魚が気圧されて日和る
+    if (S.combo >= 5 || S.meter >= 100) tryCower(S.player.x);
   }
 
   function updateMiniHp(e) {
@@ -712,6 +714,44 @@ window.Battle = (function() {
   }
   function releaseToken(e) {
     if (e.attackToken) { e.attackToken = false; S.tokens++; }
+  }
+
+  // ==== D: 敵が日和る（cower） ====
+  // 雑魚を日和らせる。ボス・ライダーは対象外（格を保つ）。originX 周辺のみ／確率で。
+  function tryCower(originX, force) {
+    if (!S) return;
+    const bossName = (S.station && S.station.enemy && S.station.enemy.name)
+      || (S.bossData && S.bossData.name) || '組長';
+    const PANIC = [
+      `ヒィッ…${bossName}さん呼んでくる！俺じゃ勝てねえ！`,
+      'マジかよこいつ…つええ…',
+      '逃げるが勝ちだぁ！'
+    ];
+    const ox = (originX != null) ? originX : S.player.x;
+    S.enemies.forEach(e => {
+      if (e.kind !== 'mob') return;                                  // ボス・ライダーは日和らない
+      if (e.state === 'down' || e.state === 'dead' || e.state === 'getup'
+        || e.state === 'cower' || e.state === 'loiter') return;
+      if (!force && Math.abs(ox - e.x) > 150) return;
+      if (Math.random() > 0.55) return;
+      enterCower(e, PANIC);
+    });
+  }
+
+  function enterCower(e, panicLines) {
+    releaseToken(e);                                                 // 攻撃トークンを手放す＝当分殴ってこない
+    e.move = null;
+    e.state = 'cower'; e.stateT = 0;
+    e.cowerDir = (e.x < S.player.x) ? -1 : 1;                        // プレイヤーと反対へ後ずさり
+    e.fleeing = Math.random() < 0.3;                                 // 一部は画面外へ逃走
+    e.fleeDir = e.cowerDir;
+    e.fEl.classList.remove('hit', 'charging');
+    setAnim(e, null);
+    e.fEl.classList.add('cower');
+    const face = e.fEl.querySelector('.dq-face');
+    if (face) face.classList.add('scared');
+    if (panicLines) showTaunt(e, panicLines[Math.floor(Math.random() * panicLines.length)]);
+    gainMeter(3);                                                    // 連動: 日和らせるほどアドレナリン上乗せ
   }
 
   function checkEnrage() {
@@ -946,6 +986,7 @@ window.Battle = (function() {
             else {
               gainMeter(8);
               log(`${e.data.name}を倒した！`);
+              tryCower(e.x);   // D: 目の前で仲間がKO→周囲の雑魚が日和る
             }
             // ボスは「撃破→倒れたまま」を勝利カットシーンまで見せる。
             // (以前は700msで消していたが、カットシーンは1300ms後のため、その差でボスだけ
@@ -997,6 +1038,21 @@ window.Battle = (function() {
       case 'retreat': {
         e.x -= e.dir * e.speed * 0.8 * dt;
         if (e.stateT > 0.6) { e.state = 'idle'; e.cdLeft = 0.5; }
+        return;
+      }
+      case 'cower': {
+        if (e.fleeing) {
+          e.x += e.fleeDir * 170 * dt;                               // 画面外へ逃走
+          if (e.x < S.cam - 220 || e.x > S.cam + S.viewW + 220) { e.state = 'dead'; removeEntity(e); }
+          return;
+        }
+        e.x += e.cowerDir * 22 * dt;                                 // じりじり後ずさり
+        if (e.stateT > 2.4) {                                        // 一定時間ビビって我に返る
+          e.state = 'idle'; e.cdLeft = 0.6;
+          e.fEl.classList.remove('cower');
+          const face = e.fEl.querySelector('.dq-face');
+          if (face) face.classList.remove('scared');
+        }
         return;
       }
     }

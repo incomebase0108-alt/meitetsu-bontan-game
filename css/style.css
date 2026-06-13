@@ -762,6 +762,34 @@ body {
 .fighter.thrown { animation: thrown 0.6s forwards; }
 .fighter.enemy.thrown { animation: thrown-e 0.6s forwards; }
 .fighter.defeated { animation: fall 0.6s forwards; }
+
+/* D: 日和り（cower）。敵は scaleX(-1) を保持したままガクガク震える */
+.fighter.cower { animation: cower-shiver 0.1s linear infinite; }
+.fighter.enemy.cower { animation: cower-shiver-e 0.1s linear infinite; }
+@keyframes cower-shiver {
+  0%, 100% { transform: translateX(-1.5px) rotate(-1deg); }
+  50% { transform: translateX(1.5px) rotate(1deg); }
+}
+@keyframes cower-shiver-e {
+  0%, 100% { transform: scaleX(-1) translateX(-1.5px) rotate(-1deg); }
+  50% { transform: scaleX(-1) translateX(1.5px) rotate(1deg); }
+}
+/* 怯え顔: 眉が八の字・白目見開き・滝汗 */
+.dq-face.scared .dq-brow.l { transform: rotate(-28deg); top: -1px; }
+.dq-face.scared .dq-brow.r { transform: rotate(28deg); top: -1px; }
+.dq-face.scared .dq-eye { transform: scale(1.25); background: #fff; }
+.dq-face.scared::after {
+  content: ''; position: absolute; right: 1px; top: 7px;
+  width: 4px; height: 8px;
+  background: linear-gradient(#bfe8ff, #6fb7e6);
+  border-radius: 60% 60% 65% 65% / 80% 80% 55% 55%;
+  animation: sweat-bead 0.6s ease-in infinite;
+}
+@keyframes sweat-bead {
+  0% { opacity: 0; transform: translateY(0); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(7px); }
+}
 .fighter.enemy.defeated { animation: fall-e 0.6s forwards; }
 .fighter.pantsless .char-pants { display: none; }
 .fighter.pantsless .char-body {
