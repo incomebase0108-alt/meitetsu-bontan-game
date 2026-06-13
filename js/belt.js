@@ -265,12 +265,16 @@ window.Battle = (function() {
   function showSpark(e, big) {
     const stage = $('battle-stage');
     const p = screenPos(e);
-    const s = document.createElement('div');
-    s.className = 'hit-spark' + (big ? ' big' : '');
-    s.style.left = (p.x - 17 + Math.random() * 16 - 8) + 'px';
-    s.style.top = (p.y - SPR_H * 0.55 + Math.random() * 16 - 8) + 'px';
-    stage.appendChild(s);
-    setTimeout(() => s.remove(), 300);
+    const max = !!(S && S.meter >= 100);   // アドレナリンMAX中は火花2倍
+    const count = max ? 2 : 1;
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('div');
+      s.className = 'hit-spark' + (big ? ' big' : '') + (max ? ' max' : '');
+      s.style.left = (p.x - 17 + Math.random() * 16 - 8) + 'px';
+      s.style.top = (p.y - SPR_H * 0.55 + Math.random() * 16 - 8) + 'px';
+      stage.appendChild(s);
+      setTimeout(() => s.remove(), 300);
+    }
   }
 
   function flashScreen() {
@@ -322,8 +326,9 @@ window.Battle = (function() {
     S.meter = Math.min(100, S.meter + n);
     updateMeterUI();
     if (was < 100 && S.meter >= 100) {
-      log('<span style="color:#ffcc00; font-weight:bold">🔥 必殺ゲージMAX！！</span>');
+      log('<span style="color:#ffcc00; font-weight:bold">🔥 アドレナリンMAX！！</span>');
       window.Audio8 && window.Audio8.SFX.levelup && window.Audio8.SFX.levelup();
+      adrenalineMaxCallout();
     }
   }
 
@@ -335,6 +340,25 @@ window.Battle = (function() {
     if (txt) txt.textContent = pct + '%';
     const btn = document.querySelector('.belt-btn.bb-special');
     if (btn) btn.classList.toggle('ready', pct >= 100);
+    // アドレナリン: メーター量(0→1)を #app のCSS変数に → 画面端の赤ヴィネットが濃くなる。
+    const app = document.getElementById('app');
+    if (app) {
+      app.style.setProperty('--adrenaline', (pct / 100).toFixed(3));
+      app.classList.toggle('adrenaline-max', pct >= 100);
+    }
+  }
+
+  // アドレナリンMAX到達の演出：フラッシュ＋「ADRENALINE MAX!」コールアウト＋短いスロー（hitstop流用）
+  function adrenalineMaxCallout() {
+    flashScreen();
+    if (S) S.hitstop = Math.max(S.hitstop, 0.15);
+    const co = $('adrenaline-callout');
+    if (co) {
+      co.classList.remove('show');
+      void co.offsetWidth;
+      co.classList.add('show');
+      setTimeout(() => co.classList.remove('show'), 1200);
+    }
   }
 
   function updateHpUI() {
