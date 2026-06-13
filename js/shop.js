@@ -46,20 +46,30 @@ window.ShopUI = (function() {
   const COSMETICS = {
     hair:   { label: '髪型', items: [
       { id: 'plain',       name: '七三・短髪',          cost: 0 },
-      { id: 'pomp',        name: 'リーゼント',          cost: 120 },
-      { id: 'pompXL',      name: '超ロングリーゼント',  cost: 320 },
-      { id: 'mohawk',      name: 'モヒカン',            cost: 200 },
-      { id: 'skinhead',    name: 'スキンヘッド',        cost: 160 }
+      { id: 'bozu',        name: '坊主',                cost: 600 },
+      { id: 'kakugari',    name: '角刈り',              cost: 750 },
+      { id: 'pomp',        name: 'リーゼント',          cost: 900 },
+      { id: 'allback',     name: 'オールバック',        cost: 1100 },
+      { id: 'ron',         name: 'ロン毛',              cost: 1200 },
+      { id: 'mohawk',      name: 'モヒカン',            cost: 1400 },
+      { id: 'punch',       name: 'パンチパーマ',        cost: 1500 },
+      { id: 'skinhead',    name: 'スキンヘッド',        cost: 1600 },
+      { id: 'pompXL',      name: '超ロングリーゼント',  cost: 2200 },
+      { id: 'white_mix',   name: '白髪交じり',          cost: 3000 }
     ] },
     outfit: { label: '服装', items: [
       { id: 'gakuran',     name: '学ラン',              cost: 0 },
-      { id: 'tokkofuku',   name: '特攻服',              cost: 260 },
-      { id: 'white-tokko', name: '白特攻服',            cost: 420 }
+      { id: 'tokkofuku',   name: '特攻服',              cost: 1800 },
+      { id: 'leather',     name: '革ジャン',            cost: 2400 },
+      { id: 'tokkou_long', name: '長ラン',              cost: 2800 },
+      { id: 'white-tokko', name: '白特攻服',            cost: 3500 },
+      { id: 'horimono',    name: '裸に和彫り',          cost: 5000 }
     ] },
     face:   { label: '顔',   items: [
       { id: 'plain',       name: '素顔',                cost: 0 },
-      { id: 'shades',      name: 'サングラス',          cost: 120 },
-      { id: 'mask',        name: 'マスク',              cost: 90 }
+      { id: 'mask',        name: 'マスク',              cost: 700 },
+      { id: 'shades',      name: 'サングラス',          cost: 1000 },
+      { id: 'irezumi',     name: '顔の入れ墨',          cost: 4000 }
     ] }
   };
   // 初期から無料で所持している id（真面目少年の初期装備）
