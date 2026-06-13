@@ -6,6 +6,7 @@ window.STATIONS = [
   // ==== 蒲郡線 ====
   {
     id: 'gamagori',
+    mobLines: ['蒲郡の海をなめんなよ', '健司さんに話は通したのか', 'ここらじゃその顔は売れてねえぞ'],
     name: '蒲郡',
     kana: 'がまごおり',
     line: '名鉄蒲郡線',
@@ -24,6 +25,7 @@ window.STATIONS = [
   },
   {
     id: 'gamagori-kyoutei',
+    mobLines: ['ここは賭場だ、命も賭ける気で来な', '外れ舟券みてえな面しやがって', '真田さんの島で遊ぶ気か'],
     name: '蒲郡競艇場前',
     kana: 'がまごおりきょうていじょうまえ',
     line: '名鉄蒲郡線',
@@ -57,6 +59,7 @@ window.STATIONS = [
   },
   {
     id: 'mikawa-kashima',
+    mobLines: ['鹿島の縄張りに何の用だ', '修さんが黙っちゃいねえぞ', '漁師をなめるなよ'],
     name: '三河鹿島',
     kana: 'みかわかしま',
     line: '名鉄蒲郡線',
@@ -75,6 +78,7 @@ window.STATIONS = [
   },
   {
     id: 'katahara',
+    mobLines: ['形原のみかん畑を荒らす気か', '大輔さんの顔に泥を塗るな', 'のんびり者ばかりと思うなよ'],
     name: '形原',
     kana: 'かたはら',
     line: '名鉄蒲郡線',
@@ -93,6 +97,7 @@ window.STATIONS = [
   },
   {
     id: 'nishiura',
+    mobLines: ['西浦の湯に浸かりに来たんじゃねえだろ', '治さんの宿で揉め事はやめときな', 'のぼせる前に帰んな'],
     name: '西浦',
     kana: 'にしうら',
     line: '名鉄蒲郡線',
@@ -111,6 +116,7 @@ window.STATIONS = [
   },
   {
     id: 'kodomonokuni',
+    mobLines: ['ここは子供の国だ、泣かす前に帰れ', '健児さんの遊び場だぞ', 'いい歳して何しに来た'],
     name: 'こどもの国',
     kana: 'こどものくに',
     line: '名鉄蒲郡線',
@@ -129,6 +135,7 @@ window.STATIONS = [
   },
   {
     id: 'higashi-hazu',
+    mobLines: ['東幡豆の浜は俺らのもんだ', '智明さんのアサリに手を出すな', '潮が満ちる前に消えな'],
     name: '東幡豆',
     kana: 'ひがしはず',
     line: '名鉄蒲郡線',
@@ -147,6 +154,7 @@ window.STATIONS = [
   },
   {
     id: 'nishi-hazu',
+    mobLines: ['西幡豆の漁場を荒らすな', '竜也さんが相手してやる', '釣られに来たのか'],
     name: '西幡豆',
     kana: 'にしはず',
     line: '名鉄蒲郡線',
@@ -165,6 +173,7 @@ window.STATIONS = [
   },
   {
     id: 'mikawa-toba',
+    mobLines: ['鳥羽の火祭りをなめるな', '修司さんに焼かれてえのか', '火の粉が怖くて来れんのか'],
     name: '三河鳥羽',
     kana: 'みかわとば',
     line: '名鉄蒲郡線',
@@ -184,6 +193,7 @@ window.STATIONS = [
   // ==== 乗換駅（中ボス） ====
   {
     id: 'kira-yoshida',
+    mobLines: ['ここは吉良家の土地だ', '雅樹さんに無礼は許さん', '田舎モンが乗り換えに来たか'],
     name: '吉良吉田',
     kana: 'きらよしだ',
     line: '名鉄蒲郡線⇔西尾線',
@@ -204,6 +214,7 @@ window.STATIONS = [
   // ==== 西尾線 ====
   {
     id: 'kami-yokosuka',
+    mobLines: ['上横須賀は清則さんの縄張りだ', 'ここで肩で風切る気か', '授業料は払ったのか'],
     name: '上横須賀',
     kana: 'かみよこすか',
     line: '名鉄西尾線',
@@ -223,6 +234,7 @@ window.STATIONS = [
   },
   {
     id: 'fukuchi',
+    mobLines: ['福地に福はねえぞ', '浩二さんの庭で遊ぶな', '運が悪かったな'],
     name: '福地',
     kana: 'ふくち',
     line: '名鉄西尾線',
@@ -241,6 +253,7 @@ window.STATIONS = [
   },
   {
     id: 'nishio',
+    mobLines: ['西尾は怜司さんが束ねてる', 'ここまで来たのは褒めてやる', '抹茶より苦い思いをさせてやる'],
     name: '西尾',
     kana: 'にしお',
     line: '名鉄西尾線',
@@ -261,6 +274,7 @@ window.STATIONS = [
   },
   {
     id: 'nishio-guchi',
+    mobLines: ['元太さんは群れねえ、だが負けねえ', '西野の名前はここじゃ通用せん', '一人で来たのか、いい度胸だ'],
     name: '西尾口',
     kana: 'にしおぐち',
     line: '名鉄西尾線',
@@ -279,6 +293,7 @@ window.STATIONS = [
   },
   {
     id: 'sakuramachi-mae',
+    mobLines: ['桜町商店街は俺らが守ってる', '修平さんの店に手を出すな', 'シャッターに落書きすんなよ'],
     name: '桜町前',
     kana: 'さくらまちまえ',
     line: '名鉄西尾線',
@@ -297,6 +312,7 @@ window.STATIONS = [
   },
   {
     id: 'yonezu',
+    mobLines: ['米津の米をなめるな', '剛さんの顔に泥を塗る気か', '腹が減ってんなら帰んな'],
     name: '米津',
     kana: 'よねづ',
     line: '名鉄西尾線',
@@ -315,6 +331,7 @@ window.STATIONS = [
   },
   {
     id: 'minami-sakurai',
+    mobLines: ['南桜井は恭太さんの庭だ', 'やる気なら相手になるぜ', '桜と一緒に散らされてえか'],
     name: '南桜井',
     kana: 'みなみさくらい',
     line: '名鉄西尾線',
@@ -333,6 +350,7 @@ window.STATIONS = [
   },
   {
     id: 'sakurai',
+    mobLines: ['桜井は蓮さんが仕切ってる', '兄貴に無礼すんなよ', 'いい度胸じゃねえか'],
     name: '桜井',
     kana: 'さくらい',
     line: '名鉄西尾線',
@@ -351,6 +369,7 @@ window.STATIONS = [
   },
   {
     id: 'horiuchi-koen',
+    mobLines: ['この公園は茂さんのもんだ', 'ベンチが欲しけりゃ倒してみな', 'デカいのが出てくるぞ'],
     name: '堀内公園',
     kana: 'ほりうちこうえん',
     line: '名鉄西尾線',
@@ -370,6 +389,7 @@ window.STATIONS = [
   },
   {
     id: 'hekikai-furui',
+    mobLines: ['古井は文夫さんが長えんだ', '新顔が偉そうにすんな', '井戸の底が見てえか'],
     name: '碧海古井',
     kana: 'へきかいふるい',
     line: '名鉄西尾線',
@@ -388,6 +408,7 @@ window.STATIONS = [
   },
   {
     id: 'minami-anjo',
+    mobLines: ['南安城は隆さんの縄張りだ', 'リーゼントを乱すなよ', '身なりに気をつけな'],
     name: '南安城',
     kana: 'みなみあんじょう',
     line: '名鉄西尾線',
@@ -406,6 +427,7 @@ window.STATIONS = [
   },
   {
     id: 'kita-anjo',
+    mobLines: ['北安城は柴田さんの街だ', '金で片付けてやろうか', '貧乏人は引っ込んでな'],
     name: '北安城',
     kana: 'きたあんじょう',
     line: '名鉄西尾線',
@@ -425,6 +447,7 @@ window.STATIONS = [
   // ==== ラスボス ====
   {
     id: 'shin-anjo',
+    mobLines: ['新安城総長・譲二さんの前だぞ', 'ここが名鉄の頂点だ', 'よくここまで来たな'],
     name: '新安城',
     kana: 'しんあんじょう',
     line: '名鉄西尾線',
