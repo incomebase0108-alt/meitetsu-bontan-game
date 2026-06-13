@@ -1343,6 +1343,27 @@ img.char-sprite {
 .lowfx2 .belt-photo { filter: none !important; }
 .lowfx2 [class*="spark"], .lowfx2 [class*="glow"], .lowfx2 [class*="aura"] { display: none !important; }
 
+/* ==== プレイヤー命名モーダル ==== */
+.name-overlay {
+  position: fixed; inset: 0; z-index: 9500;
+  background: rgba(0,0,0,0.8);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.name-panel {
+  width: 100%; max-width: 360px;
+  background: linear-gradient(180deg, #1a1320, #241a2c);
+  border: 3px solid #d4a017; border-radius: 12px; padding: 22px; text-align: center;
+}
+.name-panel h2 { margin: 0 0 8px; color: #ffe08a; font-size: 22px; }
+.name-note { font-size: 13px; color: #cbb3c0; margin: 0 0 14px; }
+.name-input {
+  width: 100%; box-sizing: border-box; padding: 12px;
+  font-size: 18px; text-align: center;
+  background: #0e0a12; color: #fff;
+  border: 2px solid #d4a017; border-radius: 8px; margin-bottom: 16px;
+}
+.name-input:focus { outline: none; border-color: #ffd700; }
+
 /* ==== 強化ショップ ==== */
 .shop-overlay {
   position: fixed; inset: 0; z-index: 9000;

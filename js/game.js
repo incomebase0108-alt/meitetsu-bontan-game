@@ -34,6 +34,7 @@ window.Game = (function() {
 
   function newGame() {
     player = JSON.parse(JSON.stringify(window.PLAYER_INIT));
+    if (window._pendingName) { player.name = window._pendingName; window._pendingName = null; }
     currentStationIndex = 0;
     window.Save && window.Save.clear();
     startGame();
@@ -426,11 +427,38 @@ window.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', ensureAudio, { once: true });
   document.addEventListener('keydown', ensureAudio, { once: true });
 
+  // プレイヤー命名モーダル（軽量・JS生成）。入力名は {playerName} 差し込みに使われる
+  function askPlayerName(cb) {
+    const def = (window.PLAYER_INIT && window.PLAYER_INIT.name) || 'ボンタン狩り太郎';
+    const ov = document.createElement('div');
+    ov.className = 'name-overlay';
+    ov.innerHTML = `
+      <div class="name-panel">
+        <h2>名乗りな</h2>
+        <p class="name-note">お前の名前は？（空欄なら「${def}」）</p>
+        <input id="name-input" class="name-input" type="text" maxlength="12" placeholder="${def}">
+        <button id="name-ok" class="big-btn">これでいく</button>
+      </div>`;
+    document.body.appendChild(ov);
+    const inp = ov.querySelector('#name-input');
+    setTimeout(() => inp.focus(), 50);
+    const done = () => {
+      const v = (inp.value || '').trim() || def;
+      ov.remove();
+      cb(v);
+    };
+    ov.querySelector('#name-ok').addEventListener('click', done);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') done(); });
+  }
+
   document.getElementById('btn-start').addEventListener('click', () => {
     window.Audio8 && window.Audio8.SFX.menu();
-    // 新規はオープニング・ストーリー →（終わったら）ゲーム開始
-    if (window.StoryIntro) window.StoryIntro.play(() => window.Game.newGame());
-    else window.Game.newGame();
+    // 名前を入力 → オープニング・ストーリー →（終わったら）ゲーム開始
+    askPlayerName(name => {
+      window._pendingName = name;
+      if (window.StoryIntro) window.StoryIntro.play(() => window.Game.newGame());
+      else window.Game.newGame();
+    });
   });
   document.getElementById('btn-continue').addEventListener('click', () => {
     window.Audio8 && window.Audio8.SFX.menu();

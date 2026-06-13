@@ -115,18 +115,56 @@ window.Battle = (function() {
     ]
   };
 
-  // 雑魚の恫喝（駅名入り）
+  // ==== fame帯別の台詞（序盤ナメ→中盤警戒→終盤怯え） ====
+  // {playerName}=噂の主人公として認識される／{station}=駅名
+  const MOB_LINES = {
+    low: [
+      'おい、金貸してくれよ。返さねーけどさ',
+      '新入りか？シメといてやるよ',
+      'ちょうどいい、パシリが欲しかったんだ',
+      '弱そうなのが来たな',
+      '通りてぇなら金置いてけ'
+    ],
+    mid: [
+      'お前…最近暴れてる奴か？',
+      'ナメてかかると痛い目見るぜ…？',
+      'やんのか？こっちも引けねぇ',
+      '{station}で勝手はさせねぇ'
+    ],
+    high: [
+      'あいつ、噂の三谷水産の{playerName}だ！',
+      '{playerName}…ここで会っちまったか…！',
+      'ヒィッ、逃げろ！',
+      'マジかよ、本物じゃねえか…'
+    ]
+  };
+  const HURT_LINES = {
+    low: ['痛えな、何しやがる！', 'このガキ…！', '調子に乗んなよ'],
+    mid: ['っ…やるじゃねえか', 'くそっ、効いた…', 'まだだ…！'],
+    high: ['か、勝てねえ…！', 'ば、化け物かよ…', '助けてくれ…！']
+  };
+  function playerName() {
+    return (S && S.playerName)
+      || (window.Game && window.Game.getPlayer && window.Game.getPlayer().name)
+      || 'ボンタン狩り太郎';
+  }
+  function fameBand() {
+    const f = (S && S.fame) || 0;
+    if (f < 40) return 'low';
+    if (f < 140) return 'mid';
+    return 'high';
+  }
+  function fillLine(s) {
+    const st = (S && S.station && S.station.name) || 'ここ';
+    return s.replace(/\{playerName\}/g, playerName()).replace(/\{station\}/g, st);
+  }
+  function pickLine(table) {
+    const arr = table[fameBand()] || table.low;
+    return fillLine(arr[Math.floor(Math.random() * arr.length)]);
+  }
+  // 雑魚の恫喝（fame帯で出し分け）
   function mobTaunt() {
-    const name = (S.station && S.station.name) || 'ここ';
-    const lines = [
-      `${name}は俺たちの場所だ`,
-      'これ以上は通さない',
-      `${name}で揉め事はやめときな`,
-      '相手になるぞ',
-      `悪いが${name}から先へは行かせない`,
-      '待ちな、どこへ行く'
-    ];
-    return lines[Math.floor(Math.random() * lines.length)];
+    return pickLine(MOB_LINES);
   }
 
   const TAUNTS = [
@@ -685,7 +723,7 @@ window.Battle = (function() {
     showDamageNumber(p, dmg, mult >= 2 ? 'critical' : 'normal');
     setTimeout(() => window.Audio8 && window.Audio8.SFX.hit(), 60);
     log(`${att.data.name}の${moveName}！ ${dmg}ダメージ！`);
-    if (Math.random() < 0.18) showTaunt(att, TAUNTS[Math.floor(Math.random() * TAUNTS.length)]);
+    if (Math.random() < 0.18) showTaunt(att, pickLine(HURT_LINES));   // fame帯で被弾台詞を出し分け
     p.invulnT = 0.55;
     p.hurtCount++;
     const knockdown = mult >= 1.8 || p.hurtCount >= 3 || p.hp <= 0;
@@ -890,15 +928,7 @@ window.Battle = (function() {
       e.cdLeft = 0.9 + i * 0.3;
       e.dir = S.player.x > e.x ? 1 : -1;
     });
-    const lines = [
-      '今、こっちを見たな?',
-      'やる気か?',
-      'こっちを睨んだな?',
-      'ここはお前の来る場所じゃない',
-      'いい度胸してるじゃないか',
-      'じろじろ見るな'
-    ];
-    if (group[0]) showTaunt(group[0], lines[Math.floor(Math.random() * lines.length)]);
+    if (group[0]) showTaunt(group[0], pickLine(MOB_LINES));   // fame帯で登場台詞を出し分け
     log('<span style="color:#ff9966">不良たちに絡まれた！</span>');
     window.Audio8 && window.Audio8.SFX.guardBreak && window.Audio8.SFX.guardBreak();
   }
@@ -1326,6 +1356,7 @@ window.Battle = (function() {
       hitstop: 0,                 // ヒットストップ(強打の瞬間フリーズ=手応え)
       combo: 0, lastHitAt: 0,
       fame: gp.fame || 0,         // 名声（日和り確率・台詞のfame帯判定に使用）
+      playerName: gp.name || 'ボンタン狩り太郎',
       tokens: 2,
       stats: { hits: 0, misses: 0 },
       riderEvents: [{ at: 0.3, done: false }, { at: 0.6, done: false }],
