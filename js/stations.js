@@ -469,10 +469,10 @@ window.PLAYER_INIT = {
 window.STATION_ARCHETYPE = {
   // 蒲郡線
   'gamagori':           'gamo',             // 蒲生健司：漁師上がり（日焼け・刈上げ・腹巻・ゴム長・銛）
-  'gamagori-kyoutei':   'gambler-boss',     // 賭けマサ：イカサマ投げ
+  'gamagori-kyoutei':   'sanada',           // 真田雅彦：博徒チンピラ（アロハ＋サングラス）
   'mikawa-kashima':     'yankee-basic',     // シカジマ
-  'katahara':           'thrower-boss',     // カタハラ蜜柑：ミカン連投
-  'nishiura':           'onsen-boss',       // 温泉のヌシ：湯気目つぶし
+  'katahara':           'katahara',         // 片原大輔：みかん農家（麦わら帽＋前掛け）
+  'nishiura':           'yuasa',            // 湯浅治：温泉番頭くずれ（丹前＋鉢巻＋桶）
   'kodomonokuni':       'kid-boss',         // ガキ大将ケンジ
   'higashi-hazu':       'yankee-fisher',    // アサリのトミ
   'nishi-hazu':         'yankee-fisher',    // ハズの竜
