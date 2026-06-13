@@ -50,13 +50,16 @@
   /* 頭 */
   .cf-head{position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:58px;height:60px;z-index:5}
   .cf-face{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:42px;height:40px;background:var(--skin);border:3px solid #000;border-radius:9px 11px 12px 12px}
-  .cf-brow{position:absolute;top:11px;width:14px;height:4px;background:#000}
-  .cf-brow.l{left:3px;transform:rotate(16deg)} .cf-brow.r{right:3px;transform:rotate(-16deg)}
-  .angry .cf-brow.l{top:9px;transform:rotate(26deg)} .angry .cf-brow.r{top:9px;transform:rotate(-26deg)}
-  .cf-eye{position:absolute;top:15px;width:8px;height:9px;background:#fff;border:2px solid #000;border-radius:2px}
+  /* 眉: 全員シャープな尖り眉(外側太→内側尖り)・釣り上げ */
+  .cf-brow{position:absolute;top:9px;width:17px;height:7px;background:#000}
+  .cf-brow.l{left:2px;transform:rotate(26deg);clip-path:polygon(0 0,100% 42%,100% 58%,0 100%)}
+  .cf-brow.r{right:2px;transform:rotate(-26deg);clip-path:polygon(100% 0,0 42%,0 58%,100% 100%)}
+  .angry .cf-brow{top:8px} .angry .cf-brow.l{transform:rotate(32deg)} .angry .cf-brow.r{transform:rotate(-32deg)}
+  /* 目: 全員 釣り目(外側を上げる)・三白眼 */
+  .cf-eye{position:absolute;top:15px;width:9px;height:8px;background:#fff;border:2px solid #000;border-radius:2px 2px 1px 1px}
   .cf-eye::after{content:"";position:absolute;right:0;bottom:0;width:5px;height:5px;background:#15151c;border-radius:1px}
-  .cf-eye.l{left:5px} .cf-eye.r{right:5px} .cf-eye.l::after{right:auto;left:0}
-  /* まん丸目（コミカル雑魚用） */
+  .cf-eye.l{left:4px;transform:rotate(18deg)} .cf-eye.r{right:4px;transform:rotate(-18deg)} .cf-eye.l::after{right:auto;left:0}
+  /* まん丸目でも釣り上げは維持 */
   .round .cf-eye{width:9px;height:9px;border-radius:50%} .round .cf-eye::after{width:4px;height:4px;border-radius:50%;right:1px;bottom:2px} .round .cf-eye.l::after{left:1px;right:auto}
   .cf-mouth{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:16px;height:6px;background:#5a1414;border:2px solid #000;border-radius:2px;overflow:hidden}
   .cf-mouth::before{content:"";position:absolute;top:2px;left:0;right:0;height:2px;background:#fff}
@@ -76,7 +79,8 @@
   .cf.xl .cf-pomp{width:54px;height:34px;top:-9px;right:-15px}
   .cf.bald .cf-hair{display:none}
   .cf.bald .cf-face{border-radius:18px 18px 12px 12px;height:44px}
-  .cf-tattoo{position:absolute;top:2px;right:8px;font-size:13px;font-weight:900;color:#2a6fb0;transform:rotate(12deg);z-index:6}
+  /* 頭の刺青: 坊主頭の額に乗せる(浮かせない) */
+  .cf-tattoo{position:absolute;top:17px;left:50%;font-size:12px;font-weight:900;color:#2a6fb0;transform:translateX(-50%) rotate(8deg);z-index:6;text-shadow:0 0 1px #14416e}
   .cf.bald:not(.has-tattoo) .cf-tattoo{display:none}
   /* モヒカン */
   .cf.mohawk .cf-pomp{display:none}
@@ -231,7 +235,7 @@
     {state:'walk',cls:'mohawk',style:{hair:'#7a1530',gak:'#2a2a30',bontan:'#1a1a20'},pipe:true,cap:'モヒカン+鉄パイプ'},
     {state:'walk',cls:'bald',tattoo:true,style:{skin:'#e8b486',gak:'#26262e',bontan:'#15151b'},shades:true,scar:true,cap:'スキンヘッド'},
     {state:'walk',body:'big',style:{hair:'#241505',gak:'#3a3a16',bontan:'#24240e'},chain:true,scar:true,cap:'ガタイ+チェーン'},
-    {state:'walk',style:{hair:'#d4a017',gak:'#7a2a52',bontan:'#3a1a30'},face:'round',cap:'金髪'},
+    {state:'walk',style:{hair:'#d4a017',gak:'#7a2a52',bontan:'#3a1a30'},cap:'金髪'},
     {state:'walk',body:'slim',style:{hair:'#23201c',gak:'#0c0c12',bontan:'#0a0a10'},shades:true,mask:true,cap:'マスク'},
     {state:'walk',style:{hair:'#1c2e10',gak:'#1c3a1c',bontan:'#12240f'},flag:true,cap:'旗持ち'},
   ]);
