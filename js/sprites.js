@@ -41,17 +41,27 @@ window.Sprites = (function() {
 
   // PNG差し替えの存在キャッシュ（archetypeId → 'ok' | 'none'）
   const SPRITE_CACHE = {};
+  // デコード済み Image の参照保持（GCを防ぎ、ブラウザのデコード結果をキャッシュに残す）
+  const SPRITE_DECODED = {};
 
   // スプライト画像のキャッシュバスター（画像を差し替えたらここを更新）
   const SPRITE_VER = '?v=20260613-3';
 
-  // ポーズ画像があるか調べる (キャッシュ付き)
+  // ポーズ画像があるか調べる (キャッシュ付き)。
+  // probe 段階で decoding='async' ＋ .decode() まで済ませ、描画時の同期デコード長タスクを防ぐ。
   function probeSprite(path, cb) {
     if (SPRITE_CACHE[path] === 'ok') return cb(true);
     if (SPRITE_CACHE[path] === 'none') return cb(false);
     const probe = new Image();
-    probe.onload = () => { SPRITE_CACHE[path] = 'ok'; cb(true); };
+    probe.decoding = 'async';
     probe.onerror = () => { SPRITE_CACHE[path] = 'none'; cb(false); };
+    probe.onload = () => {
+      SPRITE_CACHE[path] = 'ok';
+      SPRITE_DECODED[path] = probe; // 参照保持＝デコード結果をキャッシュに残す
+      // デコードまで済ませてから cb（後段の img.src 差し替え時に同期デコードが走らない）
+      if (probe.decode) probe.decode().then(() => cb(true), () => cb(true));
+      else cb(true);
+    };
     probe.src = path + SPRITE_VER;
   }
 
@@ -73,14 +83,22 @@ window.Sprites = (function() {
 
     let state = 'idle';
     let idx = 0;
-    // 保険: ポーズPNG(_hit/_atk/_grd/_2/_3)が万一404でも img を空にせず、
-    // 読込済みの idle(cycle[0]) へ戻して透明化を防ぐ（probeSprite事前チェックの二重防御）。
-    img.onerror = () => { if (img.src.indexOf(cycle[0]) === -1) img.src = cycle[0] + SPRITE_VER; };
+    // 冗長な src 書込みを抑止（同一URLの再代入はデコードthrashの原因）。
+    // getAttribute('src') は設定した相対URLのまま返るので、これで一致判定する。
+    function swapSrc(url) {
+      if (img.getAttribute('src') === url) return;
+      img.src = url;
+    }
+    // 保険: ポーズPNGが万一404でも img を空にせず、読込済みの idle(cycle[0]) へ戻す
+    // （probeSprite事前チェックの二重防御。URL一致判定で onerror 無限ループも防止）。
+    img.onerror = () => { swapSrc(cycle[0] + SPRITE_VER); };
     const timer = setInterval(() => {
       if (!img.isConnected) { clearInterval(timer); mo.disconnect(); return; }
+      // 低スペック時(body.lowfx)は呼吸アニメを停止（280ms毎の大PNG差し替えが持続負荷源のため）。
+      if (document.body.classList.contains('lowfx')) return;
       if (state !== 'idle' || cycle.length < 2) return;
       idx = (idx + 1) % cycle.length;
-      img.src = cycle[idx] + SPRITE_VER;
+      swapSrc(cycle[idx] + SPRITE_VER);
     }, 280);
 
     const ACT = ['act-punch', 'act-kick', 'act-special', 'act-dash', 'act-throw', 'act-slash'];
@@ -93,7 +111,7 @@ window.Sprites = (function() {
       else if (cl.contains('guarding')) want = 'grd';
       if (want === state) return;
       state = want;
-      img.src = ((want !== 'idle' && pose[want]) ? pose[want] : cycle[idx % cycle.length]) + SPRITE_VER;
+      swapSrc(((want !== 'idle' && pose[want]) ? pose[want] : cycle[idx % cycle.length]) + SPRITE_VER);
     });
     mo.observe(charEl, { attributes: true, attributeFilter: ['class'] });
   }
@@ -135,6 +153,7 @@ window.Sprites = (function() {
       if (i >= candidates.length) return;
       const path = candidates[i];
       const img = new Image();
+      img.decoding = 'async'; // 同期デコードによるメインスレッド長タスク（透明化・音楽鈍化）を防ぐ
       img.onload = () => {
         SPRITE_CACHE[path] = 'ok';
         if (!charEl.isConnected) return;
