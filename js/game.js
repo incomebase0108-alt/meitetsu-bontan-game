@@ -124,20 +124,36 @@ window.Game = (function() {
     playTrainCutscene(window.STATIONS[currentStationIndex - 1], st, startBattle);
   }
 
-  function playTrainCutscene(from, to, onDone) {
+  function playTrainCutscene(from, to, onDone, opts) {
     showScreen('screen-train');
     document.getElementById('train-from-name').textContent = from.name;
     document.getElementById('train-to-name').textContent = to.name;
-    document.getElementById('train-distance').textContent = to.distanceFromPrev.toFixed(1);
+    document.getElementById('train-distance').textContent = (to.distanceFromPrev || 0).toFixed(1);
     window.Audio8 && window.Audio8.SFX.train();
     // 電車アニメ用のクラス追加（CSSキーフレームで動かす）
     const sprite = document.getElementById('train-sprite');
+    sprite.classList.toggle('jr-silver', !!(opts && opts.silver));   // 最終章=JRシルバー車体
     sprite.classList.remove('moving');
     void sprite.offsetWidth;
     sprite.classList.add('moving');
     setTimeout(() => {
       onDone();
     }, 2800);
+  }
+
+  // ==== 最終章（演出枠） ====
+  // 三河三谷の三谷水産で待つ真ラスボス・大沢仁志。本キャラ描画＆勝敗/進行の本接続は
+  // 4号機のCSSデザイン確定後に行う。ここでは「蒲郡へ帰還→JRシルバー車体で三河三谷へ」の
+  // 移動演出の枠だけ用意（window.Game.playFinalApproach で起動可能）。
+  const FINAL_STAGE = {
+    id: 'mikawa-mitani',
+    name: '三河三谷',
+    distanceFromPrev: 8.2,
+    enemy: { name: '大沢 仁志', title: '三谷水産の現番長', archetypeId: 'player', isTrueFinalBoss: true }
+  };
+  function playFinalApproach(onDone) {
+    const gamagori = window.STATIONS[0];   // 蒲郡へ一度戻ってからJRで三河三谷へ
+    playTrainCutscene(gamagori, FINAL_STAGE, onDone || (() => showScreen('screen-map')), { silver: true });
   }
 
   function startBattle() {
@@ -402,7 +418,8 @@ window.Game = (function() {
 
   return {
     init, newGame, continueGame, startGame, boardStation, nextStation, retry,
-    backToTitle, getPlayer, getCurrentStationIndex, showScreen, selectStation, persist, startNGPlus
+    backToTitle, getPlayer, getCurrentStationIndex, showScreen, selectStation, persist, startNGPlus,
+    playFinalApproach   // 最終章の移動演出（枠。本接続は4号機の大沢仁志デザイン確定後）
   };
 })();
 
