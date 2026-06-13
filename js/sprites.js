@@ -73,6 +73,9 @@ window.Sprites = (function() {
 
     let state = 'idle';
     let idx = 0;
+    // 保険: ポーズPNG(_hit/_atk/_grd/_2/_3)が万一404でも img を空にせず、
+    // 読込済みの idle(cycle[0]) へ戻して透明化を防ぐ（probeSprite事前チェックの二重防御）。
+    img.onerror = () => { if (img.src.indexOf(cycle[0]) === -1) img.src = cycle[0] + SPRITE_VER; };
     const timer = setInterval(() => {
       if (!img.isConnected) { clearInterval(timer); mo.disconnect(); return; }
       if (state !== 'idle' || cycle.length < 2) return;
