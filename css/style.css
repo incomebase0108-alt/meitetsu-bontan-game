@@ -116,18 +116,19 @@ body {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 7px;
 }
 .station-row {
   display: flex;
-  align-items: center;
-  padding: 10px 14px;
+  align-items: flex-start;
+  padding: 11px 14px;
   background: #1a1a1a;
   border-left: 4px solid #555;
   cursor: pointer;
   transition: all 0.15s;
   font-size: 14px;
   min-height: 44px;
+  line-height: 1.5;
 }
 .station-row.current {
   background: #ff6600;
@@ -151,17 +152,18 @@ body {
   text-align: center;
   margin-right: 10px;
 }
-.station-info { flex: 1; }
-.station-enemy { font-size: 12px; color: #ffaa66; margin-top: 2px; }
+.station-info { flex: 1; min-width: 0; line-height: 1.5; }   /* min-width:0 で長い駅名/敵名が折り返す */
+.station-enemy { font-size: 12px; color: #ffaa66; margin-top: 5px; line-height: 1.45; }
 .danger-badge {
   display: inline-block;
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 3px;
-  margin-left: 6px;
+  margin: 1px 0 1px 6px;
   vertical-align: middle;
   font-weight: bold;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 .danger-badge.low {
   background: #ff9900;
@@ -187,9 +189,10 @@ body {
 .rare-enemy {
   font-size: 11px;
   color: #ff66cc;
-  margin-top: 2px;
+  margin-top: 5px;
   padding-left: 8px;
   font-style: italic;
+  line-height: 1.45;
 }
 .rare-chance {
   display: inline-block;
