@@ -460,7 +460,8 @@ window.PLAYER_INIT = {
   achievements: {}, // 解除済み実績 id → true
   streak: 0,      // 連勝数（負けでリセット）
   bestStreak: 0,  // 最高連勝
-  lastDaily: ''   // デイリーボーナス最終受取日(YYYY-MM-DD)
+  lastDaily: '',  // デイリーボーナス最終受取日(YYYY-MM-DD)
+  ngPlus: 0       // 強くてニューゲーム+ の周回数
 };
 
 // 駅ID → キャラアーキタイプID

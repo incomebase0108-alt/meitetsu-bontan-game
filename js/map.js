@@ -77,6 +77,13 @@ window.MapUI = (function() {
     document.getElementById('map-bontans').textContent = player.bontans.length;
     const moneyEl = document.getElementById('map-money');
     if (moneyEl) moneyEl.textContent = (player.money || 0);
+    // NG+ 周回バッジ（タイトル横に表示）
+    const h2 = mapEl.parentElement && mapEl.parentElement.querySelector('.map-header h2');
+    if (h2) {
+      const ng = player.ngPlus || 0;
+      h2.innerHTML = '路線図（駅タップで選択）' +
+        (ng > 0 ? ` <span style="color:#ff7a3c; font-size:14px">🔥NG+${ng}</span>` : '');
+    }
 
     // 強化ショップを開く
     const shopBtn = document.getElementById('btn-shop');

@@ -52,6 +52,7 @@ window.Game = (function() {
     if (typeof player.streak !== 'number') player.streak = 0;
     if (typeof player.bestStreak !== 'number') player.bestStreak = 0;
     if (typeof player.lastDaily !== 'string') player.lastDaily = '';
+    if (typeof player.ngPlus !== 'number') player.ngPlus = 0;
     currentStationIndex = data.currentStationIndex || 0;
     showScreen('screen-map');
     window.MapUI.render();
@@ -147,6 +148,7 @@ window.Game = (function() {
     if (st.rareEnemy && Math.random() < (st.rareChance || 0)) {
       enemy = st.rareEnemy;
       enemy._rarity = rollRarity();   // 銅/銀/金/虹 を抽選（勝利時に報酬・演出へ反映）
+      // (NG+スケールは下で適用)
       bgmMode = 'boss';
       window.Audio8 && window.Audio8.SFX.final();
     } else if (st.isFinalBoss) {
@@ -154,6 +156,14 @@ window.Game = (function() {
       window.Audio8 && window.Audio8.SFX.final();
     } else if (st.isMidBoss) {
       bgmMode = 'boss';
+    }
+    // 強くてニューゲーム+: 敵のHP/ATKをNG周回数でスケール
+    const ng = player.ngPlus || 0;
+    if (ng > 0) {
+      enemy = Object.assign({}, enemy, {
+        hp: Math.round(enemy.hp * (1 + ng * 0.6)),
+        atk: Math.round(enemy.atk * (1 + ng * 0.4))
+      });
     }
     window.Audio8 && window.Audio8.startBgm(bgmMode);
     window.Battle.init(enemy, onBattleWin, onBattleLose, st.id);
@@ -181,6 +191,7 @@ window.Game = (function() {
       res.money = Math.round(res.score / 4) + (firstClear ? 80 : 25);
       if (tier) res.money = Math.round(res.money * tier.moneyMul) + 100;
       res.money = Math.round(res.money * streakMul);
+      if (player.ngPlus) res.money = Math.round(res.money * (1 + player.ngPlus * 0.3));   // NG+報酬増
       res.streak = player.streak;
       player.money = (player.money || 0) + res.money;
     }
@@ -358,8 +369,31 @@ window.Game = (function() {
     display.innerHTML = player.bontans.map(b =>
       `<span class="bontan-icon" style="background:${b.color}" title="${b.from}"></span>`
     ).join('');
-    // クリア後はセーブを消す（リプレイ用）
-    window.Save && window.Save.clear();
+    // 総合スコア（全駅のベスト合計）＋ハイスコア（セーブとは別に永続保存）
+    const total = Object.values(player.bestScores || {}).reduce((s, v) => s + (v || 0), 0);
+    let hi = 0;
+    try { hi = parseInt(localStorage.getItem('meitetsu-highscore') || '0', 10) || 0; } catch (e) {}
+    if (total > hi) { hi = total; try { localStorage.setItem('meitetsu-highscore', String(hi)); } catch (e) {} }
+    const ng = player.ngPlus || 0;
+    document.getElementById('victory-score').innerHTML =
+      `総合スコア <b>${total}</b>　ハイスコア <b style="color:#ffd700">${hi}</b>` +
+      (ng > 0 ? `　<span style="color:#ff7a3c">NG+${ng}</span>` : '');
+    // ※NG+ で続けられるようセーブは消さない（「最初から」を押した時のみ newGame でリセット）
+  }
+
+  // 強くてニューゲーム+: 強化・金・実績・図鑑・最高記録は維持し、駅進行だけリセット。敵が強くなる
+  function startNGPlus() {
+    player.ngPlus = (player.ngPlus || 0) + 1;
+    player.defeated = [];
+    player.bestScores = {};   // ベストはNG+難度で再計測
+    player.streak = 0;
+    currentStationIndex = 0;
+    player.hp = player.maxHp;
+    persist();
+    toast(`🔥 強くてニューゲーム+${player.ngPlus} 開始！<br><small>敵が強くなった…！</small>`);
+    showScreen('screen-map');
+    window.MapUI.render();
+    window.Audio8 && window.Audio8.startBgm('map');
   }
 
   function getPlayer() { return player; }
@@ -367,7 +401,7 @@ window.Game = (function() {
 
   return {
     init, newGame, continueGame, startGame, boardStation, nextStation, retry,
-    backToTitle, getPlayer, getCurrentStationIndex, showScreen, selectStation, persist
+    backToTitle, getPlayer, getCurrentStationIndex, showScreen, selectStation, persist, startNGPlus
   };
 })();
 
@@ -419,6 +453,11 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-newgame').addEventListener('click', () => {
     window.Audio8 && window.Audio8.SFX.menu();
     window.Game.newGame();
+  });
+  const ngBtn = document.getElementById('btn-ngplus');
+  if (ngBtn) ngBtn.addEventListener('click', () => {
+    window.Audio8 && window.Audio8.SFX.menu();
+    window.Game.startNGPlus();
   });
 
   // ミュートトグル
