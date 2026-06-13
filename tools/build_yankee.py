@@ -953,6 +953,50 @@ def chibi_face(p, cz, r, cfg):
     # 耳 (髪で大半隠れるので小さく)
     for sy in (1, -1):
         sph((-r * 0.02, sy * r * 0.92, cz - r * 0.06), r * 0.15, skin, scale=(0.5, 0.32, 0.7), parent=p)
+    # 頬傷 (カメラ側・凶相用)
+    if cfg.get("scar"):
+        sc = mat("cscar", PAL["scar"], 0, 0.6)
+        for k in range(3):
+            box((r * 0.56, -r * 0.70, cz - r * (0.02 + 0.15 * k)), (r * 0.11, r * 0.030, r * 0.042),
+                sc, rot=(0, -14, -10), parent=p, bevel=0.004)
+
+
+def chibi_weapon_bat(p, grip, pose):
+    """チビ用・金属バット (肩担ぎ idle / 前振り atk)。チビ寸法にスケール"""
+    gold = mat("cbat", PAL["gold"], 0.85, 0.25)
+    gdk = mat("cbat_dk", PAL["gold_dk"], 0.8, 0.35)
+    dirv = (0.62, -0.05, -0.55) if pose == "atk" else (0.10, -0.48, 0.87)  # 前下振り / 肩から上へ(カメラ側に見せる)
+    n = math.sqrt(sum(x * x for x in dirv)); dirv = tuple(x / n for x in dirv)
+    ry = math.degrees(math.atan2(math.hypot(dirv[0], dirv[1]), dirv[2]))
+    rz = math.degrees(math.atan2(dirv[1], dirv[0]))
+    along = lambda t: tuple(grip[k] + dirv[k] * t for k in range(3))
+    L = 0.46
+    cyl(along(L * 0.5 - 0.05), 0.028, 0.055, L, gold, rot=(0, ry, rz), parent=p)   # テーパー胴
+    sph(along(L - 0.02), 0.058, gold, parent=p)                                    # 先端
+    sph(along(-0.06), 0.032, gdk, scale=(1, 1, 0.6), rot=(0, ry, rz), parent=p)    # グリップエンド
+
+
+def chibi_dragon_emb(p, sh_w, bulk, hem, hip_z):
+    """チビ・金龍刺繍: カメラ側(-Y)の裾〜胸を蛇行して登る太い金ライン+龍頭+雲渦"""
+    g = mat("cemb", PAL["gold"], 0.55, 0.4)
+    surf = -sh_w * bulk * 0.86          # カメラ側コートの表面付近
+    pts = []
+    n = 12
+    for k in range(n):
+        t = k / (n - 1)
+        z = hem + 0.03 + t * (hip_z + 0.20 - hem)     # 裾から胸まで登る
+        x = 0.04 + 0.10 * math.sin(t * math.pi * 2.1)
+        y = surf * (1.04 - 0.16 * t)
+        pts.append((x, y, z))
+    tube(pts, 0.017, g, parent=p)
+    # 龍頭 (胸上・大きめ) + 角
+    hx, hy, hz = pts[-1]
+    sph((hx + 0.03, hy, hz + 0.02), 0.045, g, scale=(1.5, 0.6, 0.9), rot=(0, -24, 0), parent=p)
+    for sy in (1, -1):
+        cyl((hx, hy + sy * 0.02, hz + 0.07), 0.007, 0.0018, 0.06, g, rot=(sy * 18, -24, 0), parent=p)
+    # 雲の渦 (2つ・脇腹と胸)
+    torus((0.06, surf * 0.95, hem + 0.16), 0.035, 0.009, g, rot=(80, -14, 18), parent=p)
+    torus((0.10, surf * 0.88, hip_z + 0.06), 0.028, 0.008, g, rot=(80, -14, -12), parent=p)
 
 
 def chibi_pompadour(p, cz, r, cfg):
@@ -1002,6 +1046,12 @@ def build_chibi(cfg):
     for sy in (1, -1):
         sph((0, sy * sh_w * 1.0, sh_z - 0.01), sh_w * 0.44 * bulk, cc, scale=(0.95, 0.9, 0.9), parent=p)
     top_r = sh_w * 1.18 * 0.82
+    # ロング特攻服の裾 (膝までフレア。脚を覆い靴だけ覗く)
+    hem_z = cfg.get("chem_z", 0.14)
+    if cfg.get("long_coat"):
+        cyl((0, 0, (hip_z + hem_z) / 2 + 0.01), sh_w * 1.18 * bulk, sh_w * 0.98 * bulk, hip_z - hem_z + 0.05,
+            cc, scale=(0.84, 1, 1), parent=p)
+        torus((0, 0, hem_z + 0.01), sh_w * 1.16 * bulk, 0.016, cd, scale=(0.84, 1, 0.7), parent=p)
     # 白さらし (腹に巻く)
     if cfg.get("sarashi"):
         sar = mat("csar", C(0.93, 0.92, 0.89), 0, 0.85)
@@ -1021,11 +1071,17 @@ def build_chibi(cfg):
     col_r = sh_w * 0.62
     cyl((0, 0, sh_z + 0.04), col_r * 1.10, col_r * 1.16, 0.10, cc, parent=p)
     cyl((0, 0, sh_z + 0.075), col_r * 0.95, col_r, 0.05, mat("cinner", PAL["black"], 0, 0.8), parent=p)
-    # ---- 腕 (短い・拳を脇に。atk はカメラ側を前へ) ----
+    if cfg.get("gold_trim"):                                  # 金の襟パイピング (ボスの豪華さ)
+        torus((0, 0, sh_z + 0.095), col_r * 1.14, 0.011, gold, scale=(1, 1, 0.7), parent=p)
+    # ---- 腕 (短い・拳を脇に。atk はカメラ側を前へ。武器持ちは肩担ぎ) ----
+    wp = cfg.get("weapon")
+    grip = None
     for sy in (1, -1):
         y0 = sy * sh_w * 1.05
         sh_pos = (0.0, y0, sh_z - 0.02)
-        if POSE == "atk" and sy == -1:
+        if wp and sy == -1 and POSE in ("idle", "idle2", "idle3", "grd"):
+            mid = (0.06, y0 * 1.00, sh_z - 0.10); f = (0.18, y0 * 0.60, sh_z + 0.05)  # 前腕を立て肩担ぎ
+        elif POSE == "atk" and sy == -1:
             mid = (0.16, y0 * 0.95, sh_z - 0.06); f = (0.34, y0 * 0.82, sh_z - 0.10)
         elif POSE == "grd":
             mid = (0.10, y0 * 1.02, (sh_z + hip_z) / 2 + 0.05); f = (0.22, y0 * 0.55, hip_z + 0.14)
@@ -1034,6 +1090,14 @@ def build_chibi(cfg):
         seg(sh_pos, mid, sh_w * 0.42 * bulk, sh_w * 0.34 * bulk, cc, parent=p)
         seg(mid, f, sh_w * 0.34 * bulk, sh_w * 0.30, cc, parent=p)
         fist(p, f, r=0.072)
+        if sy == -1:
+            grip = f
+    # 武器
+    if wp == "bat_gold" and grip:
+        chibi_weapon_bat(p, grip, POSE)
+    # 刺繍 (カメラ側の裾)
+    if cfg.get("embroidery") == "dragon":
+        chibi_dragon_emb(p, sh_w, bulk, hem_z, hip_z)
     # ---- 頭 ----
     cz = sh_z + r * 0.95
     cyl((0, 0, sh_z + 0.02), r * 0.42, r * 0.46, 0.08, skin, parent=p)   # 短い首
@@ -1048,7 +1112,135 @@ def build_chibi(cfg):
     return p
 
 
+# ---- 雑魚チビの小物 ----
+def chibi_cigarette(p, mouth):
+    """咥えタバコ＋火種＋立ち昇る紫煙"""
+    white = mat("cciga", C(0.93, 0.91, 0.87), 0, 0.6)
+    tip = mat("cciga_tip", C(0.96, 0.42, 0.10), 0, 0.4)
+    smoke = mat("csmoke", C(0.70, 0.70, 0.73), 0, 1.0)
+    x, y, z = mouth
+    cyl((x + 0.06, y - 0.02, z - 0.01), 0.013, 0.013, 0.14, white, rot=(0, 82, 0), parent=p)
+    sph((x + 0.135, y - 0.02, z - 0.01), 0.016, tip, parent=p)
+    # 細く軽い紫煙(斜め上へ流す)
+    for k in range(3):
+        t = k / 2.0
+        sph((x + 0.14 + 0.05 * t, y - 0.02 - 0.02 * t, z + 0.07 + 0.10 * k),
+            0.013 + 0.006 * k, smoke, parent=p)
+
+
+def chibi_thinner_bag(p, hand):
+    """シンナーを吸うビニール袋（口元の手に持つ・明色の半透明っぽい塊）"""
+    bag = mat("cbag", C(0.86, 0.89, 0.86), 0, 0.25)
+    x, y, z = hand
+    sph((x + 0.02, y, z - 0.03), 0.062, bag, scale=(0.92, 1.0, 1.15), parent=p)
+    sph((x + 0.02, y, z + 0.05), 0.030, bag, scale=(0.7, 0.7, 1.25), parent=p)   # 袋の口
+
+
+def chibi_litter(p):
+    """足元の散乱: つぶれた空き缶×2＋ワンカップ"""
+    can = mat("ccan", C(0.76, 0.79, 0.83), 0.7, 0.3)
+    can_r = mat("ccan_r", C(0.80, 0.20, 0.15), 0.4, 0.4)
+    cup = mat("ccup", C(0.86, 0.91, 0.96), 0, 0.2)
+    capm = mat("ccup_cap", PAL["gold"], 0.6, 0.35)
+    cyl((0.30, 0.24, 0.05), 0.042, 0.046, 0.10, can_r, rot=(0, 72, 20), parent=p)
+    cyl((0.36, -0.27, 0.045), 0.040, 0.040, 0.09, can, rot=(0, 86, -12), parent=p)
+    cyl((0.16, -0.31, 0.05), 0.036, 0.042, 0.095, cup, parent=p)
+    cyl((0.16, -0.31, 0.10), 0.036, 0.036, 0.012, capm, parent=p)
+
+
+def chibi_radio(p):
+    """肩乗せ風ラジカセ(足元横・カメラ側に置く)：昭和ヤンキーの象徴"""
+    body = mat("cradio", C(0.13, 0.13, 0.15), 0.2, 0.5)
+    spk = mat("cspk", C(0.55, 0.57, 0.62), 0.5, 0.4)
+    sil = mat("cradio_sil", C(0.78, 0.80, 0.84), 0.7, 0.25)
+    knob = mat("cknob", PAL["gold"], 0.6, 0.3)
+    bx, by, bz = 0.28, -0.42, 0.13
+    box((bx, by, bz), (0.30, 0.26, 0.22), body, parent=p, bevel=0.014)        # 本体(横長)
+    for s in (-1, 1):                                                          # スピーカー2つ(カメラ側-Y)
+        cyl((bx + s * 0.07, by - 0.115, bz - 0.01), 0.052, 0.052, 0.02, spk, rot=(90, 0, 0), parent=p)
+        cyl((bx + s * 0.07, by - 0.125, bz - 0.01), 0.030, 0.030, 0.015, sil, rot=(90, 0, 0), parent=p)
+    box((bx, by - 0.118, bz + 0.075), (0.10, 0.012, 0.03), sil, parent=p, bevel=0.004)  # 中央パネル
+    for s in (-1, 0, 1):
+        sph((bx + s * 0.03, by - 0.13, bz + 0.075), 0.011, knob, parent=p)    # ツマミ
+    # 取っ手(上のアーチ)
+    for sx in (-1, 1):
+        seg((bx + sx * 0.09, by, bz + 0.11), (bx + sx * 0.05, by, bz + 0.19), 0.012, 0.012, body, parent=p)
+    seg((bx - 0.05, by, bz + 0.19), (bx + 0.05, by, bz + 0.19), 0.012, 0.012, body, parent=p)
+
+
+def build_chibi_zako(cfg):
+    """雑魚チビ: ウンコ座り(完全しゃがみ・がに股)＋咥えタバコ/シンナー袋＋足元の缶/ラジカセ"""
+    p = root()
+    r = cfg.get("chead_r", 0.30)
+    bulk = cfg.get("bulk", 1.0)
+    sh_w = cfg.get("csh_w", 0.20)
+    cc = mat("ccoat", cfg["coat"], 0, 0.9)
+    pc = mat("cpants", cfg["pants"], 0, 0.9)
+    skin = mat("cskin", PAL["skin"])
+    shoe = mat("cshoe", PAL["black"], 0.1, 0.4)
+    gold = mat("cgold", PAL["gold"], 0.6, 0.35)
+    hip_z = 0.20
+    sh_z = 0.50
+    breath = {"idle": 0.0, "idle2": 0.010, "idle3": 0.018}.get(POSE, 0.0)
+    sh_z += breath
+    # ---- 脚: 完全しゃがみ・膝を高く前へ・がに股で平ら接地 ----
+    for sy in (1, -1):
+        foot = (0.17, sy * 0.18, 0.045)
+        knee = (0.13, sy * 0.21, 0.40 + breath)
+        hip = (-0.04, sy * 0.11, hip_z)
+        seg(hip, knee, 0.115 * bulk, 0.10 * bulk, pc, parent=p)    # 腿(上向き)
+        sph(knee, 0.097 * bulk, pc, parent=p)                      # 膝
+        seg(knee, (foot[0], foot[1], foot[2] + 0.05), 0.097 * bulk, 0.072, pc, parent=p)  # 脛(下向き)
+        sph((foot[0] + 0.05, foot[1], foot[2]), 0.095, shoe, scale=(1.85, 0.78, 0.5), parent=p)  # 平ら靴
+    # ---- 尻・前傾の胴 ----
+    sph((-0.07, 0, hip_z), 0.17 * bulk, pc, scale=(0.9, 1.12, 0.9), parent=p)
+    cyl((-0.02, 0, (hip_z + sh_z) / 2 + 0.02), sh_w * 1.02 * bulk, sh_w * 1.06, sh_z - hip_z + 0.05,
+        cc, scale=(0.84, 1, 1), rot=(0, 14, 0), parent=p)
+    for sy in (1, -1):
+        sph((0.03, sy * sh_w * 0.98, sh_z - 0.01), sh_w * 0.42 * bulk, cc, scale=(0.95, 0.9, 0.9), parent=p)
+    top_r = sh_w * 1.06 * 0.82
+    for k in range(3):
+        sph((0.05 + top_r * 0.9, 0.02, sh_z - 0.06 - k * 0.07), 0.019, gold, parent=p)
+    col_r = sh_w * 0.6
+    cyl((0.05, 0, sh_z + 0.03), col_r * 1.10, col_r * 1.15, 0.08, cc, parent=p)
+    # ---- 腕: カメラ側は口元へ(タバコ/袋)、反対は膝に乗せる ----
+    yC = -sh_w * 1.0
+    shC = (0.05, yC, sh_z - 0.02)
+    if cfg.get("thinner"):   # シンナー袋を口元へ吸い上げる
+        midC = (0.18, yC * 1.02, sh_z - 0.14); handC = (0.35, -sh_w * 0.5, sh_z + 0.06)
+    else:                    # 膝の間にだらりと下ろす
+        midC = (0.19, yC * 1.05, sh_z - 0.18); handC = (0.30, -sh_w * 0.55, 0.34)
+    seg(shC, midC, sh_w * 0.40 * bulk, sh_w * 0.32 * bulk, cc, parent=p)
+    seg(midC, handC, sh_w * 0.32 * bulk, sh_w * 0.28, cc, parent=p)
+    fist(p, handC, r=0.07)
+    yK = sh_w * 1.0
+    shK = (0.05, yK, sh_z - 0.02)
+    midK = (0.20, yK * 1.06, sh_z - 0.16)
+    handK = (0.30, yK * 1.0, 0.42 + breath)   # 膝の上
+    seg(shK, midK, sh_w * 0.40 * bulk, sh_w * 0.32 * bulk, cc, parent=p)
+    seg(midK, handK, sh_w * 0.32 * bulk, sh_w * 0.28, cc, parent=p)
+    fist(p, handK, r=0.07)
+    # ---- 頭(やや前傾=うつむきガン飛ばし) ----
+    cz = sh_z + r * 0.92
+    cyl((0.02, 0, sh_z + 0.02), r * 0.40, r * 0.44, 0.07, skin, parent=p)
+    sph((0, 0, cz), r, skin, scale=(0.96, 0.95, 1.0), parent=p)
+    chibi_face(p, cz, r, cfg)
+    chibi_pompadour(p, cz, r, cfg)
+    # ---- 小物 ----
+    mouth = (r * 0.95, -r * 0.06, cz - r * 0.5)
+    if cfg.get("cigarette"):
+        chibi_cigarette(p, mouth)
+    if cfg.get("thinner"):
+        chibi_thinner_bag(p, handC)
+    if cfg.get("radio"):
+        chibi_radio(p)
+    chibi_litter(p)
+    return p
+
+
 def build_character(cfg):
+    if cfg.get("chibi_zako"):
+        return build_chibi_zako(cfg)
     if cfg.get("chibi"):
         return build_chibi(cfg)
     if cfg.get("rider"):
@@ -1185,15 +1377,16 @@ def setup_scene(cfg=None):
 # ============================================================
 
 CHARS = {
-    # ラスボス 総長アンジョー: 白特攻服・金龍刺繍・長身・金バット・銀白髪
+    # ラスボス 総長アンジョー: 2頭身チビ・白ロング特攻服・金龍刺繍・金バット・銀白リーゼント・傷 (最も豪華)
     "shin-anjo": {
-        "H": 2.05, "bulk": 1.42, "sh": 1.38, "head_scale": 1.14,
-        "coat": PAL["white"], "coat_dk": C(0.48, 0.48, 0.52),
-        "pants": PAL["white"], "pants_dk": C(0.55, 0.55, 0.58),
-        "hair": C(0.58, 0.60, 0.66), "brow": C(0.22, 0.23, 0.28), "inner": PAL["black"],
-        "scar": True,
-        "weapon": "bat_gold", "embroidery": "dragon",
-        "hem_z": 0.44, "pompadour": 1.3,
+        "chibi": True, "bulk": 1.35,
+        "chead_r": 0.32, "csh_z": 0.66, "chip_z": 0.34, "csh_w": 0.225,
+        "coat": C(0.91, 0.91, 0.89), "coat_dk": C(0.52, 0.52, 0.56),
+        "pants": C(0.88, 0.88, 0.86), "pants_dk": C(0.52, 0.52, 0.56),
+        "hair": C(0.80, 0.82, 0.88), "brow": C(0.45, 0.46, 0.52),
+        "long_coat": True, "chem_z": 0.16, "weapon": "bat_gold", "embroidery": "dragon",
+        "scar": True, "pompadour": 1.4, "gold_trim": True,
+        "res": (640, 920), "ortho": 1.88,
         "out": ("boss", "shin-anjo.png"),
     },
     # 中ボス 吉良の若殿マサキ: 紫・金刺繍・ヤセ長身・豪華木刀・頬傷
@@ -1238,6 +1431,39 @@ CHARS = {
         "sarashi": True, "pompadour": 1.3,
         "res": (640, 900), "ortho": 1.72,
         "out": (None, "player.png"),
+    },
+    # 標準雑魚: 2頭身チビ・ウンコ座り＋咥えタバコ＋シンナー袋＋足元の空き缶
+    "yankee-basic": {
+        "chibi_zako": True, "bulk": 1.0,
+        "chead_r": 0.30, "csh_w": 0.20,
+        "coat": C(0.16, 0.16, 0.21), "coat_dk": C(0.08, 0.08, 0.11),
+        "pants": C(0.12, 0.12, 0.17), "pants_dk": C(0.06, 0.06, 0.09),
+        "hair": C(0.10, 0.08, 0.06), "brow": C(0.10, 0.08, 0.06),
+        "pompadour": 1.0, "cigarette": True,
+        "res": (640, 760), "ortho": 1.35,
+        "out": (None, "yankee-basic.png"),
+    },
+    # 炎の不良(雑魚): ウンコ座り＋シンナー(ビニール袋)を口元で吸う・赤黒・赤リーゼント
+    "yankee-fire": {
+        "chibi_zako": True, "bulk": 1.0,
+        "chead_r": 0.30, "csh_w": 0.20,
+        "coat": C(0.28, 0.07, 0.06), "coat_dk": C(0.14, 0.03, 0.03),
+        "pants": C(0.14, 0.06, 0.06), "pants_dk": C(0.07, 0.03, 0.03),
+        "hair": C(0.40, 0.06, 0.04), "brow": C(0.22, 0.05, 0.03),
+        "pompadour": 1.05, "thinner": True,
+        "res": (640, 760), "ortho": 1.35,
+        "out": (None, "yankee-fire.png"),
+    },
+    # 漁師町の不良(雑魚): ウンコ座り＋肩乗せラジカセ＋足元に酒(ワンカップ/缶)・紺
+    "yankee-fisher": {
+        "chibi_zako": True, "bulk": 1.0,
+        "chead_r": 0.30, "csh_w": 0.20,
+        "coat": C(0.10, 0.14, 0.26), "coat_dk": C(0.05, 0.07, 0.13),
+        "pants": C(0.08, 0.10, 0.18), "pants_dk": C(0.04, 0.05, 0.09),
+        "hair": C(0.08, 0.10, 0.14), "brow": C(0.08, 0.10, 0.14),
+        "pompadour": 1.0, "cigarette": True, "radio": True,
+        "res": (700, 760), "ortho": 1.45,
+        "out": (None, "yankee-fisher.png"),
     },
     # 暴走族ライダー: 旧車會単車に跨がった特攻服の不良 (idle/idle2=エンジン振動 のみ)
     "rider": {
