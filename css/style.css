@@ -1512,8 +1512,6 @@ img.char-sprite {
 .belt-f.riding:has(img.char-sprite) { transform: none; }
 .belt-f:has(img.char-sprite) .dq-bike,
 .belt-f:has(img.char-sprite) .dq-ciga { display: none; }
-/* スプライト雑魚は絵自体がウンコ座りなので、loiter の縮み変形は当てない(二重潰れ防止) */
-.belt-f:has(img.char-sprite).loiter { transform: none; }
 .belt-f.riding img.char-sprite {
   max-width: none;
   width: 200px;
