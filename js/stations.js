@@ -456,7 +456,8 @@ window.PLAYER_INIT = {
   money: 0,     // カツアゲ金（強化ショップの通貨）
   upgrades: {}, // 購入済み強化のレベル {hp, atk, meter}
   bestScores: {}, // 駅id → 自己ベストスコア
-  dexClaims: {} // ボンタン図鑑の収集マイルストーン受取済み
+  dexClaims: {}, // ボンタン図鑑の収集マイルストーン受取済み
+  achievements: {} // 解除済み実績 id → true
 };
 
 // 駅ID → キャラアーキタイプID

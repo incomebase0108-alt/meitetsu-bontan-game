@@ -48,6 +48,7 @@ window.Game = (function() {
     if (!player.upgrades) player.upgrades = {};
     if (!player.bestScores) player.bestScores = {};
     if (!player.dexClaims) player.dexClaims = {};
+    if (!player.achievements) player.achievements = {};
     currentStationIndex = data.currentStationIndex || 0;
     showScreen('screen-map');
     window.MapUI.render();
@@ -163,6 +164,7 @@ window.Game = (function() {
       }
     }
     player.hp = player.maxHp;
+    window.Achievements && window.Achievements.checkOnWin(player, res, tier);   // 実績判定
     persist();
     showBontanCutscene(enemy, hpBoost, atkBoost, isRare, firstClear, tier);
   }

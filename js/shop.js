@@ -109,6 +109,7 @@ window.ShopUI = (function() {
     p.money -= cost;
     p.upgrades[key] = l + 1;
     u.apply(p);
+    window.Achievements && window.Achievements.grant(p, 'shopper');   // 実績「常連」
     window.Audio8 && window.Audio8.SFX.levelup && window.Audio8.SFX.levelup();
     window.Game.persist && window.Game.persist();
     if (window.MapUI) window.MapUI.render();   // マップのHP/ATK/金表示を更新
