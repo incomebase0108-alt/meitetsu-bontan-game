@@ -292,6 +292,9 @@ window.Battle = (function() {
     if (n < 2) { el.classList.remove('show', 'chain'); return; }
     el.classList.remove('chain');
     el.textContent = `${n} HIT COMBO!`;
+    // コンボが伸びるほど大きく・熱い色に（手応えの段階表現）
+    el.style.fontSize = Math.min(46, 22 + n * 1.4) + 'px';
+    el.style.color = n >= 30 ? '#ff3366' : n >= 15 ? '#ff9a00' : n >= 8 ? '#ffe600' : '#fff';
     el.classList.remove('show');
     void el.offsetWidth;
     el.classList.add('show');
@@ -555,6 +558,8 @@ window.Battle = (function() {
       showDamageNumber(e, dmg, isCrit ? 'critical' : 'normal');
       showSpark(e, isCrit || smash || mv.radial);
       if (isCrit || mv.radial || smash) { flashScreen(); shakeStage(); }
+      // ヒットストップ: 強打ほど長く止める（通常打は軽く）
+      S.hitstop = Math.max(S.hitstop, (isCrit || smash || mv.radial) ? 0.085 : 0.03);
       setTimeout(() => window.Audio8 && window.Audio8.SFX[(isCrit || smash) ? 'critical' : 'hit'](), 60);
 
       const dead = e.hp <= 0;
@@ -602,6 +607,7 @@ window.Battle = (function() {
     p.hp -= dmg;
     gainMeter(10);
     S.noHit = false;          // スコア用: 被弾したらノーダメ評価を外す
+    S.hitstop = Math.max(S.hitstop, mult >= 1.8 ? 0.07 : 0.03);   // 被弾にも手応え
     S.combo = 0;
     showCombo(0);
     showDamageNumber(p, dmg, mult >= 2 ? 'critical' : 'normal');
@@ -1109,6 +1115,13 @@ window.Battle = (function() {
       S.perfAcc = 0; S.perfN = 0;
       if (avgMs > 22 && S.fxLevel < 2) setFxLevel(S.fxLevel + 1);   // 約45fps未満が続いたら素早く降格
     }
+    // ヒットストップ: 強打の瞬間だけゲーム時間を止めて手応えを出す（描画は継続）
+    if (S.hitstop > 0) {
+      S.hitstop -= dtRaw;
+      render();
+      S.raf = requestAnimationFrame(loop);
+      return;
+    }
     updatePlayer(dt);
     S.enemies.forEach(e => updateEnemy(e, dt));
     S.enemies = S.enemies.filter(e => e.state !== 'dead'); // DOM除去はupdateEnemy内のsetTimeoutで実施
@@ -1143,6 +1156,7 @@ window.Battle = (function() {
       waves: buildWaves(station),
       meter: Math.min(75, ((gp.upgrades && gp.upgrades.meter) || 0) * 25),   // 強化「気合い注入」で初期ゲージ
       upg: (gp.upgrades || {}),   // 戦闘強化ツリー(連撃/一撃必殺/特攻魂)を doPlayerAttack で参照
+      hitstop: 0,                 // ヒットストップ(強打の瞬間フリーズ=手応え)
       combo: 0, lastHitAt: 0,
       tokens: 2,
       stats: { hits: 0, misses: 0 },
