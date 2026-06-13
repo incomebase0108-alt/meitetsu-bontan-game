@@ -210,7 +210,7 @@ window.STATIONS = [
     distanceFromPrev: 2.8,
     danger: 1,
     enemy: {
-      name: '鉄火のジロー',
+      name: '尾崎 清則',
       title: '上横須賀の番を張る男',
       hp: 130,
       atk: 22,
