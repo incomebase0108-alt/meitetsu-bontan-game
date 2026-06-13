@@ -558,7 +558,10 @@ window.Battle = (function() {
       setTimeout(() => window.Audio8 && window.Audio8.SFX[(isCrit || smash) ? 'critical' : 'hit'](), 60);
 
       const dead = e.hp <= 0;
-      const knockdown = dead || mv.down || isCrit || smash || e.kind === 'rider';
+      // ボスは毎回ダウンすると getup中の点滅(invuln)で「戦闘中に透明」に見えてしまう。
+      // 死亡時以外はダウンしにくくして、ボスらしく踏ん張らせる。
+      const knockdown = dead || e.kind === 'rider' ||
+        ((mv.down || isCrit || smash) && (e.kind !== 'boss' || Math.random() < 0.18));
       if (e.attackToken) { releaseToken(e); }
       e.move = null;
       if (knockdown) {
@@ -1043,7 +1046,8 @@ window.Battle = (function() {
     for (const e of all) {
       const sx = e.x - S.cam - SPR_W / 2;
       // 画面外カリング: オフスクリーンのキャラは描画ツリーから外す(合成コスト削減)。AIは update 側で継続
-      if (e !== S.player && (sx < cullL || sx > cullR)) {
+      // ボスは戦闘中に消えると致命的なので常に描画(プレイヤーと同様にカリング対象外)
+      if (e !== S.player && e.kind !== 'boss' && (sx < cullL || sx > cullR)) {
         if (!e.culled) { e.el.style.display = 'none'; e.culled = true; }
         continue;
       }
