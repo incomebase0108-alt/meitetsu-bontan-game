@@ -18,11 +18,17 @@ window.Battle = (function() {
     special: { name: '必殺技', anim: 'special', mult: 2.5, reach: 165, cd: 1.0,  hitAt: 0.3,  down: true,  sfx: 'special', radial: true, useMeter: true }
   };
 
-  // 雑魚3種（HP/ATKはその駅のボス値に連動して自然にスケール）
+  // 雑魚9アーキタイプ（HP/ATKはその駅のボス値に連動して自然にスケール・髪型/服/小物バラバラ）
   const MOB_TYPES = [
-    { key: 'chinpira',  name: 'チンピラ',  archetypeId: 'yankee-basic',  hpF: 0.50, atkF: 0.45, speed: 95,  reach: 60, cdMin: 1.0, cdMax: 1.9 },
-    { key: 'torimaki',  name: '取り巻き',  archetypeId: 'yankee-fisher', hpF: 0.65, atkF: 0.55, speed: 75,  reach: 64, cdMin: 1.2, cdMax: 2.1 },
-    { key: 'teppodama', name: '鉄砲玉',    archetypeId: 'yankee-fire',   hpF: 0.40, atkF: 0.70, speed: 135, reach: 58, cdMin: 0.8, cdMax: 1.6 }
+    { key: 'chinpira',  name: 'チンピラ',  archetypeId: 'mob-cig',  hpF: 0.50, atkF: 0.45, speed: 95,  reach: 60, cdMin: 1.0, cdMax: 1.9 },
+    { key: 'charai',    name: 'チャラ男',  archetypeId: 'mob-afro', hpF: 0.45, atkF: 0.50, speed: 120, reach: 58, cdMin: 0.9, cdMax: 1.7 },
+    { key: 'mohican',   name: '尖り',      archetypeId: 'mob-moha', hpF: 0.55, atkF: 0.60, speed: 100, reach: 62, cdMin: 1.0, cdMax: 1.8 },
+    { key: 'pipe',      name: '鉄パイプ',  archetypeId: 'mob-pipe', hpF: 0.60, atkF: 0.65, speed: 80,  reach: 78, cdMin: 1.2, cdMax: 2.0 },
+    { key: 'gatai',     name: 'ガタイ',    archetypeId: 'mob-big',  hpF: 0.95, atkF: 0.70, speed: 60,  reach: 66, cdMin: 1.4, cdMax: 2.3 },
+    { key: 'kosodoro',  name: 'コソ泥',    archetypeId: 'mob-mask', hpF: 0.40, atkF: 0.45, speed: 140, reach: 56, cdMin: 0.8, cdMax: 1.6 },
+    { key: 'kakukari',  name: '突っ張り',  archetypeId: 'mob-flat', hpF: 0.65, atkF: 0.55, speed: 85,  reach: 64, cdMin: 1.1, cdMax: 2.0 },
+    { key: 'longhair',  name: '与太者',    archetypeId: 'mob-long', hpF: 0.50, atkF: 0.55, speed: 105, reach: 60, cdMin: 1.0, cdMax: 1.8 },
+    { key: 'yotaku',    name: '半グレ',    archetypeId: 'mob-allb', hpF: 0.70, atkF: 0.65, speed: 90,  reach: 64, cdMin: 1.1, cdMax: 2.0 }
   ];
 
   // ボスの技パターン（旧1vs1のアーキタイプ別パターンをベルト用にマッピング）

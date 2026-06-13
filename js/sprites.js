@@ -137,7 +137,17 @@ window.Sprites = (function() {
     // 【最終章・真ラスボス】大沢仁志（三河三谷）: 高級ダークスーツ＋葉巻＋筋肉・最大級シルエット
     'oosawa':        { body:'big', scale:1.42, hair:'allback', hairColor:'#14140f', streak:true,
                        outfit:'suit', gak:'#262a34', bontan:'#1a1d24', cigar:true, necklace:true,
-                       shades:true, scar:true, face:'smirk' }
+                       shades:true, scar:true, face:'smirk' },
+    // ===== 雑魚9アーキタイプ（街の不良・髪/服/小物を散らす） =====
+    'mob-cig':       { hair:'pomp',  hairColor:'#1a140e', gak:'#3a2a1c', bontan:'#241a10', cig:true },
+    'mob-afro':      { body:'slim', hair:'afro', hairColor:'#2a1a0e', gak:'#7a3030', bontan:'#3a1414', face:'smirk' },
+    'mob-moha':      { hair:'mohawk', hairColor:'#6a1530', gak:'#2a2a32', bontan:'#1a1a20', scar:true, face:'shout' },
+    'mob-pipe':      { hair:'buzz',  hairColor:'#15140f', gak:'#3a4a3a', bontan:'#1c241c', weapon:'pipe' },
+    'mob-big':       { body:'big', hair:'punch', hairColor:'#241505', gak:'#4a3a22', bontan:'#2a2414', chain:true, scar:true, face:'shout' },
+    'mob-mask':      { body:'slim', hair:'buzz', hairColor:'#15140f', gak:'#23232b', bontan:'#15151b', shades:true, mask:true },
+    'mob-flat':      { hair:'flat',  hairColor:'#10202a', gak:'#234a52', bontan:'#16323a', face:'shout' },
+    'mob-long':      { body:'slim', hair:'long', hairColor:'#d4a017', gak:'#7a2a52', bontan:'#3a1a30', face:'smirk' },
+    'mob-allb':      { hair:'allback', hairColor:'#23201c', gak:'#1a1a22', bontan:'#10101a', shades:true, scar:true }
   };
 
   function buildCfxHTML(c) {
