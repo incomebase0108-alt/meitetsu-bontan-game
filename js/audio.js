@@ -324,17 +324,23 @@ window.Audio8 = (function() {
     const t0 = ctx.currentTime;
     const out = ctx.createGain();
     out.gain.value = 0;
-    out.gain.linearRampToValueAtTime(0.13, t0 + 0.25);   // フェードイン
+    out.gain.linearRampToValueAtTime(0.34, t0 + 0.22);   // 爆音フェードイン (旧車會の竹やりマフラー)
     out.connect(masterGain);
 
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 1.2;
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass'; lp.frequency.value = 2600;
-    bp.connect(lp); lp.connect(out);
+    // ディストーション (歪んだ爆音にする tanh ソフトクリップ)
+    const dist = ctx.createWaveShaper();
+    const curve = new Float32Array(256);
+    for (let i = 0; i < 256; i++) { const x = i / 255 * 2 - 1; curve[i] = Math.tanh(x * 3.2); }
+    dist.curve = curve; dist.oversample = '2x';
 
-    const base = [124, 125.6, 62];                       // 2本のノコギリ＋サブ
-    const types = ['sawtooth', 'sawtooth', 'square'];
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 950; bp.Q.value = 1.7;   // 高めの鼻づまり=甲高い
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 3600;                     // バリバリした倍音を通す
+    bp.connect(dist); dist.connect(lp); lp.connect(out);
+
+    const base = [124, 125.6, 62, 186];                  // ノコギリ2本+サブ+5度上(厚み)
+    const types = ['sawtooth', 'sawtooth', 'square', 'sawtooth'];
     const oscs = base.map((f, i) => {
       const o = ctx.createOscillator();
       o.type = types[i]; o.frequency.value = f;
@@ -342,19 +348,19 @@ window.Audio8 = (function() {
       return o;
     });
 
-    // チャグ（パラパラ）: 速いトレモロでエンジンの脈動
+    // チャグ（パラパラ）: 速いトレモロでエンジンの脈動 (深め)
     const lfo = ctx.createOscillator();
     lfo.type = 'sawtooth'; lfo.frequency.value = 16;
-    const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.06;
+    const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.12;
     lfo.connect(lfoGain); lfoGain.connect(out.gain); lfo.start(t0);
 
-    // 排気のエア感（ループノイズ）
+    // 排気のエア感（ループノイズ・大きめ）
     const nbuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 1.0), ctx.sampleRate);
     const nd = nbuf.getChannelData(0);
     for (let i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1) * 0.5;
     const nSrc = ctx.createBufferSource(); nSrc.buffer = nbuf; nSrc.loop = true;
-    const nf = ctx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 1400; nf.Q.value = 0.7;
-    const ng = ctx.createGain(); ng.gain.value = 0.05;
+    const nf = ctx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 1500; nf.Q.value = 0.7;
+    const ng = ctx.createGain(); ng.gain.value = 0.10;
     nSrc.connect(nf); nf.connect(ng); ng.connect(out); nSrc.start(t0);
 
     let stopped = false;
