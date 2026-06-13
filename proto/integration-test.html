@@ -8,7 +8,7 @@
   body{margin:0;background:#2a2f3a;color:#eee;font-family:system-ui}
   h1{font-size:16px;margin:12px}
   .lbl{font-size:11px;color:#9fb0c0;margin:8px 12px 0}
-  .grid{display:flex;flex-wrap:wrap;gap:2px;padding:6px 10px;
+  .trow{display:flex;flex-wrap:wrap;gap:2px;padding:6px 10px;
     background:linear-gradient(180deg,#bcd3e6 0 44%,#8a7f68 44%)}
   .cell{position:relative;width:96px;height:176px;vertical-align:bottom}
   .cell .entity{position:absolute;left:3px;bottom:6px;top:auto}
@@ -17,12 +17,14 @@
 </head>
 <body>
   <h1>統合テスト（本番 css/js を直接ロード）</h1>
+  <div class="lbl">▶ 主人公の差別化＆カスタム（真面目少年 → アイテムで不良化 → 雑魚と別物か）</div>
+  <div class="trow" id="g-player"></div>
   <div class="lbl">▶ 全アーキタイプ idle（applyCharSprite の出力確認）</div>
-  <div class="grid" id="g-idle"></div>
+  <div class="trow" id="g-idle"></div>
   <div class="lbl">▶ 歩き .walking（手足が踏む）／敵は scaleX(-1)</div>
-  <div class="grid" id="g-walk"></div>
+  <div class="trow" id="g-walk"></div>
   <div class="lbl">▶ 攻撃 .act-punch / .act-kick / .act-slash ・被弾 .hit ・cower(.dq-face.scared)</div>
-  <div class="grid" id="g-act"></div>
+  <div class="trow" id="g-act"></div>
 
 <script src="../js/sprites.js"></script>
 <script>
@@ -43,6 +45,15 @@
     return {cell,f};
   }
   const gIdle=document.getElementById('g-idle'), gWalk=document.getElementById('g-walk'), gAct=document.getElementById('g-act');
+  // 主人公: 真面目少年(初期) → cosmeticsで段階的に不良化 → 雑魚 と並べる
+  const gPlayer=document.getElementById('g-player');
+  [
+    ['player', {}, '初期(真面目)'],
+    ['player', {cosmetics:{hair:'pomp', hairColor:'#14141c', sarashi:true}}, '+リーゼント+さらし'],
+    ['player', {cosmetics:{hair:'pompXL', hairColor:'#101010', outfit:'white-tokko', scar:true, props:['bat']}}, '+特攻服+傷+バット'],
+    ['player', {cosmetics:{hair:'skinhead', tattoo:true, face:'shades', scar:true, props:['blade']}}, '+スキンヘッド+青龍刀'],
+    ['yankee-basic', {}, '雑魚(比較)'],
+  ].forEach(([a,d,cap])=>{ const {cell}=makeFighter(a,d); cell.querySelector('.cap').textContent=cap; gPlayer.appendChild(cell); });
   // idle
   ARCHES.forEach(a=>{ gIdle.appendChild(makeFighter(a).cell); });
   // walk (敵向き)

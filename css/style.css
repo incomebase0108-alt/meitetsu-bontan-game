@@ -2101,6 +2101,17 @@ img.char-sprite {
 .belt-f.cssx.mohawk .cfx-hair::before { border-radius:6px 6px 2px 2px; }
 .cfx-mohawk { position:absolute; top:-13px; left:50%; transform:translateX(-50%); width:15px; height:26px; background:var(--hair); border:3px solid #000; border-radius:6px 6px 0 0; clip-path:polygon(0 100%,28% 8%,50% 32%,72% 0,100% 100%); }
 .belt-f.cssx:not(.mohawk) .cfx-mohawk { display:none; }
+/* 真面目少年: 普通の短髪（リーゼントでない・主人公の初期） */
+.cfx-crop { position:absolute; top:2px; left:50%; transform:translateX(-50%); width:48px; height:23px; background:var(--hair); border:3px solid #000; border-radius:15px 15px 5px 5px; }
+.cfx-crop::after { content:""; position:absolute; bottom:-5px; left:7px; width:34px; height:9px; background:var(--hair); border:3px solid #000; border-top:none; border-radius:0 0 7px 7px; }
+/* 真面目顔: 尖り眉/釣り目をやめ穏やかに（雑魚との差別化） */
+.belt-f.cssx .plain .dq-brow { height:4px; background:#43301c; clip-path:none; border-radius:2px; top:12px; }
+.belt-f.cssx .plain .dq-brow.l { transform:rotate(7deg); } .belt-f.cssx .plain .dq-brow.r { transform:rotate(-7deg); }
+.belt-f.cssx .plain .dq-eye { width:8px; height:9px; border-radius:50%; transform:none; }
+.belt-f.cssx .plain .dq-eye::after { width:5px; height:5px; border-radius:50%; right:1px; bottom:1px; }
+.belt-f.cssx .plain .dq-eye.l::after { left:1px; right:auto; }
+.belt-f.cssx .plain .dq-mouth { width:10px; height:3px; background:#7a4a3a; border-radius:2px; }
+.belt-f.cssx .plain .dq-mouth::before { display:none; }
 /* 体型 */
 .belt-f.cssx.slim { --torsow:42px; --armw:12px; --legw:17px; --legsp:14px; }
 .belt-f.cssx.big { --torsow:62px; --torsoh:52px; --armw:18px; --armtop:58px; --legw:24px; --legsp:18px; }

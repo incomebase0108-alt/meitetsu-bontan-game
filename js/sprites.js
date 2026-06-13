@@ -43,7 +43,9 @@ window.Sprites = (function() {
   // face: normal|smirk|shout / flags: scar shades mask sarashi belt white tattoo
   // weapon: bat|pipe|blade|bokuto / extras: cig chain
   const CFX = {
-    'player':        { hair:'pomp',     hairColor:'#14141c', gak:'#1b2740', bontan:'#10141f', sarashi:true },
+    // 主人公の初期＝真面目少年（普通短髪・穏やか顔・きれいな学ラン・傷/さらし/小物なし）。
+    //   アイテム取得で cosmetics により不良化していく（applyCharSprite の data.cosmetics で差し替え）。
+    'player':        { hair:'plain', face:'plain', hairColor:'#241a12', gak:'#222633', bontan:'#1b1f2a', skin:'#f2c79b' },
     'yankee-basic':  { hair:'pomp',     hairColor:'#1a140e', gak:'#3a2a1c', bontan:'#241a10', cig:true },
     'yankee-fisher': { body:'slim', hair:'pomp', hairColor:'#10202a', gak:'#234a52', bontan:'#16323a', face:'smirk' },
     'yankee-fire':   { hair:'pomp',     hairColor:'#3a0d05', gak:'#5a1810', bontan:'#3a1008', face:'shout', scar:true },
@@ -63,10 +65,13 @@ window.Sprites = (function() {
   };
 
   function buildCfxHTML(c) {
-    const bald = c.hair === 'skinhead';
     let head = '';
-    if (!bald) {
-      head += `<div class="cfx-hair"><div class="cfx-pomp"></div></div><div class="cfx-mohawk"></div>`;
+    if (c.hair === 'skinhead') {
+      head = '';                                   // 坊主（髪なし）
+    } else if (c.hair === 'plain') {
+      head += `<div class="cfx-crop"></div>`;       // 真面目少年の普通短髪
+    } else {
+      head += `<div class="cfx-hair"><div class="cfx-pomp"></div></div><div class="cfx-mohawk"></div>`;  // リーゼント/モヒカン
     }
     if (c.tattoo) head += `<div class="cfx-tattoo">龍</div>`;
     const eyes = c.shades ? `<div class="cfx-shades"></div>`
@@ -93,11 +98,37 @@ window.Sprites = (function() {
       ${weapon}`;
   }
 
+  // 主人公カスタム: アイテムで取得した cosmetics を config に反映（不良化）。
+  // schema: { body, hair, hairColor, outfit, outfitColor, face, sarashi, scar, props:[], accColor }
+  // shop/save/通貨の配線は1号機。ここは描画キーへのマッピングのみ。
+  function applyCosmetics(c, cm) {
+    if (cm.body) c.body = cm.body;
+    if (cm.hair) c.hair = cm.hair;                 // plain|pomp|pompXL|mohawk|skinhead
+    if (cm.hairColor) c.hairColor = cm.hairColor;
+    if (cm.outfitColor) c.gak = cm.outfitColor;
+    if (cm.bontanColor) c.bontan = cm.bontanColor;
+    if (cm.outfit === 'white-tokko') { c.white = true; c.belt = true; }
+    if (cm.outfit === 'tokkofuku') { c.sarashi = true; }
+    if (cm.face === 'shades') c.shades = true;
+    else if (cm.face === 'mask') c.mask = true;
+    else if (cm.face && cm.face !== 'plain') c.face = cm.face;  // smirk/shout等
+    if (cm.sarashi !== undefined) c.sarashi = cm.sarashi;
+    if (cm.scar) c.scar = true;
+    if (cm.tattoo) c.tattoo = true;
+    (cm.props || []).forEach(p => {
+      if (['bat', 'pipe', 'blade', 'bokuto'].indexOf(p) >= 0) c.weapon = p;
+      else if (p === 'cigarette') c.cig = true;
+      else if (p === 'chain') c.chain = true;
+    });
+    return c;
+  }
+
   // charEl（.fighter）に手足キャラを適用。aura/shadow/mini-hp は温存。戻り値=推奨スケール。
   function applyCharSprite(charEl, archetypeId, data) {
     data = data || {};
     const base = CFX[archetypeId] || CFX['yankee-basic'];
     const c = Object.assign({}, base);
+    if (data.cosmetics) applyCosmetics(c, data.cosmetics);   // 主人公の着せ替え（不良化）
 
     charEl.classList.add('dq', 'cssx');
     // 体型・髪型・表情のクラス
