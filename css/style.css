@@ -129,6 +129,7 @@ body {
   font-size: 14px;
   min-height: 44px;
   line-height: 1.5;
+  flex-shrink: 0;   /* ★縮ませない: 縮むとテキストがはみ出て次の駅と重なる(overflow-yで縮みが優先される為) */
 }
 .station-row.current {
   background: #ff6600;
@@ -220,6 +221,7 @@ body {
   border-top: 1px dashed #444;
   border-bottom: 1px dashed #444;
   margin: 4px 0;
+  flex-shrink: 0;   /* 区切りも縮ませない */
 }
 
 .map-controls { padding: 8px; width: 100%; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
