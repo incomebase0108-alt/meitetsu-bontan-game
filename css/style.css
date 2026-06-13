@@ -2311,3 +2311,8 @@ img.char-sprite {
 @keyframes cfx-kick { 0%,100%{transform:translateX(var(--legsp)) rotate(-14deg)} 45%{transform:translateX(calc(var(--legsp)+6px)) rotate(94deg)} }
 .belt-f.cssx.act-slash .cfx-bat, .belt-f.cssx.act-slash .cfx-pipe, .belt-f.cssx.act-slash .cfx-blade, .belt-f.cssx.act-slash .cfx-bokuto, .belt-f.cssx.act-slash .cfx-harpoon, .belt-f.cssx.act-slash .cfx-rake { animation:cfx-slash .5s ease-in-out; }
 @keyframes cfx-slash { 0%{transform:rotate(-46deg)} 50%{transform:rotate(56deg)} 100%{transform:rotate(18deg)} }
+/* 手足キャラ用に旧whole-bodyアニメを上書き: キック=飛び蹴り/投げ=体倒れ を体重移動だけにして手足アニメに任せる */
+.belt-f.cssx.act-kick { animation:cssx-kickbody .42s ease-out; }
+@keyframes cssx-kickbody { 0%,100%{transform:translateX(0)} 45%{transform:translateX(18px)} }
+.belt-f.cssx.act-throw { animation:cssx-throwbody .6s ease-out; }
+@keyframes cssx-throwbody { 0%,100%{transform:translateX(0)} 40%{transform:translateX(22px)} }
