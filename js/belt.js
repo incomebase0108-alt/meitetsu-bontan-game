@@ -198,6 +198,7 @@ window.Battle = (function() {
   }
 
   function removeEntity(e) {
+    if (e.engineSfx) { e.engineSfx.stop(); e.engineSfx = null; }   // 単車エンジン音を止める
     if (e.el && e.el.parentNode) e.el.parentNode.removeChild(e.el);
   }
 
@@ -708,6 +709,8 @@ window.Battle = (function() {
     S.enemies.push(rider);
     setTimeout(() => { if (S && rider.state === 'ride') showTaunt(rider, 'どけどけぇーー！！'); }, 350);
     window.Audio8 && window.Audio8.SFX.dash && window.Audio8.SFX.dash();
+    // 単車のエンジン音（持続）。走行中ループ → 退場/落馬で停止
+    if (window.Audio8 && window.Audio8.startEngine) rider.engineSfx = window.Audio8.startEngine();
   }
 
   // ライダーから単車を外す（殴り落とした時）
@@ -715,6 +718,7 @@ window.Battle = (function() {
     e.fEl.classList.remove('riding');
     const bk = e.fEl.querySelector('.dq-bike');
     if (bk) bk.remove();
+    if (e.engineSfx) { e.engineSfx.stop(); e.engineSfx = null; }   // 落馬したらエンジン音停止
   }
 
   // たむろ集団が絡んでくる（接近 or 先制攻撃で発動）
@@ -825,6 +829,8 @@ window.Battle = (function() {
     // 暴走族ライダー：走行中は直進、轢き判定、画面外で消える
     if (e.kind === 'rider' && e.state === 'ride') {
       e.x += e.dir * 430 * dt;
+      // ドップラー: プレイヤーへ接近中は高め、通過後は低め
+      if (e.engineSfx) e.engineSfx.setPitch((e.x - S.player.x) > 0 ? 1.12 : 0.9);
       if (!e.hitDone && Math.abs(S.player.x - e.x) < 50 && Math.abs(S.player.y - e.y) < 26) {
         e.hitDone = true;
         hurtPlayer(e, 1.6, '単車アタック');

@@ -316,6 +316,69 @@ window.Audio8 = (function() {
     }
   };
 
+  // 単車エンジン（持続音・旧車會の甲高い「パラパラ」）。
+  // startEngine() → { stop(), setPitch(mult) }。setPitch で接近=高/通過後=低のドップラー表現。
+  function startEngine() {
+    init(); resumeIfSuspended();
+    if (muted || !ctx) return { stop() {}, setPitch() {} };
+    const t0 = ctx.currentTime;
+    const out = ctx.createGain();
+    out.gain.value = 0;
+    out.gain.linearRampToValueAtTime(0.13, t0 + 0.25);   // フェードイン
+    out.connect(masterGain);
+
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 1.2;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 2600;
+    bp.connect(lp); lp.connect(out);
+
+    const base = [124, 125.6, 62];                       // 2本のノコギリ＋サブ
+    const types = ['sawtooth', 'sawtooth', 'square'];
+    const oscs = base.map((f, i) => {
+      const o = ctx.createOscillator();
+      o.type = types[i]; o.frequency.value = f;
+      o.connect(bp); o.start(t0);
+      return o;
+    });
+
+    // チャグ（パラパラ）: 速いトレモロでエンジンの脈動
+    const lfo = ctx.createOscillator();
+    lfo.type = 'sawtooth'; lfo.frequency.value = 16;
+    const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.06;
+    lfo.connect(lfoGain); lfoGain.connect(out.gain); lfo.start(t0);
+
+    // 排気のエア感（ループノイズ）
+    const nbuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 1.0), ctx.sampleRate);
+    const nd = nbuf.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1) * 0.5;
+    const nSrc = ctx.createBufferSource(); nSrc.buffer = nbuf; nSrc.loop = true;
+    const nf = ctx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 1400; nf.Q.value = 0.7;
+    const ng = ctx.createGain(); ng.gain.value = 0.05;
+    nSrc.connect(nf); nf.connect(ng); ng.connect(out); nSrc.start(t0);
+
+    let stopped = false;
+    return {
+      setPitch(m) {
+        if (stopped || !ctx) return;
+        const tt = ctx.currentTime;
+        oscs.forEach((o, i) => o.frequency.setTargetAtTime(base[i] * m, tt, 0.08));
+        lfo.frequency.setTargetAtTime(16 * m, tt, 0.08);
+      },
+      stop() {
+        if (stopped || !ctx) return;
+        stopped = true;
+        const tt = ctx.currentTime;
+        out.gain.cancelScheduledValues(tt);
+        out.gain.setValueAtTime(Math.max(0.0001, out.gain.value), tt);
+        out.gain.exponentialRampToValueAtTime(0.001, tt + 0.3);  // フェードアウト
+        const end = tt + 0.36;
+        oscs.forEach(o => o.stop(end));
+        lfo.stop(end); nSrc.stop(end);
+      }
+    };
+  }
+
   function startBgm(mode = 'map') {
     if (muted) return;
     stopBgm();
@@ -363,5 +426,5 @@ window.Audio8 = (function() {
 
   function isMuted() { return muted; }
 
-  return { SFX, startBgm, stopBgm, toggleMute, isMuted, init, resumeIfSuspended };
+  return { SFX, startBgm, stopBgm, startEngine, toggleMute, isMuted, init, resumeIfSuspended };
 })();
