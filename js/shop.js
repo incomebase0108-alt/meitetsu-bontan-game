@@ -21,6 +21,22 @@ window.ShopUI = (function() {
       desc: '戦闘開始時の必殺ゲージ +25%',
       cost: lv => 150 + lv * 120, max: 3,
       apply: () => {}   // 効果は belt.js init が upgrades.meter を読んで反映
+    },
+    // ▼ 戦闘強化ツリー（効果は belt.js の playerHitCheck が upgrades を読んで反映）
+    {
+      key: 'combo', icon: '🥊', name: '連撃の極み',
+      desc: 'コンボの威力上昇が大きくなる',
+      cost: lv => 120 + lv * 100, max: 5, apply: () => {}
+    },
+    {
+      key: 'crit', icon: '💢', name: '一撃必殺',
+      desc: 'クリティカル率 +5%',
+      cost: lv => 140 + lv * 110, max: 6, apply: () => {}
+    },
+    {
+      key: 'power', icon: '☄️', name: '特攻魂',
+      desc: '必殺技の威力 +15%',
+      cost: lv => 160 + lv * 130, max: 5, apply: () => {}
     }
   ];
 

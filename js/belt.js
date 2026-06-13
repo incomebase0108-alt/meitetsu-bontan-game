@@ -545,8 +545,11 @@ window.Battle = (function() {
       if (e.state === 'loiter') activateWave(e.wave);
       // ライダーは殴られたら単車から吹っ飛ぶ
       if (e.kind === 'rider') dismountRider(e);
-      const isCrit = Math.random() < 0.12;
-      let dmg = Math.max(1, Math.floor(p.atk * mv.mult * (isCrit ? 1.8 : 1) * (smash ? 1.4 : 1) * (1 + Math.min(0.4, S.combo * 0.06)) + Math.random() * 3 - 1));
+      const isCrit = Math.random() < (0.12 + (S.upg.crit || 0) * 0.05);          // 強化「一撃必殺」
+      const comboLv = S.upg.combo || 0;                                          // 強化「連撃の極み」
+      const comboMul = 1 + Math.min(0.4 + comboLv * 0.15, S.combo * (0.06 + comboLv * 0.015));
+      const powMul = mv.useMeter ? (1 + (S.upg.power || 0) * 0.15) : 1;           // 強化「特攻魂」(必殺威力)
+      let dmg = Math.max(1, Math.floor(p.atk * mv.mult * powMul * (isCrit ? 1.8 : 1) * (smash ? 1.4 : 1) * comboMul + Math.random() * 3 - 1));
       e.hp -= dmg;
       gainMeter(mv.useMeter ? 0 : (mv.mult >= 1.5 ? 9 : 6));
       showDamageNumber(e, dmg, isCrit ? 'critical' : 'normal');
@@ -1137,6 +1140,7 @@ window.Battle = (function() {
       enemies: [], boss: null,
       waves: buildWaves(station),
       meter: Math.min(75, ((gp.upgrades && gp.upgrades.meter) || 0) * 25),   // 強化「気合い注入」で初期ゲージ
+      upg: (gp.upgrades || {}),   // 戦闘強化ツリー(連撃/一撃必殺/特攻魂)を doPlayerAttack で参照
       combo: 0, lastHitAt: 0,
       tokens: 2,
       stats: { hits: 0, misses: 0 },
