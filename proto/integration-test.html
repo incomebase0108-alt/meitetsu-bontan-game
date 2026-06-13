@@ -19,6 +19,8 @@
   <h1>統合テスト（本番 css/js を直接ロード）</h1>
   <div class="lbl">▶ 主人公の差別化＆カスタム（真面目少年 → アイテムで不良化 → 雑魚と別物か）</div>
   <div class="trow" id="g-player"></div>
+  <div class="lbl">▶ 23駅 固有config（蒲生健司=蒲郡・漁師上がり：日焼け/刈上げ/腹巻/ゴム長/銛）idle・歩き・銛振り</div>
+  <div class="trow" id="g-station"></div>
   <div class="lbl">▶ 髪型カタログ（リーゼント以外も・主人公カスタム＆23キャストで共用）</div>
   <div class="trow" id="g-hair"></div>
   <div class="lbl">▶ 全アーキタイプ idle（applyCharSprite の出力確認）</div>
@@ -56,6 +58,12 @@
     ['player', {cosmetics:{hair:'skinhead', tattoo:true, face:'shades', scar:true, props:['blade']}}, '+スキンヘッド+青龍刀'],
     ['yankee-basic', {}, '雑魚(比較)'],
   ].forEach(([a,d,cap])=>{ const {cell}=makeFighter(a,d); cell.querySelector('.cap').textContent=cap; gPlayer.appendChild(cell); });
+  // 23駅 固有config: 蒲生健司
+  const gStation=document.getElementById('g-station');
+  [['gamo','',' 蒲生健司 idle'],['gamo','walking','蒲生 歩き'],['gamo','act-slash','蒲生 銛振り']].forEach(([a,st,cap])=>{
+    const {cell,f}=makeFighter(a); if(st) f.classList.add(st); cell.querySelector('.cap').textContent=cap; gStation.appendChild(cell);
+  });
+  setInterval(()=>{ document.querySelectorAll('#g-station .fighter.act-slash').forEach(f=>{ f.classList.remove('act-slash'); void f.offsetWidth; f.classList.add('act-slash'); }); }, 800);
   // 髪型カタログ（playerに各hairをcosmeticsで適用）
   const gHair=document.getElementById('g-hair');
   [['plain','七三/短髪'],['pomp','リーゼント'],['pompXL','超ロング'],['long','ロン毛'],['buzz','坊主'],['flat','角刈り'],['punch','パンチパーマ'],['allback','オールバック'],['afro','パーマ'],['mohawk','モヒカン'],['skinhead','スキンヘッド']]

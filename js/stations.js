@@ -468,7 +468,7 @@ window.PLAYER_INIT = {
 // アーキタイプは見た目（emoji/accessory）と戦闘AIパターンを決定する
 window.STATION_ARCHETYPE = {
   // 蒲郡線
-  'gamagori':           'yankee-basic',     // ガマゴリ若頭：基本パンチ・キック
+  'gamagori':           'gamo',             // 蒲生健司：漁師上がり（日焼け・刈上げ・腹巻・ゴム長・銛）
   'gamagori-kyoutei':   'gambler-boss',     // 賭けマサ：イカサマ投げ
   'mikawa-kashima':     'yankee-basic',     // シカジマ
   'katahara':           'thrower-boss',     // カタハラ蜜柑：ミカン連投

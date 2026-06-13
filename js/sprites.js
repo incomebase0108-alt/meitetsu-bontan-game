@@ -62,7 +62,11 @@ window.Sprites = (function() {
     'onsen-boss':    { body:'big', hair:'buzz', hairColor:'#5a4a42', gak:'#6a4a3a', bontan:'#3a281f' },
     'riezent-boss':  { hair:'pompXL',  hairColor:'#050505', gak:'#3a2a1c', bontan:'#241810', scar:true, weapon:'bat' },
     'karate-boss':   { hair:'buzz',    hairColor:'#1a1a1a', gak:'#2a2a30', bontan:'#1a1a20', scar:true },
-    'skinhead':      { hair:'skinhead', tattoo:true, shades:true, scar:true, weapon:'blade', skin:'#e8b486', gak:'#26262e', bontan:'#15151b' }
+    'skinhead':      { hair:'skinhead', tattoo:true, shades:true, scar:true, weapon:'blade', skin:'#e8b486', gak:'#26262e', bontan:'#15151b' },
+    // ===== 23駅 固有config（改名表ブリーフ準拠・順次追加） =====
+    // 蒲郡／蒲生健司: 港町の漁師上がり。日焼け・刈上げ・腹巻・ゴム長・銛、がっしり
+    'gamo':          { body:'big', hair:'flat', hairColor:'#191712', gak:'#2c4a52', bontan:'#1d3036',
+                       skin:'#cf9a63', outfit:'work', sarashi:true, boots:true, weapon:'harpoon', face:'shout' }
   };
 
   function buildCfxHTML(c) {
@@ -146,6 +150,8 @@ window.Sprites = (function() {
     charEl.classList.toggle('bald', c.hair === 'skinhead');
     charEl.classList.toggle('mohawk', c.hair === 'mohawk');
     charEl.classList.toggle('has-streak', !!c.streak);
+    charEl.classList.toggle('boots', !!c.boots);
+    charEl.classList.toggle('o-work', c.outfit === 'work');
 
     // 配色（data上書き対応：旧API互換 hairOverride/gakOverride/color/bontanColor）
     charEl.style.setProperty('--hair', data.hairOverride || c.hairColor || '#15110c');
