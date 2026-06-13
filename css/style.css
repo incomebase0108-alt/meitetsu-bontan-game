@@ -787,10 +787,10 @@ body {
   100% { transform: scaleX(-1) translate(-100px, 30px) rotate(-540deg); opacity: 1; }
 }
 @keyframes fall {
-  to { transform: rotate(-90deg) translateY(60px); opacity: 0.5; }
+  to { transform: rotate(-90deg) translateY(60px); opacity: 0.85; }
 }
 @keyframes fall-e {
-  to { transform: scaleX(-1) rotate(-90deg) translateY(60px); opacity: 0.5; }
+  to { transform: scaleX(-1) rotate(-90deg) translateY(60px); opacity: 0.85; }
 }
 
 /* Blender製等のPNGスプライト差し替え（足元基準・キャラ枠いっぱい） */

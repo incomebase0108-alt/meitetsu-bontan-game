@@ -871,7 +871,10 @@ window.Battle = (function() {
               gainMeter(8);
               log(`${e.data.name}を倒した！`);
             }
-            setTimeout(() => removeEntity(e), 700);
+            // ボスは「撃破→倒れたまま」を勝利カットシーンまで見せる。
+            // (以前は700msで消していたが、カットシーンは1300ms後のため、その差でボスだけ
+            //  戦闘画面から消えて「戦闘中に透明になった」ように見えていた=本バグの正体)
+            if (e !== S.boss) setTimeout(() => removeEntity(e), 700);
           } else {
             e.state = 'getup'; e.stateT = 0;
             e.fEl.classList.remove('down-pose');
