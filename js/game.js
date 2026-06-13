@@ -428,7 +428,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-start').addEventListener('click', () => {
     window.Audio8 && window.Audio8.SFX.menu();
-    window.Game.newGame();
+    // 新規はオープニング・ストーリー →（終わったら）ゲーム開始
+    if (window.StoryIntro) window.StoryIntro.play(() => window.Game.newGame());
+    else window.Game.newGame();
   });
   document.getElementById('btn-continue').addEventListener('click', () => {
     window.Audio8 && window.Audio8.SFX.menu();

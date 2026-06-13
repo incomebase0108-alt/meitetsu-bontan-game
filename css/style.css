@@ -1367,6 +1367,36 @@ img.char-sprite {
 .ach-name { font-size: 14px; font-weight: bold; color: #fff; }
 .ach-desc { font-size: 11px; color: #bbb; }
 .ach-rw { font-size: 12px; color: #ffd24a; white-space: nowrap; }
+
+/* ==== オープニング・ストーリー ==== */
+#screen-intro { display: flex; align-items: center; justify-content: center; }
+#screen-intro.active { display: flex; }
+.intro-box {
+  width: 100%; max-width: 460px; margin: 0 16px;
+  background: linear-gradient(180deg, #14141c, #1f1a26);
+  border: 3px solid #555; border-radius: 14px; padding: 22px 18px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+.intro-box.boss { border-color: #b3302f; }
+.intro-box.hero { border-color: #2f6bb3; }
+.intro-box.narr { border-color: #888; }
+.intro-face {
+  font-size: 72px; text-align: center; line-height: 1;
+  animation: intro-bob 1.6s ease-in-out infinite;
+}
+@keyframes intro-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.intro-who {
+  text-align: center; font-weight: bold; font-size: 16px; color: #ffcc66;
+  margin: 8px 0 4px;
+}
+.intro-box.hero .intro-who { color: #66b0ff; }
+.intro-text {
+  color: #f0f0f0; font-size: 16px; line-height: 1.7; min-height: 90px;
+  background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px;
+}
+.intro-box.narr .intro-text { text-align: center; color: #ddd; font-style: italic; }
+.intro-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; gap: 10px; }
+.intro-controls .big-btn { flex: 1; margin: 0; }
 .belt-bg {
   position: absolute;
   top: 0;
