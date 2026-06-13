@@ -902,7 +902,155 @@ def build_rider(p, cfg):
     return p
 
 
+# ============================================================
+# チビ (2頭身・くにおくん風) — リアル寄り6頭身が不気味の谷に落ちるため、
+# 振り切ったデフォルメで谷を回避する。全身を1体ごと個別造形 (共通素体なし)。
+# ============================================================
+
+def chibi_face(p, cz, r, cfg):
+    """チビ顔: 大きいアニメ目+大キャッチライト・太い角眉・小さい鼻・不敵な片笑み。
+    虚ろ回避=黒目を大きく+白いキャッチライトを必ず入れる。左右の瞳をわずかにずらす(死人感回避)"""
+    skin = mat("cskin", PAL["skin"])
+    skin_dk = mat("cskin_dk", C(0.82, 0.60, 0.45), 0, 0.85)
+    ew = mat("ceye_w", C(0.98, 0.98, 0.97), 0, 0.3)           # 真っ白にしない (薄ピンクグレー)
+    iris = mat("ciris", C(0.24, 0.13, 0.07), 0, 0.25)
+    iris2 = mat("ciris2", C(0.45, 0.26, 0.13), 0, 0.3)
+    pupil = mat("cpupil", C(0.04, 0.03, 0.04), 0, 0.25)
+    hl = mat("chl", C(1.0, 1.0, 1.0), 0, 0.2)
+    brow = mat("cbrow", cfg.get("brow", cfg["hair"]), 0, 0.7)
+    # 大きいアニメ目を顔の中央〜やや下に (チビ比率: 目は顔の下半分寄り・大きく)
+    for sy in (1, -1):
+        near = (sy == -1)                       # カメラ側(-Y)が手前=大きく
+        th = D(19 if near else 22)
+        ex = r * math.cos(th) * 0.93
+        ey = sy * r * math.sin(th) * 1.16
+        ez = cz - r * 0.03
+        esc = 1.0 if near else 0.85
+        jitter = (0, -0.01)[near]               # 手前の瞳をほんの少し下へ (完全シンメトリ回避)
+        sph((ex, ey, ez), r * 0.45 * esc, ew, scale=(0.32, 0.92, 1.12), rot=(0, 0, sy * 6), parent=p)
+        sph((ex + r * 0.06, ey - sy * r * 0.02, ez - r * 0.01 + jitter * r), r * 0.33 * esc, iris,
+            scale=(0.36, 0.94, 0.96), parent=p)
+        sph((ex + r * 0.075, ey - sy * r * 0.02, ez + r * 0.06), r * 0.21 * esc, iris2,
+            scale=(0.36, 0.82, 0.66), parent=p)
+        sph((ex + r * 0.10, ey - sy * r * 0.02, ez + jitter * r), r * 0.145 * esc, pupil,
+            scale=(0.36, 0.88, 0.96), parent=p)
+        sph((ex + r * 0.15, ey - sy * r * 0.05, ez + r * 0.17), r * 0.085 * esc, hl, parent=p)
+        # 上まぶた/まつげライン (目の上を締めて眠そう→不敵に)
+        box((ex + r * 0.05, ey, ez + r * 0.31), (r * 0.085, r * 0.35, r * 0.05),
+            mat("clash", C(0.05, 0.05, 0.08), 0, 0.6), rot=(sy * -3, 0, sy * 9), parent=p, bevel=0.005)
+        # 下まつげ/涙袋の薄い影 (生気を足す)
+        box((ex + r * 0.02, ey + sy * r * 0.01, ez - r * 0.32), (r * 0.07, r * 0.32, r * 0.03),
+            skin_dk, rot=(0, 0, sy * 6), parent=p, bevel=0.004)
+        # 太い角眉 (吊り上げ・不敵)
+        box((ex + r * 0.05, ey + sy * r * 0.02, ez + r * 0.46), (r * 0.10, r * 0.36, r * 0.115),
+            brow, rot=(sy * -8, 6, sy * -10), parent=p, bevel=0.012)
+    # 小さい鼻 (点で十分)
+    sph((r * 0.98, 0, cz - r * 0.18), r * 0.07, skin, scale=(0.6, 0.6, 0.7), parent=p)
+    # 不敵な片笑み (カメラ側の口角だけ上げる)
+    mz = cz - r * 0.54
+    box((r * 0.87, -r * 0.05, mz), (r * 0.04, r * 0.34, r * 0.052),
+        mat("cmouth", C(0.40, 0.16, 0.14), 0, 0.5), rot=(-15, 8, -7), parent=p, bevel=0.005)
+    # 耳 (髪で大半隠れるので小さく)
+    for sy in (1, -1):
+        sph((-r * 0.02, sy * r * 0.92, cz - r * 0.06), r * 0.15, skin, scale=(0.5, 0.32, 0.7), parent=p)
+
+
+def chibi_pompadour(p, cz, r, cfg):
+    """チビ・リーゼント: 頭をすっぽり覆う土台 + 誇張した前ロール + もみあげ + ダックテール"""
+    h = mat("chair", cfg["hair"], 0, 0.5)
+    vol = cfg.get("pompadour", 1.25)
+    # トップ〜後頭部の土台 (頭をすっぽり覆う)
+    sph((-r * 0.06, 0, cz + r * 0.34), r * 1.04, h, scale=(1.04, 1.0, 0.98), parent=p)
+    # 前ロール (高く前へ突き上げる巨大リーゼント。額は出して目を覆わない)
+    sph((r * 0.50, 0, cz + r * 1.04), r * 0.60 * vol, h, scale=(1.5, 0.84, 0.78), rot=(0, -24, 0), parent=p)
+    sph((r * (0.92 + 0.16 * vol), 0, cz + r * 0.94), r * 0.36 * vol, h,
+        scale=(0.95, 0.66, 0.95), rot=(0, 16, 0), parent=p)
+    # 生え際 (高い位置で前髪を眉の上に止める)
+    box((r * 0.66, 0, cz + r * 0.74), (r * 0.12, r * 0.60, r * 0.10), h, rot=(0, -42, 0), parent=p, bevel=0.012)
+    # もみあげ
+    for sy in (1, -1):
+        box((r * 0.32, sy * r * 0.82, cz - r * 0.18), (r * 0.06, r * 0.05, r * 0.24), h, parent=p, bevel=0.008)
+    # 後ろのダックテール
+    cyl((-r * 0.92, 0, cz + r * 0.02), r * 0.16, r * 0.03, r * 0.42, h, rot=(0, 118, 0), parent=p)
+
+
+def build_chibi(cfg):
+    """2頭身チビの組み立て。リアルパス(build_character)とは別系統で全身を造形する"""
+    p = root()
+    r = cfg.get("chead_r", 0.30)            # 頭が大きい (頭身を稼ぐ)
+    sh_z = cfg.get("csh_z", 0.62)
+    hip_z = cfg.get("chip_z", 0.32)
+    sh_w = cfg.get("csh_w", 0.20)           # 肩幅は頭より狭く (チビ感)
+    bulk = cfg.get("bulk", 1.0)
+    sh_z += {"idle": 0.0, "idle2": 0.012, "idle3": 0.022, "atk": 0.010, "hit": 0.0, "grd": 0.006}.get(POSE, 0.0)
+    cc = mat("ccoat", cfg["coat"], 0, 0.9)
+    cd = mat("ccoat_dk", cfg["coat_dk"], 0, 0.9)
+    pc = mat("cpants", cfg["pants"], 0, 0.9)
+    pd = mat("cpants_dk", cfg["pants_dk"], 0, 0.9)
+    gold = mat("cgold", PAL["gold"], 0.6, 0.35)
+    skin = mat("cskin", PAL["skin"])
+    shoe = mat("cshoe", PAL["black"], 0.1, 0.4)
+    # ---- 脚 (短くずんぐりのボンタン) ----
+    for sy in (1, -1):
+        y = sy * 0.105
+        cyl((0.0, y, (hip_z + 0.08) / 2 + 0.02), 0.140 * bulk, 0.110 * bulk, hip_z - 0.04, pc, parent=p)
+        torus((0.0, y, 0.105), 0.105, 0.013, pd, scale=(1, 1, 0.6), parent=p)   # 裾の絞り
+        sph((0.085, y, 0.05), 0.10, shoe, scale=(1.75, 0.7, 0.55), parent=p)    # 靴 (足裏≒z0)
+    # ---- 胴 (学ラン: ずんぐり) ----
+    cyl((0, 0, (hip_z + sh_z) / 2), sh_w * 1.05 * bulk, sh_w * 1.18, sh_z - hip_z + 0.06,
+        cc, scale=(0.82, 1, 1), parent=p)
+    for sy in (1, -1):
+        sph((0, sy * sh_w * 1.0, sh_z - 0.01), sh_w * 0.44 * bulk, cc, scale=(0.95, 0.9, 0.9), parent=p)
+    top_r = sh_w * 1.18 * 0.82
+    # 白さらし (腹に巻く)
+    if cfg.get("sarashi"):
+        sar = mat("csar", C(0.93, 0.92, 0.89), 0, 0.85)
+        sar_d = mat("csar_d", C(0.78, 0.77, 0.74), 0, 0.85)
+        cyl((0, 0, hip_z + 0.05), sh_w * 1.07 * bulk, sh_w * 1.0 * bulk, 0.15, sar, scale=(0.82, 1, 1), parent=p)
+        for k in range(2):
+            torus((0, 0, hip_z + 0.015 + k * 0.075), sh_w * 1.08 * bulk, 0.006, sar_d,
+                  scale=(0.83, 1, 0.6), parent=p)
+    # 金ボタン (前) + 前合わせライン
+    for k in range(4):
+        t = k / 3.0
+        bz = sh_z - 0.06 - t * (sh_z - hip_z - 0.04)
+        sph((top_r * 0.97 + 0.01, 0.025, bz), 0.022, gold, parent=p)
+    box((top_r * 0.99, 0.012, (hip_z + sh_z) / 2), (0.016, 0.012, (sh_z - hip_z) * 0.5),
+        cd, parent=p, bevel=0.004)
+    # 詰襟 (立ち襟・内側黒)
+    col_r = sh_w * 0.62
+    cyl((0, 0, sh_z + 0.04), col_r * 1.10, col_r * 1.16, 0.10, cc, parent=p)
+    cyl((0, 0, sh_z + 0.075), col_r * 0.95, col_r, 0.05, mat("cinner", PAL["black"], 0, 0.8), parent=p)
+    # ---- 腕 (短い・拳を脇に。atk はカメラ側を前へ) ----
+    for sy in (1, -1):
+        y0 = sy * sh_w * 1.05
+        sh_pos = (0.0, y0, sh_z - 0.02)
+        if POSE == "atk" and sy == -1:
+            mid = (0.16, y0 * 0.95, sh_z - 0.06); f = (0.34, y0 * 0.82, sh_z - 0.10)
+        elif POSE == "grd":
+            mid = (0.10, y0 * 1.02, (sh_z + hip_z) / 2 + 0.05); f = (0.22, y0 * 0.55, hip_z + 0.14)
+        else:
+            mid = (-0.03, y0 * 1.14, (sh_z + hip_z) / 2); f = (-0.06, y0 * 1.18, hip_z + 0.04)
+        seg(sh_pos, mid, sh_w * 0.42 * bulk, sh_w * 0.34 * bulk, cc, parent=p)
+        seg(mid, f, sh_w * 0.34 * bulk, sh_w * 0.30, cc, parent=p)
+        fist(p, f, r=0.072)
+    # ---- 頭 ----
+    cz = sh_z + r * 0.95
+    cyl((0, 0, sh_z + 0.02), r * 0.42, r * 0.46, 0.08, skin, parent=p)   # 短い首
+    sph((0, 0, cz), r, skin, scale=(0.96, 0.95, 1.0), parent=p)
+    chibi_face(p, cz, r, cfg)
+    chibi_pompadour(p, cz, r, cfg)
+    # 体全体のリーン (足元支点) + ヨー (顔をカメラ-Y側へ向けて3/4の見栄え)
+    lean = {"atk": 8, "hit": -7, "grd": -3}.get(POSE, 0)
+    yaw = {"atk": -7, "hit": -16, "grd": -20}.get(POSE, -13)
+    p.rotation_euler = (0, D(lean), D(yaw))
+    p.location.x = {"atk": -0.10, "hit": 0.04}.get(POSE, 0.0)
+    return p
+
+
 def build_character(cfg):
+    if cfg.get("chibi"):
+        return build_chibi(cfg)
     if cfg.get("rider"):
         p = root()
         build_rider(p, cfg)
@@ -1079,14 +1227,16 @@ CHARS = {
         "face_scar_x": True,
         "out": (None, "skinhead.png"),
     },
-    # 主人公: 黒髪リーゼント・黒長ラン前開き+白さらし・黒ボンタン・不敵 (一番かっこよく)
+    # 主人公: 2頭身チビ・黒髪リーゼント・黒学ラン+白さらし・黒ボンタン・不敵 (一番かっこよく)
+    #   no_flip=True (ゲームが scaleX(+1) 無反転表示。db7fe81 で確定)
     "player": {
-        "H": 1.80, "bulk": 1.15, "sh": 1.16, "head_scale": 1.16, "no_flip": True,
-        "coat": C(0.10, 0.12, 0.20), "coat_dk": C(0.05, 0.06, 0.11),
-        "pants": C(0.08, 0.09, 0.15), "pants_dk": C(0.04, 0.05, 0.09),
-        "hair": C(0.05, 0.06, 0.10), "brow": C(0.05, 0.05, 0.08), "inner": PAL["black"],
-        "sarashi": True, "pompadour": 1.4, "face_style": "player",
-        "hem_z": 0.50,
+        "chibi": True, "no_flip": True, "bulk": 1.05,
+        "chead_r": 0.30, "csh_z": 0.62, "chip_z": 0.32, "csh_w": 0.20,
+        "coat": C(0.08, 0.10, 0.27), "coat_dk": C(0.03, 0.04, 0.12),
+        "pants": C(0.07, 0.08, 0.22), "pants_dk": C(0.03, 0.03, 0.10),
+        "hair": C(0.05, 0.06, 0.10), "brow": C(0.05, 0.05, 0.08),
+        "sarashi": True, "pompadour": 1.3,
+        "res": (640, 900), "ortho": 1.72,
         "out": (None, "player.png"),
     },
     # 暴走族ライダー: 旧車會単車に跨がった特攻服の不良 (idle/idle2=エンジン振動 のみ)
