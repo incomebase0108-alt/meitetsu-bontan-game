@@ -3,6 +3,20 @@ window.Game = (function() {
   let player = null;
   let currentStationIndex = 0;
 
+  // レアエンカウントのレア度（ガチャ的な変動報酬）。weight で抽選、上位ほど報酬大
+  const RARITY = {
+    bronze:  { label: '銅', mark: '🥉', color: '#cd7f32', moneyMul: 1.5, bontans: 1, hp: 20, atk: 4,  weight: 50 },
+    silver:  { label: '銀', mark: '🥈', color: '#cfd6dd', moneyMul: 2.2, bontans: 2, hp: 35, atk: 6,  weight: 30 },
+    gold:    { label: '金', mark: '🥇', color: '#ffd24a', moneyMul: 3.2, bontans: 3, hp: 50, atk: 9,  weight: 14 },
+    rainbow: { label: '虹', mark: '🌈', color: 'rainbow', moneyMul: 5.0, bontans: 5, hp: 80, atk: 14, weight: 6 }
+  };
+  function rollRarity() {
+    const total = Object.values(RARITY).reduce((s, r) => s + r.weight, 0);
+    let n = Math.random() * total;
+    for (const key of Object.keys(RARITY)) { n -= RARITY[key].weight; if (n <= 0) return key; }
+    return 'bronze';
+  }
+
   // 初期化（タイトル画面表示、セーブの有無で「続きから」を出す）
   function init() {
     player = JSON.parse(JSON.stringify(window.PLAYER_INIT));
@@ -101,6 +115,7 @@ window.Game = (function() {
     let bgmMode = 'battle';
     if (st.rareEnemy && Math.random() < (st.rareChance || 0)) {
       enemy = st.rareEnemy;
+      enemy._rarity = rollRarity();   // 銅/銀/金/虹 を抽選（勝利時に報酬・演出へ反映）
       bgmMode = 'boss';
       window.Audio8 && window.Audio8.SFX.final();
     } else if (st.isFinalBoss) {
@@ -119,6 +134,7 @@ window.Game = (function() {
     const stId = window.STATIONS[currentStationIndex].id;
     const firstClear = !player.defeated.includes(stId);
     const isRare = !!enemy.isRare;
+    const tier = isRare ? RARITY[enemy._rarity] || RARITY.bronze : null;   // レア度（銅/銀/金/虹）
     // スコア/ランク: 自己ベストを記録（再戦リプレイの動機）
     const res = enemy.battleResult;
     if (res) {
@@ -126,29 +142,31 @@ window.Game = (function() {
       const prev = player.bestScores[stId] || 0;
       res.isNewBest = res.score > prev;
       if (res.isNewBest) player.bestScores[stId] = res.score;
-      // カツアゲ金: スコア連動＋クリアボーナス（強化ショップの通貨）
-      res.money = Math.round(res.score / 4) + (firstClear ? 80 : 25) + (isRare ? 150 : 0);
+      // カツアゲ金: スコア連動＋クリアボーナス。レアはレア度倍率を乗算（変動報酬）
+      res.money = Math.round(res.score / 4) + (firstClear ? 80 : 25);
+      if (tier) res.money = Math.round(res.money * tier.moneyMul) + 100;
       player.money = (player.money || 0) + res.money;
     }
     let hpBoost = 0, atkBoost = 0;
     if (firstClear) {
       player.defeated.push(stId);
-      // レベルアップ：通常HP+10/ATK+2、レアエンカウント勝利は HP+30/ATK+6（豪華）
-      hpBoost = isRare ? 30 : 10;
-      atkBoost = isRare ? 6 : 2;
+      // レベルアップ：通常HP+10/ATK+2、レアはレア度ティアで豪華に
+      hpBoost = tier ? tier.hp : 10;
+      atkBoost = tier ? tier.atk : 2;
       player.maxHp += hpBoost;
       player.atk += atkBoost;
-      // レアならボンタンも複数獲得（演出側で1本は加わるので追加で1本）
-      if (isRare) {
-        player.bontans.push({ from: enemy.name + '(裏)', color: '#666' });
+      // レアならレア度に応じた本数のボンタンを追加獲得（演出側で1本加わるので -1 本）
+      if (tier) {
+        for (let i = 0; i < Math.max(0, tier.bontans - 1); i++)
+          player.bontans.push({ from: enemy.name + '(裏)', color: tier.color === 'rainbow' ? '#a0f' : tier.color });
       }
     }
     player.hp = player.maxHp;
     persist();
-    showBontanCutscene(enemy, hpBoost, atkBoost, isRare, firstClear);
+    showBontanCutscene(enemy, hpBoost, atkBoost, isRare, firstClear, tier);
   }
 
-  function showBontanCutscene(enemy, hpBoost, atkBoost, isRare, firstClear) {
+  function showBontanCutscene(enemy, hpBoost, atkBoost, isRare, firstClear, tier) {
     showScreen('screen-bontan');
     window.Audio8 && window.Audio8.stopBgm();
     // 主人公をリーゼント不良スプライトに（戦闘と同じ見た目）
@@ -237,11 +255,27 @@ window.Game = (function() {
         return;
       }
       player.bontans.push({ from: enemy.name, color: enemy.bontanColor });
-      const rareTag = isRare ? '<div style="color:#ff3366; font-size:22px; margin-bottom:6px">🎰 レアエンカウント勝利！ボーナス報酬！</div>' : '';
+      // レア度ティアの「当たり」バナー（ガチャ的演出）
+      let rareTag = '';
+      if (tier) {
+        const isRainbow = tier.color === 'rainbow';
+        const style = isRainbow
+          ? 'class="rarity-banner rainbow"'
+          : `class="rarity-banner" style="color:${tier.color}; text-shadow:0 0 10px ${tier.color}"`;
+        rareTag = `<div ${style}>${tier.mark} ${tier.label}レア 当たり！！ 🎰</div>`;
+      }
       lv.innerHTML = rareTag +
         `<span style="color:#0f0">⬆ HP最大値 +${hpBoost} (${player.maxHp})</span>　<span style="color:#ff0">⬆ ATK +${atkBoost} (${player.atk})</span>` +
         rankHtml;
-      window.Audio8 && window.Audio8.SFX.levelup && window.Audio8.SFX.levelup();
+      // レア度が高いほど派手なファンファーレ
+      if (window.Audio8) {
+        Audio8.SFX.levelup && Audio8.SFX.levelup();
+        if (tier) {
+          const extra = { bronze: 0, silver: 1, gold: 2, rainbow: 4 }[enemy._rarity] || 0;
+          for (let i = 0; i < extra; i++) setTimeout(() => Audio8.SFX.victory && Audio8.SFX.victory(), 180 + i * 160);
+          if (tier.color === 'rainbow') setTimeout(() => Audio8.SFX.final && Audio8.SFX.final(), 120);
+        }
+      }
       persist();
     }, 2400);
   }

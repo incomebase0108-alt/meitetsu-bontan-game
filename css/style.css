@@ -1298,6 +1298,25 @@ img.char-sprite {
 .shop-buy.disabled { background: #555; color: #999; cursor: not-allowed; }
 .shop-maxed { color: #ff6699; font-weight: bold; font-size: 14px; }
 .shop-close { width: 100%; }
+
+/* ==== レア度「当たり」バナー（ガチャ演出） ==== */
+.rarity-banner {
+  font-size: 26px; font-weight: bold; margin-bottom: 8px;
+  animation: rarity-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+@keyframes rarity-pop {
+  0% { transform: scale(0.3) rotate(-8deg); opacity: 0; }
+  60% { transform: scale(1.25) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.rarity-banner.rainbow {
+  background: linear-gradient(90deg, #ff004d, #ff9a00, #ffe600, #00e676, #00b0ff, #d500f9, #ff004d);
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: rarity-pop 0.5s cubic-bezier(0.2,1.6,0.4,1) both, rainbow-flow 1.2s linear infinite;
+}
+@keyframes rainbow-flow { to { background-position: 300% 0; } }
 .belt-bg {
   position: absolute;
   top: 0;
