@@ -1036,15 +1036,21 @@ window.Battle = (function() {
     if (S.lastBgT !== bgT) { $('belt-bg').style.transform = bgT; S.lastBgT = bgT; }
 
     const all = [S.player, ...S.enemies];
+    const cullL = -SPR_W * 1.5, cullR = S.viewW + SPR_W * 1.5;
     for (const e of all) {
       const sx = e.x - S.cam - SPR_W / 2;
+      // 画面外カリング: オフスクリーンのキャラは描画ツリーから外す(合成コスト削減)。AIは update 側で継続
+      if (e !== S.player && (sx < cullL || sx > cullR)) {
+        if (!e.culled) { e.el.style.display = 'none'; e.culled = true; }
+        continue;
+      }
+      if (e.culled) { e.el.style.display = ''; e.culled = false; e.lastTrans = null; e.lastZ = null; }
       const sy = S.groundTop + e.y - SPR_H;
       const t = `translate3d(${sx.toFixed(1)}px,${sy.toFixed(1)}px,0) scaleX(${e.dir}) scale(${(S.gScale * e.scale).toFixed(3)})`;
-      if (e.lastTrans !== t) {
-        e.el.style.transform = t;
-        e.el.style.zIndex = 10 + Math.round(e.y);
-        e.lastTrans = t;
-      }
+      if (e.lastTrans !== t) { e.el.style.transform = t; e.lastTrans = t; }
+      // zIndex は y順が変わった時だけ更新(毎フレームの再スタックを避ける)
+      const z = 10 + Math.round(e.y);
+      if (e.lastZ !== z) { e.el.style.zIndex = z; e.lastZ = z; }
     }
   }
 
