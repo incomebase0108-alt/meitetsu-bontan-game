@@ -156,8 +156,8 @@ window.Battle = (function() {
   }
   function fameBand() {
     const f = (S && S.fame) || 0;
-    if (f < 40) return 'low';
-    if (f < 140) return 'mid';
+    if (f < 90) return 'low';
+    if (f < 210) return 'mid';
     return 'high';
   }
   function fillLine(s) {
@@ -168,8 +168,14 @@ window.Battle = (function() {
     const arr = table[fameBand()] || table.low;
     return fillLine(arr[Math.floor(Math.random() * arr.length)]);
   }
-  // 雑魚の恫喝（fame帯で出し分け）
+  // 雑魚の恫喝。終盤(高fame)は噂の{playerName}に怯える汎用、それ以外は
+  // 各駅固有の個性台詞(station.mobLines)→無ければ汎用にフォールバック。
   function mobTaunt() {
+    if (fameBand() === 'high') return pickLine(MOB_LINES);
+    const st = S.station;
+    if (st && st.mobLines && st.mobLines.length) {
+      return fillLine(st.mobLines[Math.floor(Math.random() * st.mobLines.length)]);
+    }
     return pickLine(MOB_LINES);
   }
 
@@ -761,14 +767,14 @@ window.Battle = (function() {
   }
 
   // ==== 名声(fame) ====
-  const FAME = { mob: 2, boss: 30 };           // 加算: 雑魚撃破=小／駅制圧=大
-  const FAME_COWER_MIN = 40;                   // これ未満は雑魚が日和らない（蒲郡序盤＝ナメられる）
+  const FAME = { mob: 1, boss: 12 };           // 加算: 雑魚撃破=小／駅制圧=大（23駅でじわじわ上がる配分）
+  const FAME_COWER_MIN = 90;                   // これ未満は雑魚が日和らない（序盤〜中盤前半＝ナメられる）
   const FAME_TITLES = [
     { min: 0,   name: '無名' },
-    { min: 25,  name: '三河の暴れん坊' },
-    { min: 70,  name: '蒲郡線の番長' },
-    { min: 140, name: '西尾の支配者' },
-    { min: 240, name: '名鉄の鬼' }
+    { min: 60,  name: '三河の暴れん坊' },
+    { min: 130, name: '蒲郡線の番長' },
+    { min: 210, name: '西尾の支配者' },
+    { min: 290, name: '名鉄の鬼' }
   ];
   function fameTitle(f) {
     let t = FAME_TITLES[0].name;
@@ -785,7 +791,7 @@ window.Battle = (function() {
   function fameCowerChance() {
     const f = (S && S.fame) || 0;
     if (f < FAME_COWER_MIN) return 0;
-    return Math.min(0.85, 0.25 + (f - FAME_COWER_MIN) / 250);
+    return Math.min(0.85, 0.2 + (f - FAME_COWER_MIN) / 300);
   }
   window.Fame = { title: fameTitle, TITLES: FAME_TITLES };
 
@@ -1282,8 +1288,8 @@ window.Battle = (function() {
     log(`${S.boss.data.name}を倒した！`);
     // 名声: 駅制圧=大 ＋ ノーダメ/高コンボ ボーナス
     let fameGain = FAME.boss;
-    if (S.noHit) fameGain += 10;
-    if (S.maxCombo >= 10) fameGain += 8;
+    if (S.noHit) fameGain += 4;
+    if (S.maxCombo >= 10) fameGain += 3;
     gainFame(fameGain);
     const bossData = S.boss.data;
     bossData.battleResult = computeBattleResult();   // スコア/ランクを勝利画面へ渡す
