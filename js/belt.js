@@ -1136,7 +1136,8 @@ window.Battle = (function() {
       cam: 0, lockCam: false,
       enemies: [], boss: null,
       waves: buildWaves(station),
-      meter: 0, combo: 0, lastHitAt: 0,
+      meter: Math.min(75, ((gp.upgrades && gp.upgrades.meter) || 0) * 25),   // 強化「気合い注入」で初期ゲージ
+      combo: 0, lastHitAt: 0,
       tokens: 2,
       stats: { hits: 0, misses: 0 },
       riderEvents: [{ at: 0.3, done: false }, { at: 0.6, done: false }],

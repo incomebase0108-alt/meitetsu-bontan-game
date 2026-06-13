@@ -452,7 +452,10 @@ window.PLAYER_INIT = {
   atk: 10,
   speed: 8,
   bontans: [], // 集めたボンタンのenemy.name配列
-  defeated: [] // 倒した駅のid配列
+  defeated: [], // 倒した駅のid配列
+  money: 0,     // カツアゲ金（強化ショップの通貨）
+  upgrades: {}, // 購入済み強化のレベル {hp, atk, meter}
+  bestScores: {} // 駅id → 自己ベストスコア
 };
 
 // 駅ID → キャラアーキタイプID

@@ -75,6 +75,15 @@ window.MapUI = (function() {
     const atkEl = document.getElementById('map-atk');
     if (atkEl) atkEl.textContent = player.atk;
     document.getElementById('map-bontans').textContent = player.bontans.length;
+    const moneyEl = document.getElementById('map-money');
+    if (moneyEl) moneyEl.textContent = (player.money || 0);
+
+    // 強化ショップを開く
+    const shopBtn = document.getElementById('btn-shop');
+    if (shopBtn && !shopBtn._bound) {
+      shopBtn._bound = true;
+      shopBtn.addEventListener('click', () => window.ShopUI && window.ShopUI.open());
+    }
 
     // 現在駅にスクロール
     const currentRow = mapEl.querySelector('.station-row.current');

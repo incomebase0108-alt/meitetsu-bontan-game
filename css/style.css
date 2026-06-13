@@ -1260,6 +1260,44 @@ img.char-sprite {
 .lowfx2 .char-shadow { display: none !important; }
 .lowfx2 .belt-photo { filter: none !important; }
 .lowfx2 [class*="spark"], .lowfx2 [class*="glow"], .lowfx2 [class*="aura"] { display: none !important; }
+
+/* ==== 強化ショップ ==== */
+.shop-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.72);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.shop-panel {
+  width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto;
+  background: linear-gradient(180deg, #1a1320 0%, #241a2c 100%);
+  border: 3px solid #d4a017; border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  padding: 16px;
+}
+.shop-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.shop-head h2 { margin: 0; font-size: 20px; color: #ffe08a; }
+.shop-money { font-size: 14px; color: #fff; }
+.shop-money b { color: #ffd700; font-size: 18px; }
+.shop-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.shop-row {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(212,160,23,0.4);
+  border-radius: 8px; padding: 10px;
+}
+.shop-ic { font-size: 26px; }
+.shop-mid { flex: 1; }
+.shop-name { font-size: 15px; font-weight: bold; color: #fff; }
+.shop-lv { font-size: 12px; color: #c9a24a; font-weight: normal; }
+.shop-desc { font-size: 12px; color: #bbb; }
+.shop-buy {
+  background: #d4a017; color: #1a1320; border: none; border-radius: 6px;
+  padding: 8px 12px; font-weight: bold; font-size: 14px; cursor: pointer; white-space: nowrap;
+}
+.shop-buy:active { transform: scale(0.94); }
+.shop-buy.disabled { background: #555; color: #999; cursor: not-allowed; }
+.shop-maxed { color: #ff6699; font-weight: bold; font-size: 14px; }
+.shop-close { width: 100%; }
 .belt-bg {
   position: absolute;
   top: 0;

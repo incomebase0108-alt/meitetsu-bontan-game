@@ -29,6 +29,10 @@ window.Game = (function() {
     const data = window.Save && window.Save.load();
     if (!data) { newGame(); return; }
     player = data.player;
+    // 旧セーブ互換: 新フィールドの既定値を補完
+    if (typeof player.money !== 'number') player.money = 0;
+    if (!player.upgrades) player.upgrades = {};
+    if (!player.bestScores) player.bestScores = {};
     currentStationIndex = data.currentStationIndex || 0;
     showScreen('screen-map');
     window.MapUI.render();
@@ -122,6 +126,9 @@ window.Game = (function() {
       const prev = player.bestScores[stId] || 0;
       res.isNewBest = res.score > prev;
       if (res.isNewBest) player.bestScores[stId] = res.score;
+      // カツアゲ金: スコア連動＋クリアボーナス（強化ショップの通貨）
+      res.money = Math.round(res.score / 4) + (firstClear ? 80 : 25) + (isRare ? 150 : 0);
+      player.money = (player.money || 0) + res.money;
     }
     let hpBoost = 0, atkBoost = 0;
     if (firstClear) {
@@ -199,10 +206,11 @@ window.Game = (function() {
       const col = { S: '#ffcc00', A: '#ff6699', B: '#66ccff', C: '#bbbbbb' }[res2.rank] || '#fff';
       const best = res2.isNewBest ? ' <span style="color:#ff3366">🏆ベスト更新!</span>' : '';
       const noHitTag = res2.noHit ? ' <span style="color:#9f9">ノーダメ!</span>' : '';
+      const moneyTag = res2.money ? `　<span style="color:#ffd700">💴+${res2.money}円</span>` : '';
       rankHtml =
         `<div style="margin-top:8px; font-size:15px">` +
         `<span style="font-size:30px; font-weight:bold; color:${col}">${res2.rank}</span>ランク　` +
-        `SCORE <b>${res2.score}</b>${best}<br>` +
+        `SCORE <b>${res2.score}</b>${best}${moneyTag}<br>` +
         `<span style="color:#ccc; font-size:13px">最大${res2.maxCombo}コンボ・${res2.timeSec}秒${noHitTag}</span></div>`;
     }
 
@@ -271,7 +279,7 @@ window.Game = (function() {
 
   return {
     init, newGame, continueGame, startGame, boardStation, nextStation, retry,
-    backToTitle, getPlayer, getCurrentStationIndex, showScreen, selectStation
+    backToTitle, getPlayer, getCurrentStationIndex, showScreen, selectStation, persist
   };
 })();
 
