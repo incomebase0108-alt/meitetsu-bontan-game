@@ -1059,6 +1059,24 @@ img.char-sprite {
 .defeat-title { font-size: 60px; color: #f33; text-shadow: 4px 4px 0 #000; margin-bottom: 20px; text-align: center; }
 .defeat-msg { font-size: 18px; margin-bottom: 20px; text-align: center; }
 .defeat-art { font-size: 80px; margin: 30px 0; }
+/* 逃げ帰る電車を名鉄スカーレット(赤)に（緑の🚃絵文字の置換） */
+.mtcar-mini {
+  display: inline-block; vertical-align: middle;
+  width: 58px; height: 32px; margin: 0 6px;
+  background: linear-gradient(180deg, #e8392b 0 12%, #d32f21 12% 68%, #a31f13 68% 100%);
+  border: 2px solid #571008; border-radius: 7px 7px 4px 4px;
+  position: relative;
+}
+.mtcar-mini::before {
+  content: ''; position: absolute; top: 6px; left: 6px; right: 6px; height: 10px;
+  background: repeating-linear-gradient(90deg, #cfe7f5 0 10px, #571008 10px 13px);
+  border: 1px solid #571008;
+}
+.mtcar-mini::after {
+  content: ''; position: absolute; bottom: -5px; left: 9px;
+  width: 8px; height: 8px; background: #1c1c1c; border-radius: 50%;
+  box-shadow: 30px 0 0 #1c1c1c;
+}
 
 .victory-title {
   font-size: 60px;
