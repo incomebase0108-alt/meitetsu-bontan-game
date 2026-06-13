@@ -497,7 +497,7 @@ window.STATION_ARCHETYPE = {
   'yonezu':             'yoneda',           // 米田剛：米屋の巨漢（米俵パワー）
   'minami-sakurai':     'ksakurai',         // 桜井恭太：喧嘩屋（モヒカン＋傷）
   'sakurai':            'sakuraba',         // 桜庭蓮：兄貴分（超ロングリーゼント＋咥えタバコ）
-  'horiuchi-koen':      'big-boss',         // 公園のヌシ
+  'horiuchi-koen':      'horiuchi',         // 堀内茂：公園のヌシ（髭面＋ボロコート＋鉄パイプ）
   'hekikai-furui':      'furuya',           // 古谷文夫：古株（白髪交じりリーゼント）
   'minami-anjo':        'andou',            // 安藤隆：超ロングリーゼントの伊達男
   'kita-anjo':          'shibata',          // 柴田高志：成金スタイル（白スーツ＋金ネックレス＋サングラス）user指定

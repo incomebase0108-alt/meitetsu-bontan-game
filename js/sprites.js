@@ -130,7 +130,14 @@ window.Sprites = (function() {
     // 新安城／安生譲二: ラスボス総長。スキンヘッド＋全身和彫り＋白特攻服肩掛け＋青龍刀＋巨躯
     'anjo':          { body:'big', scale:1.32, hair:'skinhead', tattoo:true, shirtless:true,
                        drape:true, white:true, belt:true, weapon:'blade', shades:true, scar:true,
-                       skin:'#d8a874', gak:'#e8e6dc', bontan:'#cfcabb' }
+                       skin:'#d8a874', gak:'#e8e6dc', bontan:'#cfcabb' },
+    // 堀内公園／堀内茂: 公園のヌシの巨漢。髭面＋ボロコート＋鉄パイプ
+    'horiuchi':      { body:'big', hair:'afro', hairColor:'#2a241a', beard:'#2a2018', drape:true,
+                       gak:'#4a3e2a', bontan:'#2e2618', weapon:'pipe', scar:true, face:'shout' },
+    // 【最終章・真ラスボス】大沢仁志（三河三谷）: 高級ダークスーツ＋葉巻＋筋肉・最大級シルエット
+    'oosawa':        { body:'big', scale:1.42, hair:'allback', hairColor:'#14140f', streak:true,
+                       outfit:'suit', gak:'#262a34', bontan:'#1a1d24', cigar:true, necklace:true,
+                       shades:true, scar:true, face:'smirk' }
   };
 
   function buildCfxHTML(c) {
@@ -174,6 +181,7 @@ window.Sprites = (function() {
       ${c.bale ? '<div class="cfx-bale"></div>' : ''}
       <div class="cfx-head${faceCls}">
         ${head}
+        ${c.beard ? '<div class="cfx-beard"></div>' : ''}
         <div class="dq-face">
           <div class="dq-brow l"></div><div class="dq-brow r"></div>
           ${eyes}
@@ -182,6 +190,7 @@ window.Sprites = (function() {
         </div>
       </div>
       ${c.cig ? '<div class="cfx-cig"></div>' : ''}
+      ${c.cigar ? '<div class="cfx-cigar"></div>' : ''}
       <div class="cfx-arm front"><div class="up"></div><div class="ft"></div></div>
       ${weapon}`;
   }
@@ -233,6 +242,7 @@ window.Sprites = (function() {
     charEl.classList.toggle('nikka', !!c.nikka);
     charEl.classList.toggle('shirtless', !!c.shirtless);
     if (c.muffler) charEl.style.setProperty('--muf', c.muffler);
+    if (c.beard) charEl.style.setProperty('--beard', c.beard);
 
     // 配色（data上書き対応：旧API互換 hairOverride/gakOverride/color/bontanColor）
     charEl.style.setProperty('--hair', data.hairOverride || c.hairColor || '#15110c');

@@ -2279,6 +2279,13 @@ img.char-sprite {
 .belt-f.cssx.shirtless .cfx-torso::before, .belt-f.cssx.shirtless .cfx-torso::after { display:none; }
 .belt-f.cssx.shirtless .cfx-arm .up { background:var(--skin);
   background-image:repeating-linear-gradient(120deg, rgba(40,86,150,.4) 0 2px, transparent 2px 6px); }
+/* 髭面（公園のヌシ等）: 顎まわりの無精髭 */
+.cfx-beard { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:40px; height:16px; background:var(--beard,#2a2018); border:3px solid #000; border-radius:4px 4px 13px 13px; z-index:0; }
+.belt-f.cssx .dq-face { z-index:1; }
+/* 葉巻（真ラスボス等）: 太い茶葉巻＋火種＋紫煙 */
+.cfx-cigar { position:absolute; left:53px; top:41px; width:18px; height:5px; background:linear-gradient(180deg,#6a4a2a,#4a3018); border:2px solid #000; border-radius:2px; z-index:7; }
+.cfx-cigar::before { content:""; position:absolute; right:-3px; top:0; width:4px; height:5px; background:#ff7a2a; box-shadow:0 0 5px #ff8a3a; }
+.cfx-cigar::after { content:""; position:absolute; right:-8px; top:-12px; width:8px; height:8px; border-radius:50%; background:rgba(210,210,210,.5); animation:smoke-rise 1.9s ease-out infinite; }
 /* === アニメ（belt状態クラス駆動） === */
 .belt-f.cssx.walking .cfx-leg.l { animation:cfx-stepA .46s ease-in-out infinite; }
 .belt-f.cssx.walking .cfx-leg.r { animation:cfx-stepB .46s ease-in-out infinite; }
