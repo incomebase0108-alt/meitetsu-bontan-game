@@ -155,6 +155,16 @@ window.Game = (function() {
     const gamagori = window.STATIONS[0];   // 蒲郡へ一度戻ってからJRで三河三谷へ
     playTrainCutscene(gamagori, FINAL_STAGE, onDone || (() => showScreen('screen-map')), { silver: true });
   }
+  // エンディング起動（番長就任→やくざ決意→総括）。最終章=大沢仁志撃破後に配線予定。
+  // 現状は未接続の枠（window.Game.playEnding() で単体起動・確認できる）。
+  function playEnding() {
+    if (!window.StoryEnding) { showScreen('screen-title'); return; }
+    window.StoryEnding.play(() => {
+      // 演出後の本処理（スタッフロール／NG+解放）は最終章本接続時に配線。今はタイトルへ。
+      persist();
+      showScreen('screen-title');
+    });
+  }
 
   function startBattle() {
     const st = window.STATIONS[currentStationIndex];
@@ -419,7 +429,8 @@ window.Game = (function() {
   return {
     init, newGame, continueGame, startGame, boardStation, nextStation, retry,
     backToTitle, getPlayer, getCurrentStationIndex, showScreen, selectStation, persist, startNGPlus,
-    playFinalApproach   // 最終章の移動演出（枠。本接続は4号機の大沢仁志デザイン確定後）
+    playFinalApproach,  // 最終章の移動演出（枠。本接続は4号機の大沢仁志デザイン確定後）
+    playEnding          // エンディング演出（番長→やくざ決意→総括。枠。同上で本接続）
   };
 })();
 
